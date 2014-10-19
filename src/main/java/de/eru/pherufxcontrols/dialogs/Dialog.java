@@ -8,7 +8,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
@@ -20,7 +19,7 @@ public abstract class Dialog implements Initializable{
 
     private final StringProperty title = new SimpleStringProperty();
     private Parent root;
-    protected int response = 1;
+    protected int response = -1;
 
     @FXML
     protected Label textLabel;
@@ -41,6 +40,11 @@ public abstract class Dialog implements Initializable{
         stage.setScene(scene);
         stage.setTitle(title.get());
         return stage;
+    }
+    
+    protected void closeDialog(int response){
+        this.response = response;
+        getRoot().getScene().getWindow().hide();
     }
     
     public Dialog bindTextProperty(ObservableValue<? extends String> observable) {

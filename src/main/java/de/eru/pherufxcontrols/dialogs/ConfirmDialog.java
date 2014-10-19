@@ -34,11 +34,6 @@ public final class ConfirmDialog extends Dialog {
         closeDialog(-1);
     }
     
-    private void closeDialog(int response){
-        this.response = response;
-        getRoot().getScene().getWindow().hide();
-    }
-
     public ConfirmType getType() {
         return type;
     }

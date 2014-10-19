@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.eru.pherufxcontrols;
 
 import de.eru.pherufxcontrols.dialogs.Dialogs;
@@ -27,13 +22,19 @@ public class Test extends Application {
                 .setHeader("Neuer Header")
                 .setText("neuer Text! WIUHUUU!°")
                 .setType(ConfirmType.QUESTION)
+                .setTitle("Title!")
                 .showAndWait();
         if (response == 1) {
-            Dialogs.createInfoDialog()
+            response = Dialogs.createInfoDialog()
                     .setType(InfoType.WARNING)
                     .setHeader("Header!")
                     .setText("Das ist ein Text")
-                    .show();
+                    .showAndWait();
+            if(response == 1){
+                System.out.println("OKAY!");
+            }else{
+                System.out.println("NICHT OKAY");
+            }
         }
     }
 }

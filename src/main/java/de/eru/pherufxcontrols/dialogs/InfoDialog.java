@@ -4,6 +4,7 @@ import de.eru.pherufxcontrols.utils.InfoType;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
+import javafx.fxml.FXML;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
@@ -24,6 +25,11 @@ public final class InfoDialog extends Dialog{
     public void show() {
         Stage stage = initStage();
         stage.show();
+    }
+    
+    @FXML
+    private void responseOK(){
+        closeDialog(1);
     }
 
     public InfoType getType() {
