@@ -19,6 +19,11 @@ public abstract class Dialog implements Initializable{
 
     private final StringProperty title = new SimpleStringProperty();
     private Parent root;
+    /**
+     * 1:  Ja / OK
+     * 0:  Nein
+     * -1: Abbrechen
+     */
     protected int response = -1;
 
     @FXML
@@ -38,6 +43,7 @@ public abstract class Dialog implements Initializable{
         Scene scene = new Scene(root);
         Stage stage = new Stage();
         stage.setScene(scene);
+        stage.getIcons().add(image.getImage());
         stage.setTitle(title.get());
         return stage;
     }
