@@ -42,6 +42,7 @@ public abstract class Dialog implements Initializable{
     protected Stage initStage(){
         Scene scene = new Scene(root);
         Stage stage = new Stage();
+//        stage.initStyle(StageStyle.UNDECORATED);
         stage.setScene(scene);
         stage.getIcons().add(image.getImage());
         stage.setTitle(title.get());
