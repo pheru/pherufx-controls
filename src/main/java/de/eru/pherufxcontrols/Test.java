@@ -19,27 +19,27 @@ public class Test extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-//        int response = Dialogs.createConfirmDialog()
-//                .setHeader("Löschen bestätigen")
-//                .setText("Soll diese Datei wirklich gelöscht werden?")
-//                .setType(ConfirmType.WARNING)
-//                .setTitle("Datei löschen")
-//                .showAndWait();
-//        if (response == 1) {
-//            response = Dialogs.createInfoDialog()
-//                    .setType(InfoType.INFO)
-//                    .setTitle("Datei wurde gelöscht")
-//                    .setHeader("Datei wurde gelöscht")
-//                    .setText("Die Datei wurde erfolgreich gelöscht.")
-//                    .showAndWait();
-//            if(response == 1){
-//                System.out.println("OKAY!");
-//            }else{
-//                System.out.println("NICHT OKAY");
-//            }
-//        }
-        Notifications.createInfoNotification().setHeader("HEader11").setText("Das ist text").show();
-        Thread.sleep(2000);
-        Notifications.createInfoNotification().setHeader("HEader22").setText("Das ist text").show();
+        int response = Dialogs.createConfirmDialog()
+                .setHeader("Löschen bestätigen")
+                .setText("Soll diese Datei wirklich gelöscht werden?")
+                .setType(ConfirmType.WARNING)
+                .setTitle("Datei löschen")
+                .showAndWait();
+        if (response == 1) {
+            response = Dialogs.createInfoDialog()
+                    .setType(InfoType.INFO)
+                    .setTitle("Datei wurde gelöscht")
+                    .setHeader("Datei wurde gelöscht")
+                    .setText("Die Datei wurde erfolgreich gelöscht.")
+                    .showAndWait();
+            if(response == 1){
+                System.out.println("OKAY!");
+            }else{
+                System.out.println("NICHT OKAY");
+            }
+        }
+        Notifications.createInfoNotification().setHeader("Info").setText("Das ist hier bloß eine Information. Nicht sooooo wichtig...").show();
+        Notifications.createInfoNotification().setHeader("Fehler!").setText("Es ist ein schwerer Fehler aufgetreten!").setType(InfoType.ERROR).setTimer(6).show();
+        Notifications.createInfoNotification().setHeader("Warnung").setText("Das ist eine Warnung. Das solltest du dir mal anschauen!").setType(InfoType.WARNING).setTimer(8).show();
     }
 }

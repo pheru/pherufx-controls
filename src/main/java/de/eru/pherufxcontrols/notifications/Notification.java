@@ -1,19 +1,16 @@
 package de.eru.pherufxcontrols.notifications;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
 /**
@@ -75,8 +72,9 @@ public abstract class Notification implements Initializable {
         return timer.get();
     }
 
-    public void setTimer(final Integer timer) {
+    public Notification setTimer(final Integer timer) {
         this.timer.set(timer);
+        return this;
     }
 
     public IntegerProperty timerProperty() {
@@ -88,8 +86,10 @@ public abstract class Notification implements Initializable {
     }
 
     public void setPosition(final Integer position) {
-        root.getScene().getWindow().setY(position * 400);
         this.position.set(position);
+        Window window = root.getScene().getWindow();
+        window.setX(Notifications.VISUAL_BOUNDS.getMaxX() - window.getWidth());
+        window.setY(Notifications.VISUAL_BOUNDS.getMaxY() - (position + 1) * window.getHeight());
     }
 
     public IntegerProperty positionProperty() {
@@ -102,5 +102,10 @@ public abstract class Notification implements Initializable {
 
     public void setRoot(Parent root) {
         this.root = root;
+    }
+    
+    public Notification bindDontShowAgainProperty(ObservableValue<? extends Boolean> observable) {
+        dontShowAgain.bind(observable);
+        return this;
     }
 }

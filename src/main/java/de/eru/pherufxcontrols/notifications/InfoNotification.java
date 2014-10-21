@@ -7,6 +7,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 /**
@@ -36,6 +37,7 @@ public class InfoNotification extends Notification {
 
     public InfoNotification setType(InfoType type) {
         this.type = type;
+        image.setImage(new Image(type.getImagePath()));
         return this;
     }
 
@@ -67,4 +69,14 @@ public class InfoNotification extends Notification {
         return this;
     }
 
+    @Override
+    public InfoNotification setTimer(Integer timer) {
+        return (InfoNotification) super.setTimer(timer);
+    }
+
+    @Override
+    public InfoNotification bindDontShowAgainProperty(ObservableValue<? extends Boolean> observable) {
+        return (InfoNotification) super.bindDontShowAgainProperty(observable);
+    }
+    
 }

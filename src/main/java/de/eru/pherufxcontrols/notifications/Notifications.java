@@ -1,20 +1,21 @@
 package de.eru.pherufxcontrols.notifications;
 
-import de.eru.pherufxcontrols.dialogs.Dialog;
-import de.eru.pherufxcontrols.dialogs.Dialogs;
 import java.io.IOException;
 import java.net.URL;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
-import javafx.stage.WindowEvent;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
 
 /**
  *
  * @author Philipp Bruckner
  */
 public final class Notifications {
+    
+    public static final Rectangle2D VISUAL_BOUNDS = Screen.getPrimary().getVisualBounds();
 
     private static final ObservableList<Notification> notifications = initNotificationsList();
 
@@ -39,6 +40,10 @@ public final class Notifications {
 
     public static InfoNotification createInfoNotification() {
         return (InfoNotification) getLoadedNotification("info");
+    }
+    
+    public static CustomNotification createCustomNotification() {
+        return (CustomNotification) getLoadedNotification("custom");
     }
 
     private static Notification getLoadedNotification(String fxmlName) {
