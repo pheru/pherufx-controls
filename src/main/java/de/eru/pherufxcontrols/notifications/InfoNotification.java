@@ -16,7 +16,6 @@ import javafx.scene.image.ImageView;
  */
 public class InfoNotification extends Notification {
 
-    private InfoType type;
     @FXML
     private Label headerLabel;
     @FXML
@@ -25,6 +24,8 @@ public class InfoNotification extends Notification {
     private ImageView image;
     @FXML
     private CheckBox dontShowAgainBox;
+    private InfoType type;
+    
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -58,6 +59,15 @@ public class InfoNotification extends Notification {
         textLabel.setText(text);
         return this;
     }
+    
+    public boolean isDontShowAgain() {
+        return dontShowAgainBox.isSelected();
+    }
+
+    public InfoNotification setDontShowAgain(boolean dontShowAgain) {
+        dontShowAgainBox.setSelected(dontShowAgain);
+        return this;
+    }
 
     public InfoNotification bindHeaderProperty(ObservableValue<? extends String> observable) {
         headerLabel.textProperty().bind(observable);
@@ -74,9 +84,20 @@ public class InfoNotification extends Notification {
         return (InfoNotification) super.setTimer(timer);
     }
 
-    @Override
     public InfoNotification bindDontShowAgainProperty(ObservableValue<? extends Boolean> observable) {
-        return (InfoNotification) super.bindDontShowAgainProperty(observable);
+        dontShowAgainBox.selectedProperty().bind(observable);
+        return this;
     }
+    
+    public Image getImage(){
+        return image.getImage();
+    }
+
+    @Override
+    public InfoNotification setTitle(String title) {
+        return (InfoNotification) super.setTitle(title);
+    }
+ 
+    
     
 }

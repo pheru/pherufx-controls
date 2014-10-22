@@ -1,10 +1,12 @@
 package de.eru.pherufxcontrols.notifications;
 
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
@@ -19,9 +21,8 @@ import javafx.stage.WindowEvent;
  */
 public abstract class Notification implements Initializable {
 
-    protected final BooleanProperty dontShowAgain = new SimpleBooleanProperty(false);
     protected final IntegerProperty timer = new SimpleIntegerProperty(4);
-    protected final IntegerProperty position = new SimpleIntegerProperty(-1);
+    protected final StringProperty title = new SimpleStringProperty("Benachrichtigung");
     protected Parent root;
 
     public void show() {
@@ -35,12 +36,16 @@ public abstract class Notification implements Initializable {
         Stage stage = new Stage();
         Scene scene = new Scene(root);
         stage.setScene(scene);
+        stage.setTitle(title.get());
+        if(this instanceof InfoNotification){
+            stage.getIcons().add(((InfoNotification) this).getImage());
+        }
         stage.show();
-        Notifications.add(this);
-        startTimer();
         root.getScene().getWindow().setOnHidden((WindowEvent event) -> {
-            Notifications.remove(this);
+            Notifications.removeNotification(this);
         });
+        Notifications.addNotification(this);
+        startTimer();
     }
 
     public void startTimer() {
@@ -56,18 +61,6 @@ public abstract class Notification implements Initializable {
         t.start();
     }
 
-    public Boolean isDontShowAgain() {
-        return dontShowAgain.get();
-    }
-
-    public void setDontShowAgain(final Boolean dontShowAgain) {
-        this.dontShowAgain.set(dontShowAgain);
-    }
-
-    public BooleanProperty dontShowAgainProperty() {
-        return dontShowAgain;
-    }
-
     public Integer getTimer() {
         return timer.get();
     }
@@ -81,19 +74,10 @@ public abstract class Notification implements Initializable {
         return timer;
     }
 
-    public Integer getPosition() {
-        return position.get();
-    }
-
-    public void setPosition(final Integer position) {
-        this.position.set(position);
+    public void setPosition(final double position) {
         Window window = root.getScene().getWindow();
         window.setX(Notifications.VISUAL_BOUNDS.getMaxX() - window.getWidth());
-        window.setY(Notifications.VISUAL_BOUNDS.getMaxY() - (position + 1) * window.getHeight());
-    }
-
-    public IntegerProperty positionProperty() {
-        return position;
+        window.setY(Notifications.VISUAL_BOUNDS.getMaxY() - position);
     }
 
     public Parent getRoot() {
@@ -104,8 +88,21 @@ public abstract class Notification implements Initializable {
         this.root = root;
     }
     
-    public Notification bindDontShowAgainProperty(ObservableValue<? extends Boolean> observable) {
-        dontShowAgain.bind(observable);
+    public double getHeight(){
+        return root.getScene().getWindow().getHeight();
+    }
+
+    public String getTitle() {
+        return title.get();
+    }
+
+    public Notification setTitle(final String title) {
+        this.title.set(title);
         return this;
     }
+
+    public StringProperty titleProperty() {
+        return title;
+    }
+
 }

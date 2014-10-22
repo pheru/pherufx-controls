@@ -5,6 +5,8 @@ import de.eru.pherufxcontrols.notifications.Notifications;
 import de.eru.pherufxcontrols.utils.ConfirmType;
 import de.eru.pherufxcontrols.utils.InfoType;
 import javafx.application.Application;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.stage.Stage;
 
 /**
@@ -19,6 +21,9 @@ public class Test extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        
+        BooleanProperty dsa = new SimpleBooleanProperty(true);
+        
         int response = Dialogs.createConfirmDialog()
                 .setHeader("Löschen bestätigen")
                 .setText("Soll diese Datei wirklich gelöscht werden?")
@@ -38,8 +43,8 @@ public class Test extends Application {
                 System.out.println("NICHT OKAY");
             }
         }
-        Notifications.createInfoNotification().setHeader("Info").setText("Das ist hier bloß eine Information. Nicht sooooo wichtig...").show();
-        Notifications.createInfoNotification().setHeader("Fehler!").setText("Es ist ein schwerer Fehler aufgetreten!").setType(InfoType.ERROR).setTimer(6).show();
-        Notifications.createInfoNotification().setHeader("Warnung").setText("Das ist eine Warnung. Das solltest du dir mal anschauen!").setType(InfoType.WARNING).setTimer(8).show();
+        Notifications.createInfoNotification().setTitle("Warnung!").setHeader("Warnung").setText("Das ist eine Warnung. Das solltest du dir mal anschauen! Das könnte nämlich vielleicht doch ne ernste Sache sein! Also so vielleicht...").setType(InfoType.WARNING).setTimer(8).show();
+        Notifications.createInfoNotification().bindDontShowAgainProperty(dsa).setHeader("Info").setText("Das ist hier bloß eine Information. Nicht sooooo wichtig...").show();
+        Notifications.createInfoNotification().setDontShowAgain(true).setHeader("Fehler!").setText("Es ist ein schwerer Fehler aufgetreten!").setType(InfoType.ERROR).setTimer(6).show();
     }
 }

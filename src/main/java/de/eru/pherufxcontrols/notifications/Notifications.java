@@ -14,7 +14,7 @@ import javafx.stage.Screen;
  * @author Philipp Bruckner
  */
 public final class Notifications {
-    
+
     public static final Rectangle2D VISUAL_BOUNDS = Screen.getPrimary().getVisualBounds();
 
     private static final ObservableList<Notification> notifications = initNotificationsList();
@@ -31,17 +31,17 @@ public final class Notifications {
     }
 
     private static void arrangeNotifications() {
-        for (int i = 0; i < notifications.size(); i++) {
-            if (notifications.get(i).getPosition() != i) {
-                notifications.get(i).setPosition(i);
-            }
+        double totalHeight = 0.0;
+        for (Notification notification : notifications) {
+            totalHeight += notification.getHeight();
+            notification.setPosition(totalHeight);
         }
     }
 
     public static InfoNotification createInfoNotification() {
         return (InfoNotification) getLoadedNotification("info");
     }
-    
+
     public static CustomNotification createCustomNotification() {
         return (CustomNotification) getLoadedNotification("custom");
     }
@@ -60,11 +60,12 @@ public final class Notifications {
         }
         return null;
     }
-    
-    public static void remove(Notification notification){
+
+    public static void removeNotification(Notification notification) {
         notifications.remove(notification);
     }
-    public static void add(Notification notification){
+
+    public static void addNotification(Notification notification) {
         notifications.add(notification);
     }
 }
