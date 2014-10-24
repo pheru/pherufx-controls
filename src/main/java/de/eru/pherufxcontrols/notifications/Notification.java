@@ -1,9 +1,7 @@
 package de.eru.pherufxcontrols.notifications;
 
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -34,6 +32,7 @@ public abstract class Notification implements Initializable {
             }
         });
         Stage stage = new Stage();
+        stage.setAlwaysOnTop(true);
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle(title.get());
@@ -74,12 +73,12 @@ public abstract class Notification implements Initializable {
         return timer;
     }
 
-    public void setPosition(final double position) {
+    public void setY(final double position) {
         Window window = root.getScene().getWindow();
         window.setX(Notifications.VISUAL_BOUNDS.getMaxX() - window.getWidth());
         window.setY(Notifications.VISUAL_BOUNDS.getMaxY() - position);
     }
-
+    
     public Parent getRoot() {
         return root;
     }

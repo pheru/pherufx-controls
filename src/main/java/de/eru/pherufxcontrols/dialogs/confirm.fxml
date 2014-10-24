@@ -28,7 +28,7 @@
             <Font name="System Bold" size="25.0" />
          </font>
       </Label>
-      <ImageView fx:id="image" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true">
+      <ImageView fx:id="imageView" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true">
          <GridPane.margin>
             <Insets bottom="5.0" left="20.0" right="20.0" top="5.0" />
          </GridPane.margin>

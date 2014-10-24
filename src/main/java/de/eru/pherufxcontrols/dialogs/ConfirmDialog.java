@@ -3,6 +3,7 @@ package de.eru.pherufxcontrols.dialogs;
 import de.eru.pherufxcontrols.utils.ConfirmType;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.image.Image;
@@ -40,7 +41,7 @@ public final class ConfirmDialog extends Dialog {
 
     public ConfirmDialog setType(ConfirmType type) {
         this.type = type;
-        image.setImage(new Image(type.getImagePath()));
+        imageView.setImage(new Image(type.getImagePath()));
         return this;
     }
     
@@ -60,13 +61,13 @@ public final class ConfirmDialog extends Dialog {
     }
     
     @Override
-    public ConfirmDialog bindHeaderProperty(ObservableValue<? extends String> observable) {
-        return (ConfirmDialog) super.bindHeaderProperty(observable);
+    public ConfirmDialog bindBidirectionalHeaderProperty(Property<String> property) {
+        return (ConfirmDialog) super.bindBidirectionalHeaderProperty(property);
     }
 
     @Override
-    public ConfirmDialog bindTextProperty(ObservableValue<? extends String> observable) {
-        return (ConfirmDialog) super.bindTextProperty(observable);
+    public ConfirmDialog bindBidirectionalTextProperty(Property<String> property) {
+        return (ConfirmDialog) super.bindBidirectionalTextProperty(property);
     }
 
     @Override

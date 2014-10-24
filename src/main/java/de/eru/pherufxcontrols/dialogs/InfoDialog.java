@@ -3,6 +3,7 @@ package de.eru.pherufxcontrols.dialogs;
 import de.eru.pherufxcontrols.utils.InfoType;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.image.Image;
@@ -38,7 +39,7 @@ public final class InfoDialog extends Dialog{
 
     public InfoDialog setType(InfoType type) {
         this.type = type;
-        image.setImage(new Image(type.getImagePath()));
+        imageView.setImage(new Image(type.getImagePath()));
         return this;
     }
 
@@ -58,13 +59,13 @@ public final class InfoDialog extends Dialog{
     }
 
     @Override
-    public InfoDialog bindHeaderProperty(ObservableValue<? extends String> observable) {
-        return (InfoDialog) super.bindHeaderProperty(observable);
+    public InfoDialog bindBidirectionalHeaderProperty(Property<String> property) {
+        return (InfoDialog) super.bindBidirectionalHeaderProperty(property);
     }
 
     @Override
-    public InfoDialog bindTextProperty(ObservableValue<? extends String> observable) {
-        return (InfoDialog) super.bindTextProperty(observable);
+    public InfoDialog bindBidirectionalTextProperty(Property<String> property) {
+        return (InfoDialog) super.bindBidirectionalTextProperty(property);
     }
 
     @Override

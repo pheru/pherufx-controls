@@ -17,7 +17,9 @@ public final class Notifications {
 
     public static final Rectangle2D VISUAL_BOUNDS = Screen.getPrimary().getVisualBounds();
 
-    private static final ObservableList<Notification> notifications = initNotificationsList();
+    private static final ObservableList<Notification> NOTIFICATIONS = initNotificationsList();
+
+    private static NotificationAlignment alignment = NotificationAlignment.BOTTOM_RIGHT;
 
     private Notifications() {
     }
@@ -31,10 +33,18 @@ public final class Notifications {
     }
 
     private static void arrangeNotifications() {
-        double totalHeight = 0.0;
-        for (Notification notification : notifications) {
-            totalHeight += notification.getHeight();
-            notification.setPosition(totalHeight);
+        double currentPosition = 0.0;
+        if (alignment == NotificationAlignment.TOP_LEFT || alignment == NotificationAlignment.TOP_RIGHT) {
+            currentPosition = VISUAL_BOUNDS.getMaxY();
+        }
+        for (Notification notification : NOTIFICATIONS) {
+            if (alignment == NotificationAlignment.TOP_LEFT || alignment == NotificationAlignment.TOP_RIGHT) {
+                notification.setY(currentPosition);
+                currentPosition -= notification.getHeight();
+            } else {
+                currentPosition += notification.getHeight();
+                notification.setY(currentPosition);
+            }
         }
     }
 
@@ -62,10 +72,19 @@ public final class Notifications {
     }
 
     public static void removeNotification(Notification notification) {
-        notifications.remove(notification);
+        NOTIFICATIONS.remove(notification);
     }
 
     public static void addNotification(Notification notification) {
-        notifications.add(notification);
+        NOTIFICATIONS.add(notification);
     }
+
+    public static NotificationAlignment getAlignment() {
+        return alignment;
+    }
+
+    public static void setAlignment(NotificationAlignment alignment) {
+        Notifications.alignment = alignment;
+    }
+
 }

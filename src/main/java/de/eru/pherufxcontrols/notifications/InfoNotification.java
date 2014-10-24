@@ -3,6 +3,7 @@ package de.eru.pherufxcontrols.notifications;
 import de.eru.pherufxcontrols.utils.InfoType;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -69,13 +70,13 @@ public class InfoNotification extends Notification {
         return this;
     }
 
-    public InfoNotification bindHeaderProperty(ObservableValue<? extends String> observable) {
-        headerLabel.textProperty().bind(observable);
+    public InfoNotification bindHeaderProperty(Property<String> property) {
+        headerLabel.textProperty().bindBidirectional(property);
         return this;
     }
 
-    public InfoNotification bindTextProperty(ObservableValue<? extends String> observable) {
-        textLabel.textProperty().bind(observable);
+    public InfoNotification bindTextProperty(Property<String> property) {
+        textLabel.textProperty().bindBidirectional(property);
         return this;
     }
 
@@ -84,8 +85,8 @@ public class InfoNotification extends Notification {
         return (InfoNotification) super.setTimer(timer);
     }
 
-    public InfoNotification bindDontShowAgainProperty(ObservableValue<? extends Boolean> observable) {
-        dontShowAgainBox.selectedProperty().bind(observable);
+    public InfoNotification bindDontShowAgainProperty(Property<Boolean> property) {
+        dontShowAgainBox.selectedProperty().bindBidirectional(property);
         return this;
     }
     

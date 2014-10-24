@@ -1,5 +1,6 @@
 package de.eru.pherufxcontrols.dialogs;
 
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
@@ -15,52 +16,50 @@ import javafx.stage.Stage;
  *
  * @author Philipp Bruckner
  */
-public abstract class Dialog implements Initializable{
+public abstract class Dialog implements Initializable {
 
     private final StringProperty title = new SimpleStringProperty();
     private Parent root;
     /**
-     * 1:  Ja / OK
-     * 0:  Nein
-     * -1: Abbrechen
+     * 1: Ja,OK / 0: Nein / -1: Abbrechen
      */
-    protected int response = -1;
+    private int response = -1;
 
     @FXML
     protected Label textLabel;
     @FXML
     protected Label headerLabel;
     @FXML
-    protected ImageView image;
-    
-    public int showAndWait(){
+    protected ImageView imageView;
+
+    public int showAndWait() {
         Stage stage = initStage();
         stage.showAndWait();
         return response;
     }
-    
-    protected Stage initStage(){
+
+    protected Stage initStage() {
         Scene scene = new Scene(root);
         Stage stage = new Stage();
 //        stage.initStyle(StageStyle.UNDECORATED);
         stage.setScene(scene);
-        stage.getIcons().add(image.getImage());
-        stage.setTitle(title.get());
+        stage.getIcons().add(imageView.getImage());
+        stage.titleProperty().bind(title);
         return stage;
     }
-    
-    protected void closeDialog(int response){
+
+    protected void closeDialog(int response) {
         this.response = response;
         getRoot().getScene().getWindow().hide();
     }
-    
-    public Dialog bindTextProperty(ObservableValue<? extends String> observable) {
-        textLabel.textProperty().bind(observable);
+
+    public Dialog bindBidirectionalTextProperty(Property<String> property) {
+        textLabel.textProperty().bindBidirectional(property);
         return this;
     }
 
-    public Dialog bindHeaderProperty(ObservableValue<? extends String> observable) {
-        headerLabel.textProperty().bind(observable);
+    public Dialog bindBidirectionalHeaderProperty(Property<String> property) {
+        headerLabel.textProperty().bindBidirectional(property);
         return this;
     }
 
@@ -107,5 +106,5 @@ public abstract class Dialog implements Initializable{
     protected void setRoot(Parent root) {
         this.root = root;
     }
-    
+
 }
