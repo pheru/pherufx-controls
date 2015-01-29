@@ -34,16 +34,21 @@ public final class Notifications {
 
     private static void arrangeNotifications() {
         double currentPosition = 0.0;
-        if (alignment == NotificationAlignment.TOP_LEFT || alignment == NotificationAlignment.TOP_RIGHT) {
+        if (alignment == NotificationAlignment.BOTTOM_LEFT || alignment == NotificationAlignment.BOTTOM_RIGHT) {
             currentPosition = VISUAL_BOUNDS.getMaxY();
         }
         for (Notification notification : NOTIFICATIONS) {
             if (alignment == NotificationAlignment.TOP_LEFT || alignment == NotificationAlignment.TOP_RIGHT) {
                 notification.setY(currentPosition);
-                currentPosition -= notification.getHeight();
-            } else {
                 currentPosition += notification.getHeight();
+            } else {
+                currentPosition -= notification.getHeight();
                 notification.setY(currentPosition);
+            }
+            if (alignment == NotificationAlignment.BOTTOM_LEFT || alignment == NotificationAlignment.TOP_LEFT) {
+                notification.setX(0);
+            } else {
+                notification.setX(VISUAL_BOUNDS.getMaxX() - notification.getRoot().getScene().getWindow().getWidth());
             }
         }
     }
@@ -85,6 +90,7 @@ public final class Notifications {
 
     public static void setAlignment(NotificationAlignment alignment) {
         Notifications.alignment = alignment;
+        arrangeNotifications();
     }
 
 }

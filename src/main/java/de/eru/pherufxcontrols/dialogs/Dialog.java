@@ -1,5 +1,6 @@
 package de.eru.pherufxcontrols.dialogs;
 
+import de.eru.pherufxcontrols.utils.Response;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -20,10 +21,8 @@ public abstract class Dialog implements Initializable {
 
     private final StringProperty title = new SimpleStringProperty();
     private Parent root;
-    /**
-     * 1: Ja,OK / 0: Nein / -1: Abbrechen
-     */
-    private int response = -1;
+    
+    private Response response = Response.CANCEL;
 
     @FXML
     protected Label textLabel;
@@ -32,7 +31,7 @@ public abstract class Dialog implements Initializable {
     @FXML
     protected ImageView imageView;
 
-    public int showAndWait() {
+    public Response showAndWait() {
         Stage stage = initStage();
         stage.showAndWait();
         return response;
@@ -48,9 +47,9 @@ public abstract class Dialog implements Initializable {
         return stage;
     }
 
-    protected void closeDialog(int response) {
+    protected void closeDialog(Response response) {
         this.response = response;
-        getRoot().getScene().getWindow().hide();
+        root.getScene().getWindow().hide();
     }
 
     public Dialog bindBidirectionalTextProperty(Property<String> property) {

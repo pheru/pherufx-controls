@@ -39,13 +39,23 @@
             <Image url="@Warning.png" />
          </image>
       </ImageView>
-      <CheckBox fx:id="dontShowAgainBox" mnemonicParsing="false" text="Diese Meldung nicht noch einmal zeigen." GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
-         <GridPane.margin>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </GridPane.margin>
-         <font>
-            <Font size="12.0" />
-         </font>
-      </CheckBox>
+      <HBox GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+         <children>
+            <CheckBox fx:id="dontShowAgainBox" mnemonicParsing="false" text="Diese Meldung nicht noch einmal zeigen." GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+               <GridPane.margin>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </GridPane.margin>
+               <font>
+                  <Font size="12.0" />
+               </font>
+            </CheckBox>
+            <Pane HBox.hgrow="ALWAYS" />
+            <Label text="10">
+               <font>
+                  <Font size="12.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
    </children>
 </GridPane>

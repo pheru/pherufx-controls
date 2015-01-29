@@ -36,7 +36,7 @@ public abstract class Notification implements Initializable {
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle(title.get());
-        if(this instanceof InfoNotification){
+        if (this instanceof InfoNotification) {
             stage.getIcons().add(((InfoNotification) this).getImage());
         }
         stage.show();
@@ -47,7 +47,7 @@ public abstract class Notification implements Initializable {
         startTimer();
     }
 
-    public void startTimer() {
+    private void startTimer() {
         Thread t = new Thread(() -> {
             try {
                 Thread.sleep(1000 * timer.get());
@@ -75,10 +75,14 @@ public abstract class Notification implements Initializable {
 
     public void setY(final double position) {
         Window window = root.getScene().getWindow();
-        window.setX(Notifications.VISUAL_BOUNDS.getMaxX() - window.getWidth());
-        window.setY(Notifications.VISUAL_BOUNDS.getMaxY() - position);
+        window.setY(position);
     }
-    
+
+    public void setX(final double position) {
+        Window window = root.getScene().getWindow();
+        window.setX(position);
+    }
+
     public Parent getRoot() {
         return root;
     }
@@ -86,8 +90,8 @@ public abstract class Notification implements Initializable {
     public void setRoot(Parent root) {
         this.root = root;
     }
-    
-    public double getHeight(){
+
+    public double getHeight() {
         return root.getScene().getWindow().getHeight();
     }
 

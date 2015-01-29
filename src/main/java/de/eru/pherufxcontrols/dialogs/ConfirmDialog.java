@@ -1,6 +1,7 @@
 package de.eru.pherufxcontrols.dialogs;
 
 import de.eru.pherufxcontrols.utils.ConfirmType;
+import de.eru.pherufxcontrols.utils.Response;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.Property;
@@ -13,7 +14,7 @@ import javafx.scene.image.Image;
  * @author Philipp Bruckner
  */
 public final class ConfirmDialog extends Dialog {
-    
+
     private ConfirmType type;
 
     @Override
@@ -21,20 +22,22 @@ public final class ConfirmDialog extends Dialog {
         setType(ConfirmType.QUESTION);
         setTitle("Bestätigen");
     }
-    
+
     @FXML
-    private void responseYes(){
-        closeDialog(1);
+    private void responseYes() {
+        closeDialog(Response.YES);
     }
+
     @FXML
-    private void responseNo(){
-        closeDialog(0);
+    private void responseNo() {
+        closeDialog(Response.NO);
     }
+
     @FXML
-    private void responseCancel(){
-        closeDialog(-1);
+    private void responseCancel() {
+        closeDialog(Response.CANCEL);
     }
-    
+
     public ConfirmType getType() {
         return type;
     }
@@ -44,7 +47,7 @@ public final class ConfirmDialog extends Dialog {
         imageView.setImage(new Image(type.getImagePath()));
         return this;
     }
-    
+
     @Override
     public ConfirmDialog setText(String text) {
         return (ConfirmDialog) super.setText(text);
@@ -59,7 +62,7 @@ public final class ConfirmDialog extends Dialog {
     public ConfirmDialog setTitle(String title) {
         return (ConfirmDialog) super.setTitle(title);
     }
-    
+
     @Override
     public ConfirmDialog bindBidirectionalHeaderProperty(Property<String> property) {
         return (ConfirmDialog) super.bindBidirectionalHeaderProperty(property);

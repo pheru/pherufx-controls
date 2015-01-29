@@ -1,6 +1,7 @@
 package de.eru.pherufxcontrols.dialogs;
 
 import de.eru.pherufxcontrols.utils.InfoType;
+import de.eru.pherufxcontrols.utils.Response;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.Property;
@@ -30,7 +31,7 @@ public final class InfoDialog extends Dialog{
     
     @FXML
     private void responseOK(){
-        closeDialog(1);
+        closeDialog(Response.OK);
     }
 
     public InfoType getType() {

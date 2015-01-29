@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
  *
  * @author Philipp Bruckner
  */
+@Deprecated
 public final class Dialogs {
 
     private Dialogs() {
