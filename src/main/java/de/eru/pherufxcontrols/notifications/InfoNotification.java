@@ -4,8 +4,6 @@ import de.eru.pherufxcontrols.utils.NotificationType;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.Property;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -33,7 +31,6 @@ public class InfoNotification extends Notification {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setType(NotificationType.INFO);
         timerLabel.textProperty().bind(timer.asString());
     }
 
@@ -41,7 +38,7 @@ public class InfoNotification extends Notification {
         return type;
     }
 
-    public InfoNotification setType(NotificationType type) {
+    protected InfoNotification setType(NotificationType type) {
         this.type = type;
         image.setImage(new Image(type.getImagePath()));
         return this;

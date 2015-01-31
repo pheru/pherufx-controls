@@ -24,25 +24,34 @@ public class Test extends Application {
         BooleanProperty dsa = new SimpleBooleanProperty(true);
 
         Notifications.setAlignment(NotificationAlignment.BOTTOM_RIGHT);
-        Notifications.createInfoNotification()
+        Notifications.createInfoNotification(NotificationType.WARNING)
                 .setTitle("Warnung!")
                 .setHeader("Warnung")
-                .setText("Das ist eine Warnung. Das solltest du dir mal anschauen! Das könnte nämlich vielleicht doch ne ernste Sache sein! Also so vielleicht...")
-                .setType(NotificationType.WARNING)
-                .setTimer(3)
+                .setText("Das ist eine Warnung. Das solltest du dir mal anschauen! Das könnte nämlich vielleicht doch ne ernste Sache sein! Also so vielleicht schreib ich mir mal noch viel mehr Text. Mich würde nämlich interessieren, wie viel Text in eine Notification passt.")
                 .show();
-        Notifications.createInfoNotification()
+        Notifications.createInfoNotification(NotificationType.INFO)
                 .bindDontShowAgainProperty(dsa)
                 .setHeader("Info")
                 .setText("Das ist hier bloß eine Information. Nicht sooooo wichtig...")
                 .setTimer(6)
                 .show();
-        Notifications.createInfoNotification()
+        Notifications.createInfoNotification(NotificationType.ERROR)
                 .setDontShowAgain(true)
                 .setHeader("Fehler!")
                 .setText("Es ist ein schwerer Fehler aufgetreten!")
-                .setType(NotificationType.ERROR)
-                .setTimer(8)
+                .setTimer(7)
+                .show();
+        Notifications.createInfoNotification(NotificationType.INFO)
+                .setDontShowAgain(true)
+                .setHeader("Blubb!")
+                .setText("Es ist ein schwerer Fehler aufgetreten! Oder irgendwas anderes!")
+                .setTimer(6)
+                .show();
+        Notifications.createInfoNotification(NotificationType.WARNING)
+                .setDontShowAgain(false)
+                .setHeader("Fehler!\nFehler!\nFehler!\n...Warnung?")
+                .setText("Es ist ein schwerer Fehler aufgetreten!\nZumindest gibt es eine Warnung dafür! Also ist doch was passiert, oder?")
+                .setTimer(6)
                 .show();
     }
 }

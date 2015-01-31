@@ -1,22 +1,16 @@
 package de.eru.pherufxcontrols.notifications;
 
+import de.eru.pherufxcontrols.utils.NotificationType;
 import java.io.IOException;
 import java.net.URL;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
-import javafx.animation.TranslateTransition;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
-import javafx.util.Duration;
 
 /**
  *
@@ -26,10 +20,11 @@ public final class Notifications {
 
     public static final Rectangle2D VISUAL_BOUNDS = Screen.getPrimary().getVisualBounds();
 
-    private static final ObservableList<Notification> NOTIFICATIONS = initNotificationsList();
+    private static final ObservableList<Notification> notifications = initNotificationsList();
 
     private static NotificationAlignment alignment = NotificationAlignment.BOTTOM_RIGHT;
-
+    private static final IntegerProperty defaultTimer = new SimpleIntegerProperty(7);
+    
     private Notifications() {
     }
 
@@ -54,7 +49,7 @@ public final class Notifications {
             targetY = VISUAL_BOUNDS.getMaxY() - 3;
         }
 
-        for (Notification notification : NOTIFICATIONS) {
+        for (Notification notification : notifications) {
             if (alignment == NotificationAlignment.BOTTOM_RIGHT || alignment == NotificationAlignment.TOP_RIGHT) {
                 targetX = VISUAL_BOUNDS.getMaxX() - notification.getRoot().getScene().getWindow().getWidth() - 5;
             }
@@ -71,8 +66,10 @@ public final class Notifications {
         }
     }
 
-    public static InfoNotification createInfoNotification() {
-        return (InfoNotification) getLoadedNotification("info");
+    public static InfoNotification createInfoNotification(NotificationType type) {
+        InfoNotification infoNotification = (InfoNotification) getLoadedNotification("info");
+        infoNotification.setType(type);
+        return infoNotification;
     }
 
     public static CustomNotification createCustomNotification() {
@@ -87,6 +84,7 @@ public final class Notifications {
             fxmlLoader.load();
             Notification notification = fxmlLoader.getController();
             notification.setRoot(fxmlLoader.getRoot());
+            notification.setTimer(defaultTimer.get());
             return notification;
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -95,11 +93,11 @@ public final class Notifications {
     }
 
     public static void removeNotification(Notification notification) {
-        NOTIFICATIONS.remove(notification);
+        notifications.remove(notification);
     }
 
     public static void addNotification(Notification notification) {
-        NOTIFICATIONS.add(notification);
+        notifications.add(notification);
     }
 
     public static NotificationAlignment getAlignment() {
@@ -109,6 +107,18 @@ public final class Notifications {
     public static void setAlignment(NotificationAlignment alignment) {
         Notifications.alignment = alignment;
         arrangeNotifications(false);
+    }
+
+    public static Integer getDefaultTimer() {
+        return defaultTimer.get();
+    }
+
+    public static void setDefaultTimer(final Integer defaultTimer) {
+        Notifications.defaultTimer.set(defaultTimer);
+    }
+
+    public static IntegerProperty defaultTimerProperty() {
+        return defaultTimer;
     }
 
 }

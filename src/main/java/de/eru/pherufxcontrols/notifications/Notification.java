@@ -1,14 +1,9 @@
 package de.eru.pherufxcontrols.notifications;
 
-import java.security.KeyException;
-import java.security.PublicKey;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -16,16 +11,13 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
@@ -59,7 +51,7 @@ public abstract class Notification implements Initializable {
         KeyValue fadeOutEnd = new KeyValue(root.opacityProperty(), 0.0);
 
         KeyFrame kfBegin = new KeyFrame(Duration.ZERO, fadeOutBegin);
-        KeyFrame kfEnd = new KeyFrame(Duration.millis(750), fadeOutEnd);
+        KeyFrame kfEnd = new KeyFrame(Duration.millis(1000), fadeOutEnd);
         Timeline timeline = new Timeline(kfBegin, kfEnd);
         timeline.setOnFinished((ActionEvent event) -> {
             root.getScene().getWindow().hide();
