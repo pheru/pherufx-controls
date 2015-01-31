@@ -1,9 +1,10 @@
 package de.eru.pherufxcontrols.notifications;
 
-import de.eru.pherufxcontrols.utils.InfoType;
+import de.eru.pherufxcontrols.utils.NotificationType;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.Property;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -22,22 +23,25 @@ public class InfoNotification extends Notification {
     @FXML
     private Label textLabel;
     @FXML
+    private Label timerLabel;
+    @FXML
     private ImageView image;
     @FXML
     private CheckBox dontShowAgainBox;
-    private InfoType type;
+    private NotificationType type;
     
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setType(InfoType.INFO);
+        setType(NotificationType.INFO);
+        timerLabel.textProperty().bind(timer.asString());
     }
 
-    public InfoType getType() {
+    public NotificationType getType() {
         return type;
     }
 
-    public InfoNotification setType(InfoType type) {
+    public InfoNotification setType(NotificationType type) {
         this.type = type;
         image.setImage(new Image(type.getImagePath()));
         return this;

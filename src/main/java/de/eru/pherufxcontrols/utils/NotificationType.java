@@ -4,14 +4,14 @@ package de.eru.pherufxcontrols.utils;
  *
  * @author Philipp Bruckner
  */
-public enum InfoType {
+public enum NotificationType {
     INFO("img/Info.png"), 
     WARNING("img/Warning.png"), 
     ERROR("img/Error.png");
     
     private final String imagePath;
     
-    private InfoType(final String imagePath){
+    private NotificationType(final String imagePath){
         this.imagePath = imagePath;
     }
     

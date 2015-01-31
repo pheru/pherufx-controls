@@ -2,12 +2,21 @@ package de.eru.pherufxcontrols.notifications;
 
 import java.io.IOException;
 import java.net.URL;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
+import javafx.util.Duration;
 
 /**
  *
@@ -27,28 +36,37 @@ public final class Notifications {
     private static ObservableList<Notification> initNotificationsList() {
         ObservableList<Notification> notificationsList = FXCollections.observableArrayList();
         notificationsList.addListener((ListChangeListener.Change<? extends Notification> c) -> {
-            arrangeNotifications();
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    arrangeNotifications(false);
+                } else {
+                    arrangeNotifications(true);
+                }
+            }
         });
         return notificationsList;
     }
 
-    private static void arrangeNotifications() {
-        double currentPosition = 0.0;
+    private static void arrangeNotifications(boolean animated) {
+        double targetX = 5.0;
+        double targetY = 5.0;
         if (alignment == NotificationAlignment.BOTTOM_LEFT || alignment == NotificationAlignment.BOTTOM_RIGHT) {
-            currentPosition = VISUAL_BOUNDS.getMaxY();
+            targetY = VISUAL_BOUNDS.getMaxY() - 3;
         }
+
         for (Notification notification : NOTIFICATIONS) {
-            if (alignment == NotificationAlignment.TOP_LEFT || alignment == NotificationAlignment.TOP_RIGHT) {
-                notification.setY(currentPosition);
-                currentPosition += notification.getHeight();
-            } else {
-                currentPosition -= notification.getHeight();
-                notification.setY(currentPosition);
+            if (alignment == NotificationAlignment.BOTTOM_RIGHT || alignment == NotificationAlignment.TOP_RIGHT) {
+                targetX = VISUAL_BOUNDS.getMaxX() - notification.getRoot().getScene().getWindow().getWidth() - 5;
             }
-            if (alignment == NotificationAlignment.BOTTOM_LEFT || alignment == NotificationAlignment.TOP_LEFT) {
-                notification.setX(0);
+
+            notification.setX(targetX);
+
+            if (alignment == NotificationAlignment.TOP_LEFT || alignment == NotificationAlignment.TOP_RIGHT) {
+                notification.setY(targetY, animated);
+                targetY += notification.getHeight() + 2;
             } else {
-                notification.setX(VISUAL_BOUNDS.getMaxX() - notification.getRoot().getScene().getWindow().getWidth());
+                targetY -= notification.getHeight() + 2;
+                notification.setY(targetY, animated);
             }
         }
     }
@@ -90,7 +108,7 @@ public final class Notifications {
 
     public static void setAlignment(NotificationAlignment alignment) {
         Notifications.alignment = alignment;
-        arrangeNotifications();
+        arrangeNotifications(false);
     }
 
 }

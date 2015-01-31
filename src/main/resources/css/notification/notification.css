@@ -1,0 +1,24 @@
+/* 
+    Created on : 30.01.2015, 22:50:08
+    Author     : Philipp Bruckner
+*/
+
+
+.notification {
+    -fx-background-color : rgba(0, 0, 0, 0.7);
+    -fx-background-radius: 10;
+}
+
+.notification .content{
+    -fx-text-fill : white;
+    -icon-color : white;
+}
+
+.notification .exitButton{
+    -fx-background-color: linear-gradient(#d55400, #be1d00);
+    -fx-background-radius: 30;
+    -fx-background-insets: 0;
+    -fx-text-fill: white;
+    -fx-font-size: 9;
+    -fx-font-weight: bold;
+}
