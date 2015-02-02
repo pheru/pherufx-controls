@@ -18,13 +18,13 @@ import javafx.stage.Screen;
  */
 public final class Notifications {
 
-    public static final Rectangle2D VISUAL_BOUNDS = Screen.getPrimary().getVisualBounds();
+    protected static final Rectangle2D VISUAL_BOUNDS = Screen.getPrimary().getVisualBounds();
 
     private static final ObservableList<Notification> notifications = initNotificationsList();
 
     private static NotificationAlignment alignment = NotificationAlignment.BOTTOM_RIGHT;
-    private static final IntegerProperty defaultTimer = new SimpleIntegerProperty(7);
-    
+    private static final IntegerProperty defaultTimer = new SimpleIntegerProperty(10);
+
     private Notifications() {
     }
 
@@ -48,21 +48,36 @@ public final class Notifications {
         if (alignment == NotificationAlignment.BOTTOM_LEFT || alignment == NotificationAlignment.BOTTOM_RIGHT) {
             targetY = VISUAL_BOUNDS.getMaxY() - 3;
         }
+        if (alignment == NotificationAlignment.BOTTOM_RIGHT || alignment == NotificationAlignment.TOP_RIGHT) {
+            targetX = VISUAL_BOUNDS.getMaxX() - 350 - 5; //TODO 350 nicht als fixe Zahl
+        }
 
         for (Notification notification : notifications) {
-            if (alignment == NotificationAlignment.BOTTOM_RIGHT || alignment == NotificationAlignment.TOP_RIGHT) {
-                targetX = VISUAL_BOUNDS.getMaxX() - notification.getRoot().getScene().getWindow().getWidth() - 5;
-            }
-
-            notification.setX(targetX);
 
             if (alignment == NotificationAlignment.TOP_LEFT || alignment == NotificationAlignment.TOP_RIGHT) {
+                if (targetY + notification.getHeight() > VISUAL_BOUNDS.getMaxY()) {
+                    targetY = 5.0;
+                    if (alignment == NotificationAlignment.BOTTOM_RIGHT || alignment == NotificationAlignment.TOP_RIGHT) {
+                        targetX -= notification.getWidth() + 5;
+                    } else {
+                        targetX += notification.getWidth() + 5;
+                    }
+                }
                 notification.setY(targetY, animated);
                 targetY += notification.getHeight() + 2;
             } else {
+                if (targetY - notification.getHeight() < 3.0) {
+                    targetY = VISUAL_BOUNDS.getMaxY() - 3;
+                    if (alignment == NotificationAlignment.BOTTOM_RIGHT || alignment == NotificationAlignment.TOP_RIGHT) {
+                        targetX -= notification.getWidth() + 5;
+                    } else {
+                        targetX += notification.getWidth() + 5;
+                    }
+                }
                 targetY -= notification.getHeight() + 2;
                 notification.setY(targetY, animated);
             }
+            notification.setX(targetX, animated);
         }
     }
 
@@ -92,11 +107,11 @@ public final class Notifications {
         return null;
     }
 
-    public static void removeNotification(Notification notification) {
+    protected static void removeNotification(Notification notification) {
         notifications.remove(notification);
     }
 
-    public static void addNotification(Notification notification) {
+    protected static void addNotification(Notification notification) {
         notifications.add(notification);
     }
 

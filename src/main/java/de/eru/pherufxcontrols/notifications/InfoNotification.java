@@ -32,6 +32,12 @@ public class InfoNotification extends Notification {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         timerLabel.textProperty().bind(timer.asString());
+        dontShowAgainBox.setVisible(false);
+    }
+    
+    @FXML
+    private void closeNotification(){
+        root.getScene().getWindow().hide();
     }
 
     public NotificationType getType() {
@@ -66,11 +72,6 @@ public class InfoNotification extends Notification {
         return dontShowAgainBox.isSelected();
     }
 
-    public InfoNotification setDontShowAgain(boolean dontShowAgain) {
-        dontShowAgainBox.setSelected(dontShowAgain);
-        return this;
-    }
-
     public InfoNotification bindHeaderProperty(Property<String> property) {
         headerLabel.textProperty().bindBidirectional(property);
         return this;
@@ -88,6 +89,7 @@ public class InfoNotification extends Notification {
 
     public InfoNotification bindDontShowAgainProperty(Property<Boolean> property) {
         dontShowAgainBox.selectedProperty().bindBidirectional(property);
+        dontShowAgainBox.setVisible(true);
         return this;
     }
     

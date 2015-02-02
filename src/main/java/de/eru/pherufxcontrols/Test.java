@@ -15,7 +15,7 @@ import javafx.stage.Stage;
 public class Test extends Application {
 
     public static void main(String[] args) {
-        Application.launch(args);
+        launch(args);
     }
 
     @Override
@@ -24,34 +24,54 @@ public class Test extends Application {
         BooleanProperty dsa = new SimpleBooleanProperty(true);
 
         Notifications.setAlignment(NotificationAlignment.BOTTOM_RIGHT);
-        Notifications.createInfoNotification(NotificationType.WARNING)
-                .setTitle("Warnung!")
-                .setHeader("Warnung")
-                .setText("Das ist eine Warnung. Das solltest du dir mal anschauen! Das könnte nämlich vielleicht doch ne ernste Sache sein! Also so vielleicht schreib ich mir mal noch viel mehr Text. Mich würde nämlich interessieren, wie viel Text in eine Notification passt.")
+        Notifications.createInfoNotification(NotificationType.ERROR)
+                .setTitle("Error!")
+                .setHeader("Fehler!")
+                .setText("Das ist ein Fehler. Das solltest du dir mal anschauen! Das könnte nämlich vielleicht doch ne ernste Sache sein! Also so vielleicht schreib ich mir mal noch viel mehr Text. Mich würde nämlich interessieren, wie viel Text in eine Notification passt.")
                 .show();
         Notifications.createInfoNotification(NotificationType.INFO)
                 .bindDontShowAgainProperty(dsa)
                 .setHeader("Info")
                 .setText("Das ist hier bloß eine Information. Nicht sooooo wichtig...")
-                .setTimer(6)
-                .show();
-        Notifications.createInfoNotification(NotificationType.ERROR)
-                .setDontShowAgain(true)
-                .setHeader("Fehler!")
-                .setText("Es ist ein schwerer Fehler aufgetreten!")
-                .setTimer(7)
                 .show();
         Notifications.createInfoNotification(NotificationType.INFO)
-                .setDontShowAgain(true)
+                .bindDontShowAgainProperty(dsa)
+                .setHeader("Info")
+                .setText("Das ist hier bloß eine Information. Nicht sooooo wichtig...")
+                .show();
+        Notifications.createInfoNotification(NotificationType.INFO)
+                .bindDontShowAgainProperty(dsa)
+                .setHeader("Info")
+                .setText("Das ist hier bloß eine Information. Nicht sooooo wichtig...")
+                .show();
+        Notifications.createInfoNotification(NotificationType.INFO)
+                .bindDontShowAgainProperty(dsa)
+                .setHeader("Info")
+                .setText("Das ist hier bloß eine Information. Nicht sooooo wichtig...")
+                .show();
+        Notifications.createInfoNotification(NotificationType.INFO)
+                .bindDontShowAgainProperty(dsa)
+                .setHeader("Info")
+                .setText("Das ist hier bloß eine Information. Nicht sooooo wichtig...")
+                .show();
+        Notifications.createInfoNotification(NotificationType.INFO)
+                .bindDontShowAgainProperty(dsa)
+                .setHeader("Info")
+                .setText("Das ist hier bloß eine Information. Nicht sooooo wichtig...")
+                .show();
+        Notifications.createInfoNotification(NotificationType.ERROR)
+                .setHeader("Fehler!")
+                .setText("Es ist ein schwerer Fehler aufgetreten!")
+                .show();
+        Notifications.createInfoNotification(NotificationType.INFO)
+                .bindDontShowAgainProperty(dsa)
                 .setHeader("Blubb!")
                 .setText("Es ist ein schwerer Fehler aufgetreten! Oder irgendwas anderes!")
-                .setTimer(6)
                 .show();
         Notifications.createInfoNotification(NotificationType.WARNING)
-                .setDontShowAgain(false)
+                .bindDontShowAgainProperty(dsa)
                 .setHeader("Fehler!\nFehler!\nFehler!\n...Warnung?")
                 .setText("Es ist ein schwerer Fehler aufgetreten!\nZumindest gibt es eine Warnung dafür! Also ist doch was passiert, oder?")
-                .setTimer(6)
                 .show();
     }
 }

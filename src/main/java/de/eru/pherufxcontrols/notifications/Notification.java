@@ -117,8 +117,16 @@ public abstract class Notification implements Initializable {
         return root.getScene().getWindow().yProperty();
     }
 
-    public void setX(final double position) {
-        root.getScene().getWindow().setX(position);
+    public void setX(final double position, boolean animated) {
+        if (!animated) {
+            root.getScene().getWindow().setX(position);
+        } else {
+            DoubleProperty windowX = new SimpleDoubleProperty(root.getScene().getWindow().getX());
+            windowX.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+                root.getScene().getWindow().setX(newValue.doubleValue());
+            });
+            new Timeline(new KeyFrame(Duration.millis(200.0), new KeyValue(windowX, position))).play();
+        }
     }
 
     public double getX() {
@@ -139,6 +147,10 @@ public abstract class Notification implements Initializable {
 
     public double getHeight() {
         return root.getScene().getWindow().getHeight();
+    }
+    
+    public double getWidth() {
+        return root.getScene().getWindow().getWidth();
     }
 
     public String getTitle() {

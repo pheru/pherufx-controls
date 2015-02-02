@@ -22,3 +22,11 @@
     -fx-font-size: 9;
     -fx-font-weight: bold;
 }
+
+.notification .exitButton:hover{
+    -fx-background-color: linear-gradient(#ee6410, #cc2d10);
+}
+
+.notification .exitButton:pressed{
+    -fx-background-color: linear-gradient(#d04400, #881010);
+}
