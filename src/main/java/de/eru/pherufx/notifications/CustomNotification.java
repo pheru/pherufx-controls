@@ -1,4 +1,4 @@
-package de.eru.pherufxcontrols.notifications;
+package de.eru.pherufx.notifications;
 
 import java.net.URL;
 import java.util.ResourceBundle;

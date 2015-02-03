@@ -1,6 +1,5 @@
-package de.eru.pherufxcontrols.notifications;
+package de.eru.pherufx.notifications;
 
-import de.eru.pherufxcontrols.utils.NotificationType;
 import java.io.IOException;
 import java.net.URL;
 import javafx.beans.property.IntegerProperty;
@@ -18,11 +17,16 @@ import javafx.stage.Screen;
  */
 public final class Notifications {
 
+    public enum Alignment {
+
+        BOTTOM_RIGHT, BOTTOM_LEFT, TOP_RIGHT, TOP_LEFT
+    }
+
     protected static final Rectangle2D VISUAL_BOUNDS = Screen.getPrimary().getVisualBounds();
 
     private static final ObservableList<Notification> notifications = initNotificationsList();
 
-    private static NotificationAlignment alignment = NotificationAlignment.BOTTOM_RIGHT;
+    private static Alignment alignment = Alignment.BOTTOM_RIGHT;
     private static final IntegerProperty defaultTimer = new SimpleIntegerProperty(10);
 
     private Notifications() {
@@ -45,19 +49,19 @@ public final class Notifications {
     private static void arrangeNotifications(boolean animated) {
         double targetX = 5.0;
         double targetY = 5.0;
-        if (alignment == NotificationAlignment.BOTTOM_LEFT || alignment == NotificationAlignment.BOTTOM_RIGHT) {
+        if (alignment == Alignment.BOTTOM_LEFT || alignment == Alignment.BOTTOM_RIGHT) {
             targetY = VISUAL_BOUNDS.getMaxY() - 3;
         }
-        if (alignment == NotificationAlignment.BOTTOM_RIGHT || alignment == NotificationAlignment.TOP_RIGHT) {
+        if (alignment == Alignment.BOTTOM_RIGHT || alignment == Alignment.TOP_RIGHT) {
             targetX = VISUAL_BOUNDS.getMaxX() - 350 - 5; //TODO 350 nicht als fixe Zahl
         }
 
         for (Notification notification : notifications) {
 
-            if (alignment == NotificationAlignment.TOP_LEFT || alignment == NotificationAlignment.TOP_RIGHT) {
+            if (alignment == Alignment.TOP_LEFT || alignment == Alignment.TOP_RIGHT) {
                 if (targetY + notification.getHeight() > VISUAL_BOUNDS.getMaxY()) {
                     targetY = 5.0;
-                    if (alignment == NotificationAlignment.BOTTOM_RIGHT || alignment == NotificationAlignment.TOP_RIGHT) {
+                    if (alignment == Alignment.BOTTOM_RIGHT || alignment == Alignment.TOP_RIGHT) {
                         targetX -= notification.getWidth() + 5;
                     } else {
                         targetX += notification.getWidth() + 5;
@@ -68,7 +72,7 @@ public final class Notifications {
             } else {
                 if (targetY - notification.getHeight() < 3.0) {
                     targetY = VISUAL_BOUNDS.getMaxY() - 3;
-                    if (alignment == NotificationAlignment.BOTTOM_RIGHT || alignment == NotificationAlignment.TOP_RIGHT) {
+                    if (alignment == Alignment.BOTTOM_RIGHT || alignment == Alignment.TOP_RIGHT) {
                         targetX -= notification.getWidth() + 5;
                     } else {
                         targetX += notification.getWidth() + 5;
@@ -81,7 +85,7 @@ public final class Notifications {
         }
     }
 
-    public static InfoNotification createInfoNotification(NotificationType type) {
+    public static InfoNotification createInfoNotification(InfoNotification.Type type) {
         InfoNotification infoNotification = (InfoNotification) getLoadedNotification("info");
         infoNotification.setType(type);
         return infoNotification;
@@ -115,11 +119,11 @@ public final class Notifications {
         notifications.add(notification);
     }
 
-    public static NotificationAlignment getAlignment() {
+    public static Alignment getAlignment() {
         return alignment;
     }
 
-    public static void setAlignment(NotificationAlignment alignment) {
+    public static void setAlignment(Alignment alignment) {
         Notifications.alignment = alignment;
         arrangeNotifications(false);
     }

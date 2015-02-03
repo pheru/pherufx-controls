@@ -1,6 +1,5 @@
-package de.eru.pherufxcontrols.notifications;
+package de.eru.pherufx.notifications;
 
-import de.eru.pherufxcontrols.utils.NotificationType;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.Property;
@@ -16,6 +15,23 @@ import javafx.scene.image.ImageView;
  */
 public class InfoNotification extends Notification {
 
+    public enum Type {
+
+        INFO("img/Info.png"),
+        WARNING("img/Warning.png"),
+        ERROR("img/Error.png");
+
+        private final String imagePath;
+
+        private Type(final String imagePath) {
+            this.imagePath = imagePath;
+        }
+
+        public String getImagePath() {
+            return imagePath;
+        }
+    }
+
     @FXML
     private Label headerLabel;
     @FXML
@@ -26,25 +42,24 @@ public class InfoNotification extends Notification {
     private ImageView image;
     @FXML
     private CheckBox dontShowAgainBox;
-    private NotificationType type;
-    
+    private Type type;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         timerLabel.textProperty().bind(timer.asString());
         dontShowAgainBox.setVisible(false);
     }
-    
+
     @FXML
-    private void closeNotification(){
+    private void closeNotification() {
         root.getScene().getWindow().hide();
     }
 
-    public NotificationType getType() {
+    public Type getType() {
         return type;
     }
 
-    protected InfoNotification setType(NotificationType type) {
+    protected InfoNotification setType(Type type) {
         this.type = type;
         image.setImage(new Image(type.getImagePath()));
         return this;
@@ -67,7 +82,7 @@ public class InfoNotification extends Notification {
         textLabel.setText(text);
         return this;
     }
-    
+
     public boolean isDontShowAgain() {
         return dontShowAgainBox.isSelected();
     }
@@ -92,8 +107,8 @@ public class InfoNotification extends Notification {
         dontShowAgainBox.setVisible(true);
         return this;
     }
-    
-    public Image getImage(){
+
+    public Image getImage() {
         return image.getImage();
     }
 
@@ -101,7 +116,5 @@ public class InfoNotification extends Notification {
     public InfoNotification setTitle(String title) {
         return (InfoNotification) super.setTitle(title);
     }
- 
-    
-    
+
 }
