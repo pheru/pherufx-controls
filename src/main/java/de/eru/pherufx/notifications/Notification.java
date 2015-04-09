@@ -84,11 +84,11 @@ public abstract class Notification implements Initializable {
         t.start();
     }
 
-    public Integer getTimer() {
+    public int getTimer() {
         return timer.get();
     }
 
-    public Notification setTimer(final Integer timer) {
+    public Notification setTimer(final int timer) {
         this.timer.set(timer);
         return this;
     }

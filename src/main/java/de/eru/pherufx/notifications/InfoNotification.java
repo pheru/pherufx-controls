@@ -54,7 +54,12 @@ public class InfoNotification extends Notification {
     private void closeNotification() {
         root.getScene().getWindow().hide();
     }
-
+    
+    public InfoNotification setWrapText(boolean wrapText){
+        textLabel.setWrapText(wrapText);
+        return this;
+    }
+    
     public Type getType() {
         return type;
     }
@@ -98,7 +103,7 @@ public class InfoNotification extends Notification {
     }
 
     @Override
-    public InfoNotification setTimer(Integer timer) {
+    public InfoNotification setTimer(int timer) {
         return (InfoNotification) super.setTimer(timer);
     }
 

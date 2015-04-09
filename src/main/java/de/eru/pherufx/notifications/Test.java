@@ -24,6 +24,7 @@ public class Test extends Application {
         Notifications.createInfoNotification(InfoNotification.Type.ERROR)
                 .setTitle("Error!")
                 .setHeader("Fehler!")
+                .setTimer(12)
                 .setText("Das ist ein Fehler. Das solltest du dir mal anschauen! Das könnte nämlich vielleicht doch ne ernste Sache sein! Also so vielleicht schreib ich mir mal noch viel mehr Text. Mich würde nämlich interessieren, wie viel Text in eine Notification passt.")
                 .show();
         Notifications.createInfoNotification(InfoNotification.Type.INFO)
@@ -70,5 +71,14 @@ public class Test extends Application {
                 .setHeader("Fehler!\nFehler!\nFehler!\n...Warnung?")
                 .setText("Es ist ein schwerer Fehler aufgetreten!\nZumindest gibt es eine Warnung dafür! Also ist doch was passiert, oder?")
                 .show();
+        Notifications.showInfoNotification(InfoNotification.Type.INFO, "Aktueller Titel:", ">Titel:\t\tThe Cage and the bibidy babidy buuuu\n>Album:\tEcliptica\n>Interpret:\tSonata Arctica", 0, null);
+        Notifications.createInfoNotification(InfoNotification.Type.INFO)
+                .setHeader("Aktueller Titel:")
+                //                .setText("The Cage and the bibidy babidy buuuu\nEcliptica\nSonata Arctica")
+                .setText("Titel:\t\tThe Cage and the bibidy babidy buuuu\nAlbum:\tEcliptica\nInterpret:\tSonata Arctica")
+                .setWrapText(false)
+                .bindDontShowAgainProperty(dsa)
+                .show();
+
     }
 }

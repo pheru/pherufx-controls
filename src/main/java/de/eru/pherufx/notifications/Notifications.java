@@ -3,6 +3,7 @@ package de.eru.pherufx.notifications;
 import java.io.IOException;
 import java.net.URL;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -89,6 +90,19 @@ public final class Notifications {
         InfoNotification infoNotification = (InfoNotification) getLoadedNotification("info");
         infoNotification.setType(type);
         return infoNotification;
+    }
+
+    public static void showInfoNotification(InfoNotification.Type type, String header, String text, int timer, Property<Boolean> property) {
+        InfoNotification infoNotification = createInfoNotification(type);
+        infoNotification.setHeader(header);
+        infoNotification.setText(text);
+        if (timer > 0) {
+            infoNotification.setTimer(timer);
+        }
+        if (property != null) {
+            infoNotification.bindDontShowAgainProperty(property);
+        }
+        infoNotification.show();
     }
 
     public static CustomNotification createCustomNotification() {
