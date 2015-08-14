@@ -7,7 +7,7 @@ import java.util.ResourceBundle;
  *
  * @author Philipp Bruckner
  */
-public class CustomNotification extends Notification{ 
+public class CustomNotification extends AbstractNotification{ 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {

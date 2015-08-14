@@ -25,7 +25,7 @@ public final class Notifications {
 
     protected static final Rectangle2D VISUAL_BOUNDS = Screen.getPrimary().getVisualBounds();
 
-    private static final ObservableList<Notification> notifications = initNotificationsList();
+    private static final ObservableList<AbstractNotification> notifications = initNotificationsList();
 
     private static Alignment alignment = Alignment.BOTTOM_RIGHT;
     private static final IntegerProperty defaultTimer = new SimpleIntegerProperty(10);
@@ -33,9 +33,9 @@ public final class Notifications {
     private Notifications() {
     }
 
-    private static ObservableList<Notification> initNotificationsList() {
-        ObservableList<Notification> notificationsList = FXCollections.observableArrayList();
-        notificationsList.addListener((ListChangeListener.Change<? extends Notification> c) -> {
+    private static ObservableList<AbstractNotification> initNotificationsList() {
+        ObservableList<AbstractNotification> notificationsList = FXCollections.observableArrayList();
+        notificationsList.addListener((ListChangeListener.Change<? extends AbstractNotification> c) -> {
             while (c.next()) {
                 if (c.wasAdded()) {
                     arrangeNotifications(false);
@@ -57,7 +57,7 @@ public final class Notifications {
             targetX = VISUAL_BOUNDS.getMaxX() - 350 - 5; //TODO 350 nicht als fixe Zahl
         }
 
-        for (Notification notification : notifications) {
+        for (AbstractNotification notification : notifications) {
 
             if (alignment == Alignment.TOP_LEFT || alignment == Alignment.TOP_RIGHT) {
                 if (targetY + notification.getHeight() > VISUAL_BOUNDS.getMaxY()) {
@@ -86,36 +86,36 @@ public final class Notifications {
         }
     }
 
-    public static InfoNotification createInfoNotification(InfoNotification.Type type) {
-        InfoNotification infoNotification = (InfoNotification) getLoadedNotification("info");
-        infoNotification.setType(type);
-        return infoNotification;
+    public static Notification createNotification(Notification.Type type) {
+        Notification notification = (Notification) getLoadedNotification("notification");
+        notification.setType(type);
+        return notification;
     }
 
-    public static void showInfoNotification(InfoNotification.Type type, String header, String text, int timer, Property<Boolean> property) {
-        InfoNotification infoNotification = createInfoNotification(type);
-        infoNotification.setHeader(header);
-        infoNotification.setText(text);
+    public static void showNotification(Notification.Type type, String header, String text, int timer, Property<Boolean> property) {
+        Notification notification = createNotification(type);
+        notification.setHeader(header);
+        notification.setText(text);
         if (timer > 0) {
-            infoNotification.setTimer(timer);
+            notification.setTimer(timer);
         }
         if (property != null) {
-            infoNotification.bindDontShowAgainProperty(property);
+            notification.bindDontShowAgainProperty(property);
         }
-        infoNotification.show();
+        notification.show();
     }
 
     public static CustomNotification createCustomNotification() {
         return (CustomNotification) getLoadedNotification("custom");
     }
 
-    private static Notification getLoadedNotification(String fxmlName) {
+    private static AbstractNotification getLoadedNotification(String fxmlName) {
         URL resource = Notifications.class.getResource(fxmlName + ".fxml");
         FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(resource);
         try {
             fxmlLoader.load();
-            Notification notification = fxmlLoader.getController();
+            AbstractNotification notification = fxmlLoader.getController();
             notification.setRoot(fxmlLoader.getRoot());
             notification.setTimer(defaultTimer.get());
             return notification;
@@ -125,11 +125,11 @@ public final class Notifications {
         return null;
     }
 
-    protected static void removeNotification(Notification notification) {
+    protected static void removeNotification(AbstractNotification notification) {
         notifications.remove(notification);
     }
 
-    protected static void addNotification(Notification notification) {
+    protected static void addNotification(AbstractNotification notification) {
         notifications.add(notification);
     }
 
