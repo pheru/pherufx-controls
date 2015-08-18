@@ -3,8 +3,12 @@ package de.eru.pherufx.notifications;
 import java.io.IOException;
 import java.net.URL;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -27,10 +31,18 @@ public final class Notifications {
 
     private static final ObservableList<AbstractNotification> notifications = initNotificationsList();
 
-    private static Alignment alignment = Alignment.BOTTOM_RIGHT;
+    private static final ObjectProperty<Alignment> alignment = createAlignmentProperty();
     private static final IntegerProperty defaultTimer = new SimpleIntegerProperty(10);
 
     private Notifications() {
+    }
+    
+    private static ObjectProperty<Alignment> createAlignmentProperty(){
+        ObjectProperty<Alignment> p = new SimpleObjectProperty<>(Alignment.BOTTOM_RIGHT);
+        p.addListener((ObservableValue<? extends Alignment> observable, Alignment oldValue, Alignment newValue) -> {
+            arrangeNotifications(false);
+        });
+        return p;
     }
 
     private static ObservableList<AbstractNotification> initNotificationsList() {
@@ -50,19 +62,19 @@ public final class Notifications {
     private static void arrangeNotifications(boolean animated) {
         double targetX = 5.0;
         double targetY = 5.0;
-        if (alignment == Alignment.BOTTOM_LEFT || alignment == Alignment.BOTTOM_RIGHT) {
+        if (alignment.get() == Alignment.BOTTOM_LEFT || alignment.get() == Alignment.BOTTOM_RIGHT) {
             targetY = VISUAL_BOUNDS.getMaxY() - 3;
         }
-        if (alignment == Alignment.BOTTOM_RIGHT || alignment == Alignment.TOP_RIGHT) {
+        if (alignment.get() == Alignment.BOTTOM_RIGHT || alignment.get() == Alignment.TOP_RIGHT) {
             targetX = VISUAL_BOUNDS.getMaxX() - 350 - 5; //TODO 350 nicht als fixe Zahl
         }
 
         for (AbstractNotification notification : notifications) {
 
-            if (alignment == Alignment.TOP_LEFT || alignment == Alignment.TOP_RIGHT) {
+            if (alignment.get() == Alignment.TOP_LEFT || alignment.get() == Alignment.TOP_RIGHT) {
                 if (targetY + notification.getHeight() > VISUAL_BOUNDS.getMaxY()) {
                     targetY = 5.0;
-                    if (alignment == Alignment.BOTTOM_RIGHT || alignment == Alignment.TOP_RIGHT) {
+                    if (alignment.get() == Alignment.BOTTOM_RIGHT || alignment.get() == Alignment.TOP_RIGHT) {
                         targetX -= notification.getWidth() + 5;
                     } else {
                         targetX += notification.getWidth() + 5;
@@ -73,7 +85,7 @@ public final class Notifications {
             } else {
                 if (targetY - notification.getHeight() < 3.0) {
                     targetY = VISUAL_BOUNDS.getMaxY() - 3;
-                    if (alignment == Alignment.BOTTOM_RIGHT || alignment == Alignment.TOP_RIGHT) {
+                    if (alignment.get() == Alignment.BOTTOM_RIGHT || alignment.get() == Alignment.TOP_RIGHT) {
                         targetX -= notification.getWidth() + 5;
                     } else {
                         targetX += notification.getWidth() + 5;
@@ -134,12 +146,15 @@ public final class Notifications {
     }
 
     public static Alignment getAlignment() {
-        return alignment;
+        return alignment.get();
     }
 
     public static void setAlignment(Alignment alignment) {
-        Notifications.alignment = alignment;
-        arrangeNotifications(false);
+        Notifications.alignment.set(alignment);
+    }
+    
+    public static ObjectProperty<Alignment> alignmentProperty(){
+        return alignment;
     }
 
     public static Integer getDefaultTimer() {
