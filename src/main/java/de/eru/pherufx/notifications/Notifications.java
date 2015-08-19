@@ -7,7 +7,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -36,8 +35,8 @@ public final class Notifications {
 
     private Notifications() {
     }
-    
-    private static ObjectProperty<Alignment> createAlignmentProperty(){
+
+    private static ObjectProperty<Alignment> createAlignmentProperty() {
         ObjectProperty<Alignment> p = new SimpleObjectProperty<>(Alignment.BOTTOM_RIGHT);
         p.addListener((ObservableValue<? extends Alignment> observable, Alignment oldValue, Alignment newValue) -> {
             arrangeNotifications(false);
@@ -68,9 +67,7 @@ public final class Notifications {
         if (alignment.get() == Alignment.BOTTOM_RIGHT || alignment.get() == Alignment.TOP_RIGHT) {
             targetX = VISUAL_BOUNDS.getMaxX() - 350 - 5; //TODO 350 nicht als fixe Zahl
         }
-
         for (AbstractNotification notification : notifications) {
-
             if (alignment.get() == Alignment.TOP_LEFT || alignment.get() == Alignment.TOP_RIGHT) {
                 if (targetY + notification.getHeight() > VISUAL_BOUNDS.getMaxY()) {
                     targetY = 5.0;
@@ -101,6 +98,17 @@ public final class Notifications {
     public static Notification createNotification(Notification.Type type) {
         Notification notification = (Notification) getLoadedNotification("notification");
         notification.setType(type);
+        switch (type) {
+            case INFO:
+                notification.setHeader("Information");
+                break;
+            case WARNING:
+                notification.setHeader("Warnung");
+                break;
+            case ERROR:
+                notification.setHeader("Fehler");
+                break;
+        }
         return notification;
     }
 
@@ -152,8 +160,8 @@ public final class Notifications {
     public static void setAlignment(Alignment alignment) {
         Notifications.alignment.set(alignment);
     }
-    
-    public static ObjectProperty<Alignment> alignmentProperty(){
+
+    public static ObjectProperty<Alignment> alignmentProperty() {
         return alignment;
     }
 

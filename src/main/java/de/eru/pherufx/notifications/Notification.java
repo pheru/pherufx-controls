@@ -44,6 +44,9 @@ public class Notification extends AbstractNotification {
     private CheckBox dontShowAgainBox;
     private Type type;
 
+    protected Notification(){
+    }
+    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         timerLabel.textProperty().bind(timer.asString());
@@ -52,7 +55,7 @@ public class Notification extends AbstractNotification {
 
     @FXML
     private void closeNotification() {
-        root.getScene().getWindow().hide();
+        hide();
     }
     
     public Notification setWrapText(boolean wrapText){

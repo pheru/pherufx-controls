@@ -54,7 +54,7 @@ public abstract class AbstractNotification implements Initializable {
         KeyFrame kfEnd = new KeyFrame(Duration.millis(1000), fadeOutEnd);
         Timeline timeline = new Timeline(kfBegin, kfEnd);
         timeline.setOnFinished((ActionEvent event) -> {
-            root.getScene().getWindow().hide();
+            hide();
         });
         timer.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
             if (newValue.intValue() == 0) {
@@ -65,6 +65,12 @@ public abstract class AbstractNotification implements Initializable {
         stage.show();
         Notifications.addNotification(this);
         startTimer();
+    }
+
+    public void hide() {
+        if (root.getScene() != null) {
+            root.getScene().getWindow().hide();
+        }
     }
 
     private void startTimer() {
@@ -148,7 +154,7 @@ public abstract class AbstractNotification implements Initializable {
     public double getHeight() {
         return root.getScene().getWindow().getHeight();
     }
-    
+
     public double getWidth() {
         return root.getScene().getWindow().getWidth();
     }
