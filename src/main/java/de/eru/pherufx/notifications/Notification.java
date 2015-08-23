@@ -44,9 +44,6 @@ public class Notification extends AbstractNotification {
     private CheckBox dontShowAgainBox;
     private Type type;
 
-    protected Notification(){
-    }
-    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         timerLabel.textProperty().bind(timer.asString());
