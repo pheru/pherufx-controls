@@ -1,4 +1,4 @@
-package de.eru.pherufx.notifications;
+package de.pheru.fx.notifications;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;

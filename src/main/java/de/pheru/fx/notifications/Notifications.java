@@ -1,4 +1,4 @@
-package de.eru.pherufx.notifications;
+package de.pheru.fx.notifications;
 
 import java.io.IOException;
 import java.net.URL;
