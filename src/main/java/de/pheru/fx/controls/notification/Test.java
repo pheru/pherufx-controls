@@ -1,4 +1,4 @@
-package de.pheru.fx.notifications;
+package de.pheru.fx.controls.notification;
 
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
@@ -11,9 +11,9 @@ import javafx.stage.Stage;
  */
 public class Test extends Application {
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+//    public static void main(String[] args) {
+//        launch(args);
+//    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
