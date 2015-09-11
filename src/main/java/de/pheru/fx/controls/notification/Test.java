@@ -20,6 +20,7 @@ public class Test extends Application {
 
         BooleanProperty dsa = new SimpleBooleanProperty(true);
 
+        Notifications.setDefaultTimer(20);
         Notifications.setAlignment(Notifications.Alignment.BOTTOM_RIGHT);
         Notification n1 = Notifications.createNotification(Notification.Type.ERROR)
                 .setTitle("Error!")

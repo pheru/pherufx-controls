@@ -1,12 +1,10 @@
-/* 
+/*
     Created on : 30.01.2015, 22:50:08
     Author     : Philipp Bruckner
 */
-
-
 .notification {
     -fx-background-color : rgba(0, 0, 0, 0.7);
-    -fx-background-radius: 10;
+    -fx-background-radius: 5;
 }
 
 .notification .content{
@@ -15,18 +13,20 @@
 }
 
 .notification .exitButton{
-    -fx-background-color: linear-gradient(#d55400, #be1d00);
+    -fx-background-color: transparent;
     -fx-background-radius: 30;
     -fx-background-insets: 0;
-    -fx-text-fill: white;
+    -fx-text-fill: red;
     -fx-font-size: 9;
     -fx-font-weight: bold;
 }
 
 .notification .exitButton:hover{
-    -fx-background-color: linear-gradient(#ee6410, #cc2d10);
+	-fx-text-fill: white;
+    -fx-background-color: linear-gradient(#d55400, #be1d00);
 }
 
 .notification .exitButton:pressed{
+	-fx-text-fill: white;
     -fx-background-color: linear-gradient(#d04400, #881010);
 }
