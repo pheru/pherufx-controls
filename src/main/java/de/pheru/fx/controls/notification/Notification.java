@@ -1,65 +1,35 @@
 package de.pheru.fx.controls.notification;
 
-import java.net.URL;
-import java.util.ResourceBundle;
 import javafx.beans.property.Property;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 
 /**
  *
  * @author Philipp Bruckner
  */
-public class Notification extends AbstractNotification {
-
-    public enum Type {
-
-        INFO("img/Info.png"),
-        WARNING("img/Warning.png"),
-        ERROR("img/Error.png");
-
-        private final String imagePath;
-
-        private Type(final String imagePath) {
-            this.imagePath = imagePath;
-        }
-
-        public String getImagePath() {
-            return imagePath;
-        }
-    }
+public class Notification extends CustomNotification {
 
     @FXML
     private Label headerLabel;
     @FXML
     private Label textLabel;
     @FXML
-    private Label timerLabel;
-    @FXML
     private ImageView image;
-    @FXML
-    private CheckBox dontShowAgainBox;
     private Type type;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        timerLabel.textProperty().bind(timer.asString());
-        dontShowAgainBox.setVisible(false);
+    protected Notification() {
     }
 
-    @FXML
-    private void closeNotification() {
-        hide();
-    }
-    
-    public Notification setWrapText(boolean wrapText){
+    public Notification setWrapText(boolean wrapText) {
         textLabel.setWrapText(wrapText);
         return this;
     }
-    
+
     public Type getType() {
         return type;
     }
@@ -67,6 +37,8 @@ public class Notification extends AbstractNotification {
     protected Notification setType(Type type) {
         this.type = type;
         image.setImage(new Image(type.getImagePath()));
+        headerLabel.textProperty().set(type.getText());
+        setTitle(type.getText());
         return this;
     }
 
@@ -88,10 +60,6 @@ public class Notification extends AbstractNotification {
         return this;
     }
 
-    public boolean isDontShowAgain() {
-        return dontShowAgainBox.isSelected();
-    }
-
     public Notification bindHeaderProperty(Property<String> property) {
         headerLabel.textProperty().bindBidirectional(property);
         return this;
@@ -102,24 +70,56 @@ public class Notification extends AbstractNotification {
         return this;
     }
 
-    @Override
-    public Notification setTimer(int timer) {
-        return (Notification) super.setTimer(timer);
-    }
-
-    public Notification bindDontShowAgainProperty(Property<Boolean> property) {
-        dontShowAgainBox.selectedProperty().bindBidirectional(property);
-        dontShowAgainBox.setVisible(true);
-        return this;
-    }
-
     public Image getImage() {
         return image.getImage();
     }
 
     @Override
+    public Notification setExitButtonVisible(boolean exitButtonVisible) {
+        return (Notification) super.setExitButtonVisible(exitButtonVisible);
+    }
+
+    @Override
+    public Notification bindDontShowAgainProperty(Property<Boolean> property) {
+        return (Notification) super.bindDontShowAgainProperty(property);
+    }
+
+    @Override
+    public Notification setOnMouseClicked(EventHandler<? super MouseEvent> value) {
+        return (Notification) super.setOnMouseClicked(value);
+    }
+
+    @Override
     public Notification setTitle(String title) {
         return (Notification) super.setTitle(title);
+    }
+
+    @Override
+    public Notification setTimer(int timer) {
+        return (Notification) super.setTimer(timer);
+    }
+
+    public enum Type {
+
+        INFO("Information", "img/Info.png"),
+        WARNING("Warnung", "img/Warning.png"),
+        ERROR("Fehler", "img/Error.png");
+
+        private final String text;
+        private final String imagePath;
+
+        private Type(final String text, final String imagePath) {
+            this.text = text;
+            this.imagePath = imagePath;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getImagePath() {
+            return imagePath;
+        }
     }
 
 }

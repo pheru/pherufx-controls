@@ -2,14 +2,37 @@
     Created on : 30.01.2015, 22:50:08
     Author     : Philipp Bruckner
 */
-.notification {
-    -fx-background-color : rgba(0, 0, 0, 0.7);
+.notification{
+    -fx-background-color: rgba(0, 0, 0, 0.7);
     -fx-background-radius: 5;
 }
 
-.notification .content{
-    -fx-text-fill : white;
-    -icon-color : white;
+.notification .exitPane{
+    /*-fx-background-color: linear-gradient(to right, transparent 0%, -fx-focus-color 30%);*/
+    /*-fx-background-color: -fx-focus-color;*/
+    -fx-background-radius: 0 5 5 0;
+}
+
+.notification .check-box{
+    -fx-text-fill: white;
+}
+
+.notification .check-box .box{
+    -fx-background-color: black;
+}
+
+.notification .check-box:selected .mark{
+    -fx-background-color: -fx-focus-color;
+}
+
+.notification .label{
+    -fx-text-fill: white;
+    -fx-font-size: 11pt;
+}
+
+.notification .header{
+    -fx-font-size: 14pt;
+    -fx-font-weight: bold;
 }
 
 .notification .exitButton{
@@ -22,11 +45,11 @@
 }
 
 .notification .exitButton:hover{
-	-fx-text-fill: white;
+    -fx-text-fill: white;
     -fx-background-color: linear-gradient(#d55400, #be1d00);
 }
 
 .notification .exitButton:pressed{
-	-fx-text-fill: white;
+    -fx-text-fill: white;
     -fx-background-color: linear-gradient(#d04400, #881010);
 }

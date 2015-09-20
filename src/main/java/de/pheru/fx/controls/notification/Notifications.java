@@ -1,7 +1,6 @@
 package de.pheru.fx.controls.notification;
 
 import java.io.IOException;
-import java.net.URL;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
@@ -13,6 +12,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.stage.Screen;
 
 /**
@@ -21,14 +21,9 @@ import javafx.stage.Screen;
  */
 public final class Notifications {
 
-    public enum Alignment {
-
-        BOTTOM_RIGHT, BOTTOM_LEFT, TOP_RIGHT, TOP_LEFT
-    }
-
     protected static final Rectangle2D VISUAL_BOUNDS = Screen.getPrimary().getVisualBounds();
 
-    private static final ObservableList<AbstractNotification> notifications = initNotificationsList();
+    private static final ObservableList<CustomNotification> notifications = initNotificationsList();
 
     private static final ObjectProperty<Alignment> alignment = createAlignmentProperty();
     private static final IntegerProperty defaultTimer = new SimpleIntegerProperty(10);
@@ -44,9 +39,9 @@ public final class Notifications {
         return p;
     }
 
-    private static ObservableList<AbstractNotification> initNotificationsList() {
-        ObservableList<AbstractNotification> notificationsList = FXCollections.observableArrayList();
-        notificationsList.addListener((ListChangeListener.Change<? extends AbstractNotification> c) -> {
+    private static ObservableList<CustomNotification> initNotificationsList() {
+        ObservableList<CustomNotification> notificationsList = FXCollections.observableArrayList();
+        notificationsList.addListener((ListChangeListener.Change<? extends CustomNotification> c) -> {
             while (c.next()) {
                 if (c.wasAdded()) {
                     arrangeNotifications(false);
@@ -67,7 +62,7 @@ public final class Notifications {
         if (alignment.get() == Alignment.BOTTOM_RIGHT || alignment.get() == Alignment.TOP_RIGHT) {
             targetX = VISUAL_BOUNDS.getMaxX() - 350 - 5; //TODO 350 nicht als fixe Zahl
         }
-        for (AbstractNotification notification : notifications) {
+        for (CustomNotification notification : notifications) {
             if (alignment.get() == Alignment.TOP_LEFT || alignment.get() == Alignment.TOP_RIGHT) {
                 if (targetY + notification.getHeight() > VISUAL_BOUNDS.getMaxY()) {
                     targetY = 5.0;
@@ -96,22 +91,46 @@ public final class Notifications {
     }
 
     public static Notification createNotification(Notification.Type type) {
-        Notification notification = (Notification) getLoadedNotification("notification");
+        Notification notification = loadNotification();
         notification.setType(type);
-        switch (type) {
-            case INFO:
-                notification.setHeader("Information");
-                break;
-            case WARNING:
-                notification.setHeader("Warnung");
-                break;
-            case ERROR:
-                notification.setHeader("Fehler");
-                break;
-        }
         return notification;
     }
+    private static Notification loadNotification() {
+        Notification notification = new Notification();
+        try {
+            FXMLLoader notificationFxmlLoader = new FXMLLoader(Notifications.class.getResource("notification.fxml"));
+            notificationFxmlLoader.setController(notification);
+            notificationFxmlLoader.load();
+            
+            FXMLLoader contentFxmlLoader = new FXMLLoader(Notifications.class.getResource("content.fxml"));
+            contentFxmlLoader.setController(notification);
+            contentFxmlLoader.load();
+            
+            notification.setContent(contentFxmlLoader.getRoot());
+            notification.setTimer(defaultTimer.get());
+            return notification;
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
 
+    public static CustomNotification createCustomNotification(Node content) {
+        try {
+            CustomNotification notification = new CustomNotification();
+            FXMLLoader fxmlLoader = new FXMLLoader(Notifications.class.getResource("notification.fxml"));
+            fxmlLoader.setController(notification);
+            fxmlLoader.load();
+            notification.setContent(content);
+            notification.setTimer(defaultTimer.get());
+            return notification;
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    //TODO wirklich nötig?
     public static void showNotification(Notification.Type type, String header, String text, int timer, Property<Boolean> property) {
         Notification notification = createNotification(type);
         notification.setHeader(header);
@@ -125,31 +144,11 @@ public final class Notifications {
         notification.show();
     }
 
-    public static CustomNotification createCustomNotification() {
-        return (CustomNotification) getLoadedNotification("custom");
-    }
-
-    private static AbstractNotification getLoadedNotification(String fxmlName) {
-        URL resource = Notifications.class.getResource(fxmlName + ".fxml");
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        fxmlLoader.setLocation(resource);
-        try {
-            fxmlLoader.load();
-            AbstractNotification notification = fxmlLoader.getController();
-            notification.setRoot(fxmlLoader.getRoot());
-            notification.setTimer(defaultTimer.get());
-            return notification;
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-
-    protected static void removeNotification(AbstractNotification notification) {
+    protected static void removeNotification(CustomNotification notification) {
         notifications.remove(notification);
     }
 
-    protected static void addNotification(AbstractNotification notification) {
+    protected static void addNotification(CustomNotification notification) {
         notifications.add(notification);
     }
 
@@ -177,4 +176,8 @@ public final class Notifications {
         return defaultTimer;
     }
 
+    public enum Alignment {
+
+        BOTTOM_RIGHT, BOTTOM_LEFT, TOP_RIGHT, TOP_LEFT
+    }
 }
