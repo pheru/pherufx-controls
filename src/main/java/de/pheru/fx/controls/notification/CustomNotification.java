@@ -141,6 +141,12 @@ public class CustomNotification implements Initializable {
         dontShowAgainBox.setManaged(true);
         return this;
     }
+    
+    public CustomNotification hideOnMouseClicked(){
+        return setOnMouseClicked((MouseEvent event) -> {
+            hide();
+        });
+    }
 
     public String getTitle() {
         return title.get();

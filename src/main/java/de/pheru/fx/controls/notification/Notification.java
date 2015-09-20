@@ -85,6 +85,11 @@ public class Notification extends CustomNotification {
     }
 
     @Override
+    public Notification hideOnMouseClicked() {
+        return (Notification) super.hideOnMouseClicked(); 
+    }
+
+    @Override
     public Notification setOnMouseClicked(EventHandler<? super MouseEvent> value) {
         return (Notification) super.setOnMouseClicked(value);
     }
