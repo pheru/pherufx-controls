@@ -38,7 +38,6 @@ public class Notification extends CustomNotification {
         this.type = type;
         image.setImage(new Image(type.getImagePath()));
         headerLabel.textProperty().set(type.getText());
-        setTitle(type.getText());
         return this;
     }
 
@@ -92,11 +91,6 @@ public class Notification extends CustomNotification {
     @Override
     public Notification setOnMouseClicked(EventHandler<? super MouseEvent> value) {
         return (Notification) super.setOnMouseClicked(value);
-    }
-
-    @Override
-    public Notification setTitle(String title) {
-        return (Notification) super.setTitle(title);
     }
 
     @Override

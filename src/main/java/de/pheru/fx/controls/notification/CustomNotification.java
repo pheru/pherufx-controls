@@ -12,22 +12,19 @@ import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
+import javafx.stage.Popup;
+import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
@@ -46,7 +43,6 @@ public class CustomNotification implements Initializable {
     @FXML
     private Button exitButton;
 
-    private final StringProperty title = new SimpleStringProperty("Benachrichtigung");
     private final IntegerProperty timer = new SimpleIntegerProperty(4);
 
     protected CustomNotification() {
@@ -58,31 +54,23 @@ public class CustomNotification implements Initializable {
         dontShowAgainBox.setManaged(false);
     }
 
-    public void show() {
-        Stage stage = initStage();
-        if (this instanceof Notification) {
-            stage.getIcons().add(((Notification) this).getImage());
-        } //TODO else ApplicationIcon sofern kein eigenes gesetzt
+    public void show(Window owner) {
+        Popup popup = initPopup();
         initFadeOutTimeline();
 
-        stage.show();
+        popup.show(owner);
         Notifications.addNotification(this);
         startTimer();
     }
 
-    private Stage initStage() {
-        Stage stage = new Stage();
-        stage.setTitle(title.getValue());
-        stage.initStyle(StageStyle.TRANSPARENT);
-        stage.setAlwaysOnTop(true);
-        Scene scene = new Scene(root);
-        scene.setFill(null);
-        scene.getStylesheets().add(getClass().getResource("/css/notification/notification.css").toExternalForm());
-        stage.setScene(scene);
+    private Popup initPopup() {
+        Popup popup = new Popup();
+        root.getStylesheets().add(getClass().getResource("/css/notification/notification.css").toExternalForm());
+        popup.getContent().add(root);
         root.getScene().getWindow().setOnHidden((WindowEvent event) -> {
             Notifications.removeNotification(this);
         });
-        return stage;
+        return popup;
     }
 
     private void initFadeOutTimeline() {
@@ -141,24 +129,11 @@ public class CustomNotification implements Initializable {
         dontShowAgainBox.setManaged(true);
         return this;
     }
-    
-    public CustomNotification hideOnMouseClicked(){
+
+    public CustomNotification hideOnMouseClicked() {
         return setOnMouseClicked((MouseEvent event) -> {
             hide();
         });
-    }
-
-    public String getTitle() {
-        return title.get();
-    }
-
-    public CustomNotification setTitle(final String title) {
-        this.title.set(title);
-        return this;
-    }
-
-    public StringProperty titleProperty() {
-        return title;
     }
 
     public int getTimer() {
@@ -173,14 +148,14 @@ public class CustomNotification implements Initializable {
     public IntegerProperty timerProperty() {
         return timer;
     }
-    
-    public CustomNotification setExitButtonVisible(boolean exitButtonVisible){
+
+    public CustomNotification setExitButtonVisible(boolean exitButtonVisible) {
         exitButton.setVisible(exitButtonVisible);
         exitButton.setManaged(exitButtonVisible);
         return this;
     }
-    
-    public boolean isExitButtonVisible(){
+
+    public boolean isExitButtonVisible() {
         return exitButton.isVisible();
     }
 

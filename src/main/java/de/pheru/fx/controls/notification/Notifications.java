@@ -3,7 +3,6 @@ package de.pheru.fx.controls.notification;
 import java.io.IOException;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
@@ -128,20 +127,6 @@ public final class Notifications {
             ex.printStackTrace();
         }
         return null;
-    }
-
-    //TODO wirklich nötig?
-    public static void showNotification(Notification.Type type, String header, String text, int timer, Property<Boolean> property) {
-        Notification notification = createNotification(type);
-        notification.setHeader(header);
-        notification.setText(text);
-        if (timer > 0) {
-            notification.setTimer(timer);
-        }
-        if (property != null) {
-            notification.bindDontShowAgainProperty(property);
-        }
-        notification.show();
     }
 
     protected static void removeNotification(CustomNotification notification) {
