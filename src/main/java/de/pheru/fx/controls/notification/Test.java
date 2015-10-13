@@ -22,6 +22,7 @@ public class Test extends Application {
         primaryStage.show();
         BooleanProperty dsa = new SimpleBooleanProperty(true);
         Notifications.setDefaultTimer(5);
+        Notifications.bindScreenToOwner(primaryStage);
         
         Notifications.setAlignment(Notifications.Alignment.BOTTOM_RIGHT);
         VBox box = new VBox(new Label("Liar Liar"), new Label("Haven"), new Label("Kamelot"));
