@@ -57,8 +57,6 @@ public class CustomNotification implements Initializable {
 
     public void show(Window owner, Boolean playSound) {
         Popup popup = initPopup();
-        initFadeOutTimeline();
-
         popup.show(owner);
         if ((playSound == null && Notifications.isPlaySound())
                 || (playSound != null && playSound)) {
@@ -66,6 +64,11 @@ public class CustomNotification implements Initializable {
         }
         Notifications.addNotification(this);
         if (timer.get() != Notifications.TIMER_INDEFINITE) {
+            timer.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+                if (newValue.doubleValue() <= 0.0) {
+                    hide(true);
+                }
+            });
             startTimer();
         }
     }
@@ -82,22 +85,6 @@ public class CustomNotification implements Initializable {
             Notifications.removeNotification(this);
         });
         return popup;
-    }
-
-    private void initFadeOutTimeline() {
-        KeyValue fadeOutBegin = new KeyValue(root.opacityProperty(), 1.0);
-        KeyValue fadeOutEnd = new KeyValue(root.opacityProperty(), 0.0);
-        KeyFrame kfBegin = new KeyFrame(Duration.ZERO, fadeOutBegin);
-        KeyFrame kfEnd = new KeyFrame(Duration.millis(500), fadeOutEnd);
-        Timeline fadeOutTimeline = new Timeline(kfBegin, kfEnd);
-        fadeOutTimeline.setOnFinished((ActionEvent event) -> {
-            hide();
-        });
-        timer.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-            if (newValue.doubleValue() <= 0.0) {
-                fadeOutTimeline.play();
-            }
-        });
     }
 
     private void startTimer() {
@@ -119,10 +106,26 @@ public class CustomNotification implements Initializable {
 
     @FXML
     private void closeNotification() {
-        hide();
+        hide(false);
     }
 
-    public void hide() {
+    public void hide(boolean fadeOut) {
+        if (fadeOut) {
+            KeyValue fadeOutBegin = new KeyValue(root.opacityProperty(), 1.0);
+            KeyValue fadeOutEnd = new KeyValue(root.opacityProperty(), 0.0);
+            KeyFrame kfBegin = new KeyFrame(Duration.ZERO, fadeOutBegin);
+            KeyFrame kfEnd = new KeyFrame(Duration.millis(500), fadeOutEnd);
+            Timeline fadeOutTimeline = new Timeline(kfBegin, kfEnd);
+            fadeOutTimeline.setOnFinished((ActionEvent event) -> {
+                hide();
+            });
+            fadeOutTimeline.play();
+        } else {
+            hide();
+        }
+    }
+
+    private void hide() {
         if (root.getScene() != null) {
             root.getScene().getWindow().hide();
             dontShowAgainBox.selectedProperty().unbind();
@@ -141,9 +144,9 @@ public class CustomNotification implements Initializable {
         return this;
     }
 
-    public CustomNotification hideOnMouseClicked() {
+    public CustomNotification hideOnMouseClicked(boolean fadeOut) {
         return setOnMouseClicked((MouseEvent event) -> {
-            hide();
+            hide(fadeOut);
         });
     }
 

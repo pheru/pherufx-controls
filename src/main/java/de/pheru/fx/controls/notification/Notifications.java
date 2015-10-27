@@ -96,20 +96,20 @@ public final class Notifications {
             if (alignment.get() == Alignment.TOP_LEFT || alignment.get() == Alignment.TOP_RIGHT) {
                 if (targetY + notification.getHeight() > visualBounds.getMaxY()) {
                     targetY = 5.0;
-                    if (alignment.get() == Alignment.BOTTOM_RIGHT || alignment.get() == Alignment.TOP_RIGHT) {
+                    if (alignment.get() == Alignment.TOP_RIGHT) {
                         targetX -= notification.getWidth() + 5;
-                    } else {
+                    } else { //TOP_LEFT
                         targetX += notification.getWidth() + 5;
                     }
                 }
                 notification.setY(targetY, animated);
                 targetY += notification.getHeight() + 2;
-            } else {
+            } else { //BOTTOM
                 if (targetY - notification.getHeight() < 3.0) {
                     targetY = visualBounds.getMaxY() - 3;
-                    if (alignment.get() == Alignment.BOTTOM_RIGHT || alignment.get() == Alignment.TOP_RIGHT) {
+                    if (alignment.get() == Alignment.BOTTOM_RIGHT) {
                         targetX -= notification.getWidth() + 5;
-                    } else {
+                    } else { //BOTTOM_LEFT
                         targetX += notification.getWidth() + 5;
                     }
                 }

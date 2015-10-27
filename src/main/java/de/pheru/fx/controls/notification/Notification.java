@@ -84,8 +84,8 @@ public class Notification extends CustomNotification {
     }
 
     @Override
-    public Notification hideOnMouseClicked() {
-        return (Notification) super.hideOnMouseClicked(); 
+    public Notification hideOnMouseClicked(boolean fadeOut) {
+        return (Notification) super.hideOnMouseClicked(fadeOut); 
     }
 
     @Override
