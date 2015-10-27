@@ -1,5 +1,6 @@
 package de.pheru.fx.controls.notification;
 
+import java.awt.Toolkit;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.animation.KeyFrame;
@@ -43,7 +44,7 @@ public class CustomNotification implements Initializable {
     @FXML
     private Button exitButton;
 
-    private final IntegerProperty timer = new SimpleIntegerProperty(4);
+    private final IntegerProperty timer = new SimpleIntegerProperty(Notifications.getDefaultTimer());
 
     protected CustomNotification() {
     }
@@ -54,13 +55,23 @@ public class CustomNotification implements Initializable {
         dontShowAgainBox.setManaged(false);
     }
 
-    public void show(Window owner) {
+    public void show(Window owner, Boolean playSound) {
         Popup popup = initPopup();
         initFadeOutTimeline();
 
         popup.show(owner);
+        if ((playSound == null && Notifications.isPlaySound())
+                || (playSound != null && playSound)) {
+            Toolkit.getDefaultToolkit().beep();
+        }
         Notifications.addNotification(this);
-        startTimer();
+        if (timer.get() != Notifications.TIMER_INDEFINITE) {
+            startTimer();
+        }
+    }
+
+    public void show(Window owner) {
+        show(owner, null);
     }
 
     private Popup initPopup() {

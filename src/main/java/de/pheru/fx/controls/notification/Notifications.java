@@ -1,8 +1,10 @@
 package de.pheru.fx.controls.notification;
 
 import java.io.IOException;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -22,29 +24,47 @@ import javafx.stage.Window;
  */
 public final class Notifications {
 
+    public static final int TIMER_INDEFINITE = -1;
+
     /*
-    TODO
-    screen: ChangeListener für rearrange
-    owner: listener add/remove von XY Listener
-    x & y Changelistener als Feld
-    */
-    private static final ObjectProperty<Screen> screen = new SimpleObjectProperty<>(Screen.getPrimary());
-    private static Window owner;
-
-    private static final ObservableList<CustomNotification> notifications = createNotificationsList();
-
+     public properties
+     */
+    private static final ObjectProperty<Screen> screen = createScreenProperty();
     private static final ObjectProperty<Alignment> alignment = createAlignmentProperty();
-    private static final IntegerProperty defaultTimer = new SimpleIntegerProperty(10);
+    private static final IntegerProperty defaultTimer = new SimpleIntegerProperty(TIMER_INDEFINITE);
+    private static final BooleanProperty playSound = new SimpleBooleanProperty(false);
+    private static final BooleanProperty showAgainOnOwnerHidden = new SimpleBooleanProperty(false); //TODO nicht implementiert
+
+    /*
+     private fields
+     */
+    private static final ObservableList<CustomNotification> notifications = createNotificationsList();
+    private static Window boundOwner = null;
+    private static final ChangeListener<Number> ownerListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+        //TODO fertig implementieren
+        Rectangle2D rect = new Rectangle2D(boundOwner.getX(), boundOwner.getY(), boundOwner.getWidth(), boundOwner.getHeight());
+        System.out.println(rect);
+        ObservableList<Screen> screens = Screen.getScreensForRectangle(rect);
+        System.out.println(screens);
+    };
 
     private Notifications() {
     }
 
-    private static ObjectProperty<Alignment> createAlignmentProperty() {
-        ObjectProperty<Alignment> p = new SimpleObjectProperty<>(Alignment.BOTTOM_RIGHT);
-        p.addListener((ObservableValue<? extends Alignment> observable, Alignment oldValue, Alignment newValue) -> {
+    private static ObjectProperty<Screen> createScreenProperty() {
+        ObjectProperty<Screen> screenProperty = new SimpleObjectProperty<>(Screen.getPrimary());
+        screenProperty.addListener((ObservableValue<? extends Screen> observable, Screen oldValue, Screen newValue) -> {
             arrangeNotifications(false);
         });
-        return p;
+        return screenProperty;
+    }
+
+    private static ObjectProperty<Alignment> createAlignmentProperty() {
+        ObjectProperty<Alignment> alignmentProperty = new SimpleObjectProperty<>(Alignment.BOTTOM_RIGHT);
+        alignmentProperty.addListener((ObservableValue<? extends Alignment> observable, Alignment oldValue, Alignment newValue) -> {
+            arrangeNotifications(false);
+        });
+        return alignmentProperty;
     }
 
     private static ObservableList<CustomNotification> createNotificationsList() {
@@ -61,16 +81,16 @@ public final class Notifications {
         return notificationsList;
     }
 
-    private static void arrangeNotifications(boolean animated) {
+    private static void arrangeNotifications(boolean animated) { //TODO magic-numbers entfernen
         double targetX = 5.0;
         double targetY = 5.0;
         final Rectangle2D visualBounds = screen.get().getVisualBounds();
-        
+
         if (alignment.get() == Alignment.BOTTOM_LEFT || alignment.get() == Alignment.BOTTOM_RIGHT) {
             targetY = visualBounds.getMaxY() - 3;
         }
         if (alignment.get() == Alignment.BOTTOM_RIGHT || alignment.get() == Alignment.TOP_RIGHT) {
-            targetX = visualBounds.getMaxX() - 350 - 5; //TODO 350 nicht als fixe Zahl
+            targetX = visualBounds.getMaxX() - 350 - 5;
         }
         for (CustomNotification notification : notifications) {
             if (alignment.get() == Alignment.TOP_LEFT || alignment.get() == Alignment.TOP_RIGHT) {
@@ -150,14 +170,13 @@ public final class Notifications {
     }
 
     public static void bindScreenToOwner(Window owner) {
-        ChangeListener<Number> listener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-            Rectangle2D rect = new Rectangle2D(owner.getX(), owner.getY(), owner.getWidth(), owner.getHeight());
-            System.out.println(rect);
-            ObservableList<Screen> screens = Screen.getScreensForRectangle(rect);
-            System.out.println(screens);
-        };
-        owner.xProperty().addListener(listener);
-        owner.yProperty().addListener(listener);
+        if (boundOwner != null) {
+            boundOwner.xProperty().removeListener(ownerListener);
+            boundOwner.yProperty().removeListener(ownerListener);
+        }
+        boundOwner = owner;
+        boundOwner.xProperty().addListener(ownerListener);
+        boundOwner.yProperty().addListener(ownerListener);
     }
 
     public static Screen getScreen() {
@@ -196,8 +215,32 @@ public final class Notifications {
         return defaultTimer;
     }
 
+    public static boolean isPlaySound() {
+        return playSound.get();
+    }
+
+    public static void setPlaySound(final boolean playSound) {
+        Notifications.playSound.set(playSound);
+    }
+
+    public static BooleanProperty playSoundProperty() {
+        return playSound;
+    }
+
     public enum Alignment {
 
         BOTTOM_RIGHT, BOTTOM_LEFT, TOP_RIGHT, TOP_LEFT
+    }
+
+    public boolean isShowAgainOnOwnerHidden() {
+        return showAgainOnOwnerHidden.get();
+    }
+
+    public void setShowAgainOnOwnerHidden(final boolean showAgainOnOwnerHidden) {
+        Notifications.showAgainOnOwnerHidden.set(showAgainOnOwnerHidden);
+    }
+
+    public BooleanProperty showAgainOnOwnerHiddenProperty() {
+        return showAgainOnOwnerHidden;
     }
 }
