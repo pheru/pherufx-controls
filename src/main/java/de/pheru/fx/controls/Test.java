@@ -11,6 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.util.Duration;
 
 /**
  *
@@ -84,13 +85,13 @@ public class Test extends Application {
 
     private void testTimer(Window owner) {
         Notifications.createNotification(Notification.Type.INFO).setText("Default (Indefinite)").show(owner);
-        Notifications.createNotification(Notification.Type.INFO).setText("Indefinite").setTimer(Notifications.TIMER_INDEFINITE).show(owner);
-        Notifications.createNotification(Notification.Type.INFO).setText("3 Sekunden").setTimer(3).show(owner);
-        Notifications.setDefaultTimer(3);
+        Notifications.createNotification(Notification.Type.INFO).setText("Indefinite").setDuration(Duration.INDEFINITE).show(owner);
+        Notifications.createNotification(Notification.Type.INFO).setText("3 Sekunden").setDuration(Duration.seconds(3)).show(owner);
+        Notifications.setDefaultDuration(Duration.seconds(3));
         Notifications.createNotification(Notification.Type.INFO).setText("Default (3 Sekunden)").show(owner);
-        Notifications.createNotification(Notification.Type.INFO).setText("5 Sekunden").setTimer(5).show(owner);
-        Notifications.createNotification(Notification.Type.INFO).setText("Indefinite").setTimer(Notifications.TIMER_INDEFINITE).show(owner);
-        Notifications.setDefaultTimer(Notifications.TIMER_INDEFINITE);
+        Notifications.createNotification(Notification.Type.INFO).setText("5 Sekunden").setDuration(Duration.seconds(5)).show(owner);
+        Notifications.createNotification(Notification.Type.INFO).setText("Indefinite").setDuration(Duration.INDEFINITE).show(owner);
+        Notifications.setDefaultDuration(Duration.INDEFINITE);
     }
 
     private void testScreen(Window owner) {
@@ -99,7 +100,9 @@ public class Test extends Application {
             return;
         }
         Notifications.createNotification(Notification.Type.INFO).show(owner);
+        Notifications.createNotification(Notification.Type.INFO).show(owner);
         Notifications.setScreen(Screen.getScreens().get(1));
+        Notifications.createNotification(Notification.Type.INFO).show(owner);
         Notifications.createNotification(Notification.Type.INFO).show(owner);
         Notifications.setScreen(Screen.getScreens().get(0));
         //TODO bindScreenToOwner

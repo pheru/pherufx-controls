@@ -2,10 +2,8 @@ package de.pheru.fx.controls.notification;
 
 import java.io.IOException;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -17,6 +15,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.stage.Screen;
 import javafx.stage.Window;
+import javafx.util.Duration;
 
 /**
  *
@@ -24,14 +23,12 @@ import javafx.stage.Window;
  */
 public final class Notifications {
 
-    public static final int TIMER_INDEFINITE = -1;
-
     /*
      public properties
      */
     private static final ObjectProperty<Screen> screen = createScreenProperty();
     private static final ObjectProperty<Alignment> alignment = createAlignmentProperty();
-    private static final IntegerProperty defaultTimer = new SimpleIntegerProperty(TIMER_INDEFINITE);
+    private static final ObjectProperty<Duration> defaultDuration = new SimpleObjectProperty<>(Duration.INDEFINITE);
     private static final BooleanProperty playSound = new SimpleBooleanProperty(false);
     private static final BooleanProperty showAgainOnOwnerHidden = new SimpleBooleanProperty(false); //TODO nicht implementiert
 
@@ -72,7 +69,7 @@ public final class Notifications {
         notificationsList.addListener((ListChangeListener.Change<? extends CustomNotification> c) -> {
             while (c.next()) {
                 if (c.wasAdded()) {
-                    arrangeNotifications(false);
+                    arrangeNotifications(false); //TODO bei add kompletten arrange?
                 } else {
                     arrangeNotifications(true);
                 }
@@ -81,7 +78,9 @@ public final class Notifications {
         return notificationsList;
     }
 
-    private static void arrangeNotifications(boolean animated) { //TODO magic-numbers entfernen
+    //TODO magic-numbers entfernen
+    //TODO Anzahl an Spalten variabel machen? (wie mit "überschüssigen Notifications umgehen? -> warteschlange?)
+    private static void arrangeNotifications(boolean animated) {
         double targetX = 5.0;
         double targetY = 5.0;
         final Rectangle2D visualBounds = screen.get().getVisualBounds();
@@ -138,7 +137,6 @@ public final class Notifications {
             contentFxmlLoader.load();
 
             notification.setContent(contentFxmlLoader.getRoot());
-            notification.setTimer(defaultTimer.get());
             return notification;
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -153,7 +151,6 @@ public final class Notifications {
             fxmlLoader.setController(notification);
             fxmlLoader.load();
             notification.setContent(content);
-            notification.setTimer(defaultTimer.get());
             return notification;
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -161,6 +158,7 @@ public final class Notifications {
         return null;
     }
 
+    //TODO Liste protected machen?
     protected static void removeNotification(CustomNotification notification) {
         notifications.remove(notification);
     }
@@ -203,16 +201,16 @@ public final class Notifications {
         return alignment;
     }
 
-    public static Integer getDefaultTimer() {
-        return defaultTimer.get();
+    public static Duration getDefaultDuration() {
+        return defaultDuration.get();
     }
 
-    public static void setDefaultTimer(final Integer defaultTimer) {
-        Notifications.defaultTimer.set(defaultTimer);
+    public static void setDefaultDuration(final Duration defaultTimer) {
+        Notifications.defaultDuration.set(defaultTimer);
     }
 
-    public static IntegerProperty defaultTimerProperty() {
-        return defaultTimer;
+    public static ObjectProperty<Duration> defaultDurationProperty() {
+        return defaultDuration;
     }
 
     public static boolean isPlaySound() {

@@ -6,13 +6,13 @@ import java.util.ResourceBundle;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -44,7 +44,8 @@ public class CustomNotification implements Initializable {
     @FXML
     private Button exitButton;
 
-    private final IntegerProperty timer = new SimpleIntegerProperty(Notifications.getDefaultTimer());
+    private final ObjectProperty<Duration> duration = new SimpleObjectProperty<>(Notifications.getDefaultDuration());
+    final private Timeline durationTimeline = new Timeline();
 
     protected CustomNotification() {
     }
@@ -55,26 +56,32 @@ public class CustomNotification implements Initializable {
         dontShowAgainBox.setManaged(false);
     }
 
-    public void show(Window owner, Boolean playSound) {
-        Popup popup = initPopup();
-        popup.show(owner);
-        if ((playSound == null && Notifications.isPlaySound())
-                || (playSound != null && playSound)) {
+    //TODO Sound vor oder nach show?
+    public void show(Window owner, boolean playSound) {
+        if (playSound) {
             Toolkit.getDefaultToolkit().beep();
         }
-        Notifications.addNotification(this);
-        if (timer.get() != Notifications.TIMER_INDEFINITE) {
-            timer.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                if (newValue.doubleValue() <= 0.0) {
-                    hide(true);
-                }
-            });
-            startTimer();
-        }
+        innerShow(owner);
     }
 
     public void show(Window owner) {
-        show(owner, null);
+        if (Notifications.isPlaySound()) {
+            Toolkit.getDefaultToolkit().beep();
+        }
+        innerShow(owner);
+    }
+
+    private void innerShow(Window owner) {
+        Popup popup = initPopup();
+        popup.show(owner);
+
+        Notifications.addNotification(this);
+        if (duration.get() != Duration.INDEFINITE) {
+            durationTimeline.getKeyFrames().add(new KeyFrame(duration.get(), (ActionEvent event) -> {
+                hide(true);
+            }));
+            durationTimeline.play();
+        }
     }
 
     private Popup initPopup() {
@@ -87,29 +94,13 @@ public class CustomNotification implements Initializable {
         return popup;
     }
 
-    private void startTimer() {
-        Thread t = new Thread(() -> {
-            try {
-                while (timer.get() > 0) {
-                    Thread.sleep(1000);
-                    Platform.runLater(() -> {
-                        timer.set(timer.get() - 1);
-                    });
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Timer interrupted!", e);
-            }
-        });
-        t.setDaemon(true);
-        t.start();
-    }
-
     @FXML
     private void closeNotification() {
         hide(false);
     }
 
     public void hide(boolean fadeOut) {
+        durationTimeline.stop();
         if (fadeOut) {
             KeyValue fadeOutBegin = new KeyValue(root.opacityProperty(), 1.0);
             KeyValue fadeOutEnd = new KeyValue(root.opacityProperty(), 0.0);
@@ -150,17 +141,25 @@ public class CustomNotification implements Initializable {
         });
     }
 
-    public int getTimer() {
-        return timer.get();
+    public Duration getDuration() {
+        return duration.get();
     }
 
-    public CustomNotification setTimer(final int timer) {
-        this.timer.set(timer);
+    public CustomNotification setDuration(final Duration duration) {
+        this.duration.set(duration);
         return this;
     }
 
-    public IntegerProperty timerProperty() {
-        return timer;
+    public ObjectProperty<Duration> durationProperty() {
+        return duration;
+    }
+
+    public ReadOnlyObjectProperty<Duration> currentTimeProperty() {
+        return durationTimeline.currentTimeProperty();
+    }
+
+    public Duration getCurrentTime() {
+        return durationTimeline.getCurrentTime();
     }
 
     public CustomNotification setExitButtonVisible(boolean exitButtonVisible) {

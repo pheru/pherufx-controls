@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.util.Duration;
 
 /**
  *
@@ -94,8 +95,8 @@ public class Notification extends CustomNotification {
     }
 
     @Override
-    public Notification setTimer(int timer) {
-        return (Notification) super.setTimer(timer);
+    public Notification setDuration(Duration timer) {
+        return (Notification) super.setDuration(timer);
     }
 
     public enum Type {
