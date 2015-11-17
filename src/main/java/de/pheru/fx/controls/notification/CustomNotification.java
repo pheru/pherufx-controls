@@ -1,8 +1,10 @@
 package de.pheru.fx.controls.notification;
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -13,10 +15,12 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -30,13 +34,12 @@ import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 /**
- *
  * @author Philipp Bruckner
  */
 public class CustomNotification implements Initializable {
 
     @FXML
-    private GridPane root;
+    protected GridPane root;
     @FXML
     private HBox contentBox;
     @FXML
@@ -48,6 +51,19 @@ public class CustomNotification implements Initializable {
     final private Timeline durationTimeline = new Timeline();
 
     protected CustomNotification() {
+        //Parameterloser Konstruktor wird für Notification benötigt.
+        //fxml wird nicht hier geladen, sondern in Notification
+    }
+
+    public CustomNotification(Node content) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(Notifications.class.getResource("notification.fxml"));
+            fxmlLoader.setController(this);
+            fxmlLoader.load();
+        } catch (IOException e) {
+            throw new RuntimeException("TODO", e); //TODO ex
+        }
+        setContent(content);
     }
 
     @Override
@@ -218,7 +234,8 @@ public class CustomNotification implements Initializable {
     }
 
     protected double getHeight() {
-        return root.getScene().getWindow().getHeight();
+//        return root.getScene().getWindow().getHeight();
+        return root.getHeight();
     }
 
     protected double getWidth() {

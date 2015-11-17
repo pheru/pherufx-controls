@@ -7,22 +7,21 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
-   <children>
-      <HBox spacing="10.0">
-         <children>
-              <ImageView fx:id="image" fitHeight="24.0" fitWidth="24.0" pickOnBounds="true">
-                  <image>
-                      <Image url="@Warning.png" />
-                  </image>
-              </ImageView>
-              <Label fx:id="headerLabel" styleClass="header" text="Information" wrapText="true" />
-         </children>
-      </HBox>
-        <Label fx:id="textLabel" text="Inhalt : Das ist ein Text" textAlignment="JUSTIFY" wrapText="true">
-            <opaqueInsets>
-                <Insets />
-            </opaqueInsets>
-        </Label>
-   </children>
-</VBox>
+<GridPane fx:id="contentRoot" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <ImageView fx:id="image" fitHeight="24.0" fitWidth="24.0" GridPane.rowIndex="1" pickOnBounds="true"/>
+        <Label fx:id="textLabel" textAlignment="JUSTIFY" wrapText="true" GridPane.columnSpan="2147483647"
+               GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    </children>
+    <columnConstraints>
+        <ColumnConstraints/>
+        <ColumnConstraints/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints/>
+        <RowConstraints/>
+    </rowConstraints>
+    <fx:define>
+        <Label fx:id="headerLabel" styleClass="header" wrapText="true" GridPane.columnIndex="1"/>
+    </fx:define>
+</GridPane>

@@ -1,20 +1,30 @@
 package de.pheru.fx.controls.notification;
 
+import javafx.application.Platform;
 import javafx.beans.property.Property;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
+import java.io.IOException;
+
 /**
- *
  * @author Philipp Bruckner
  */
 public class Notification extends CustomNotification {
 
+    @FXML
+    private GridPane contentRoot;
     @FXML
     private Label headerLabel;
     @FXML
@@ -23,7 +33,47 @@ public class Notification extends CustomNotification {
     private ImageView image;
     private Type type;
 
-    protected Notification() {
+    public Notification(Type type) {
+        loadFXML();
+        this.type = type;
+        image.setImage(new Image(type.getImagePath()));
+        headerLabel.textProperty().addListener((observable, oldValue, newValue) -> {
+            layout(newValue.isEmpty());
+        });
+        root.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                Notifications.arrangeNotifications(true);
+            }
+        });
+    }
+
+    private void loadFXML() {
+        try {
+            FXMLLoader notificationFxmlLoader = new FXMLLoader(Notifications.class.getResource("notification.fxml"));
+            notificationFxmlLoader.setController(this);
+            notificationFxmlLoader.load();
+
+            FXMLLoader contentFxmlLoader = new FXMLLoader(Notifications.class.getResource("content.fxml"));
+            contentFxmlLoader.setController(this);
+            contentFxmlLoader.load();
+
+            setContent(contentFxmlLoader.getRoot());
+        } catch (IOException e) {
+            throw new RuntimeException("TODO", e);
+        }
+    }
+
+    private void layout(boolean headerEmpty) {
+        if (headerEmpty) {
+            contentRoot.getChildren().remove(headerLabel);
+            GridPane.setColumnIndex(textLabel, 1);
+            GridPane.setRowIndex(image, 1);
+        } else if (!contentRoot.getChildren().contains(headerLabel)) {
+            GridPane.setRowIndex(image, 0);
+            GridPane.setColumnIndex(textLabel, 0);
+            contentRoot.getChildren().add(headerLabel);
+        }
     }
 
     public Notification setWrapText(boolean wrapText) {
@@ -33,13 +83,6 @@ public class Notification extends CustomNotification {
 
     public Type getType() {
         return type;
-    }
-
-    protected Notification setType(Type type) {
-        this.type = type;
-        image.setImage(new Image(type.getImagePath()));
-        headerLabel.textProperty().set(type.getText());
-        return this;
     }
 
     public String getHeader() {
@@ -86,7 +129,7 @@ public class Notification extends CustomNotification {
 
     @Override
     public Notification hideOnMouseClicked(boolean fadeOut) {
-        return (Notification) super.hideOnMouseClicked(fadeOut); 
+        return (Notification) super.hideOnMouseClicked(fadeOut);
     }
 
     @Override

@@ -80,7 +80,7 @@ public final class Notifications {
 
     //TODO magic-numbers entfernen
     //TODO Anzahl an Spalten variabel machen? (wie mit "überschüssigen Notifications umgehen? -> warteschlange?)
-    private static void arrangeNotifications(boolean animated) {
+    protected static void arrangeNotifications(boolean animated) {
         double targetX = 5.0;
         double targetY = 5.0;
         final Rectangle2D visualBounds = screen.get().getVisualBounds();
@@ -117,45 +117,6 @@ public final class Notifications {
             }
             notification.setX(targetX, animated);
         }
-    }
-
-    public static Notification createNotification(Notification.Type type) {
-        Notification notification = loadNotification();
-        notification.setType(type);
-        return notification;
-    }
-
-    private static Notification loadNotification() {
-        Notification notification = new Notification();
-        try {
-            FXMLLoader notificationFxmlLoader = new FXMLLoader(Notifications.class.getResource("notification.fxml"));
-            notificationFxmlLoader.setController(notification);
-            notificationFxmlLoader.load();
-
-            FXMLLoader contentFxmlLoader = new FXMLLoader(Notifications.class.getResource("content.fxml"));
-            contentFxmlLoader.setController(notification);
-            contentFxmlLoader.load();
-
-            notification.setContent(contentFxmlLoader.getRoot());
-            return notification;
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-
-    public static CustomNotification createCustomNotification(Node content) {
-        try {
-            CustomNotification notification = new CustomNotification();
-            FXMLLoader fxmlLoader = new FXMLLoader(Notifications.class.getResource("notification.fxml"));
-            fxmlLoader.setController(notification);
-            fxmlLoader.load();
-            notification.setContent(content);
-            return notification;
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return null;
     }
 
     //TODO Liste protected machen?

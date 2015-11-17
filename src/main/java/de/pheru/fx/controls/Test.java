@@ -14,7 +14,6 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 
 /**
- *
  * @author Philipp Bruckner
  */
 public class Test extends Application {
@@ -31,51 +30,40 @@ public class Test extends Application {
 
     private VBox createTestInterface(Window owner) {
         Button tonButton = new Button("Ton");
-        tonButton.setOnAction((ActionEvent event) -> {
-            testTon(owner);
-        });
+        tonButton.setOnAction((ActionEvent event) -> testTon(owner));
+
         Button timerButton = new Button("Timer");
-        timerButton.setOnAction((ActionEvent event) -> {
-            testTimer(owner);
-        });
+        timerButton.setOnAction((ActionEvent event) -> testTimer(owner));
+
         Button checkBoxButton = new Button("CheckBox");
-        checkBoxButton.setOnAction((ActionEvent event) -> {
-            testCheckBox(owner);
-        });
+        checkBoxButton.setOnAction((ActionEvent event) -> testCheckBox(owner));
+
         Button exitButtonButton = new Button("ExitButton");
-        exitButtonButton.setOnAction((ActionEvent event) -> {
-            testExitButton(owner);
-        });
+        exitButtonButton.setOnAction((ActionEvent event) -> testExitButton(owner));
+
         Button alignmentButton = new Button("Alignment");
-        alignmentButton.setOnAction((ActionEvent event) -> {
-            testAlignment(owner);
-        });
+        alignmentButton.setOnAction((ActionEvent event) -> testAlignment(owner));
+
         Button screenButton = new Button("Screen");
-        screenButton.setOnAction((ActionEvent event) -> {
-            testScreen(owner);
-        });
-        return new VBox(tonButton, timerButton, checkBoxButton, exitButtonButton, alignmentButton, screenButton);
+        screenButton.setOnAction((ActionEvent event) -> testScreen(owner));
+
+        Button layoutButton = new Button("Layout");
+        layoutButton.setOnAction((ActionEvent event) -> testLayout(owner));
+
+        return new VBox(tonButton, timerButton, checkBoxButton, exitButtonButton, alignmentButton, screenButton, layoutButton);
     }
 
     private void testTon(Window owner) {
         new Thread(() -> {
             try {
-                Platform.runLater(() -> {
-                    Notifications.createNotification(Notification.Type.INFO).setText("Ton").show(owner, true); //Ton
-                });
+                Platform.runLater(() -> new Notification(Notification.Type.INFO).setText("Ton").show(owner, true)); // Ton
                 Thread.sleep(1000);
-                Platform.runLater(() -> {
-                    Notifications.createNotification(Notification.Type.INFO).setText("Kein Ton").show(owner); //Kein Ton
-                });
+                Platform.runLater(() -> new Notification(Notification.Type.INFO).setText("Kein Ton").show(owner));  //Kein Ton
                 Thread.sleep(1000);
                 Notifications.setPlaySound(true);
-                Platform.runLater(() -> {
-                    Notifications.createNotification(Notification.Type.INFO).setText("Ton ").show(owner); //Ton
-                });
+                Platform.runLater(() -> new Notification(Notification.Type.INFO).setText("Ton ").show(owner)); //Ton
                 Thread.sleep(1000);
-                Platform.runLater(() -> {
-                    Notifications.createNotification(Notification.Type.INFO).setText("Kein Ton").show(owner, false); //Kein Ton
-                });
+                Platform.runLater(() -> new Notification(Notification.Type.INFO).setText("Kein Ton").show(owner, false)); //Kein Ton
                 Notifications.setPlaySound(false);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -83,14 +71,39 @@ public class Test extends Application {
         }).start();
     }
 
+    private void testLayout(Window owner) {
+        new Thread(() -> {
+            try {
+                Notification mitHeader = new Notification(Notification.Type.INFO)
+                        .setText("Mit Header").setHeader("Header")
+                        .setDuration(Duration.seconds(6));
+                Notification ohneHeader = new Notification(Notification.Type.INFO)
+                        .setText("Ohne Header").setHeader("")
+                        .setDuration(Duration.seconds(6));
+                Platform.runLater(() -> {
+                    mitHeader.show(owner);
+                    ohneHeader.show(owner);
+                });
+                Thread.sleep(3000);
+                Platform.runLater(() -> {
+                    mitHeader.setHeader("");
+//                    ohneHeader.setHeader("Jetzt mit");
+                });
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
     private void testTimer(Window owner) {
-        Notifications.createNotification(Notification.Type.INFO).setText("Default (Indefinite)").show(owner);
-        Notifications.createNotification(Notification.Type.INFO).setText("Indefinite").setDuration(Duration.INDEFINITE).show(owner);
-        Notifications.createNotification(Notification.Type.INFO).setText("3 Sekunden").setDuration(Duration.seconds(3)).show(owner);
+        new Notification(Notification.Type.INFO).setText("Default (Indefinite)").show(owner);
+        new Notification(Notification.Type.INFO).setText("Indefinite").setDuration(Duration.INDEFINITE).show(owner);
+        new Notification(Notification.Type.INFO).setText("Indefinite").setDuration(Duration.INDEFINITE).show(owner);
+        new Notification(Notification.Type.INFO).setText("3 Sekunden").setDuration(Duration.seconds(3)).show(owner);
         Notifications.setDefaultDuration(Duration.seconds(3));
-        Notifications.createNotification(Notification.Type.INFO).setText("Default (3 Sekunden)").show(owner);
-        Notifications.createNotification(Notification.Type.INFO).setText("5 Sekunden").setDuration(Duration.seconds(5)).show(owner);
-        Notifications.createNotification(Notification.Type.INFO).setText("Indefinite").setDuration(Duration.INDEFINITE).show(owner);
+        new Notification(Notification.Type.INFO).setText("Default (3 Sekunden)").show(owner);
+        new Notification(Notification.Type.INFO).setText("5 Sekunden").setDuration(Duration.seconds(5)).show(owner);
+        new Notification(Notification.Type.INFO).setText("Indefinite").setDuration(Duration.INDEFINITE).show(owner);
         Notifications.setDefaultDuration(Duration.INDEFINITE);
     }
 
@@ -99,11 +112,11 @@ public class Test extends Application {
             System.err.println("Screen-Funktionionalität kann nicht mit nur einem Screen getestet werden!");
             return;
         }
-        Notifications.createNotification(Notification.Type.INFO).show(owner);
-        Notifications.createNotification(Notification.Type.INFO).show(owner);
+        new Notification(Notification.Type.INFO).show(owner);
+        new Notification(Notification.Type.INFO).show(owner);
         Notifications.setScreen(Screen.getScreens().get(1));
-        Notifications.createNotification(Notification.Type.INFO).show(owner);
-        Notifications.createNotification(Notification.Type.INFO).show(owner);
+        new Notification(Notification.Type.INFO).show(owner);
+        new Notification(Notification.Type.INFO).show(owner);
         Notifications.setScreen(Screen.getScreens().get(0));
         //TODO bindScreenToOwner
     }
