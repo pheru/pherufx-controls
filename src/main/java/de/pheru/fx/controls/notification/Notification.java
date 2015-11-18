@@ -1,168 +1,264 @@
 package de.pheru.fx.controls.notification;
 
-import javafx.application.Platform;
+import java.awt.Toolkit;
+import java.io.IOException;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
-import javafx.beans.value.ChangeListener;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.stage.Popup;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
-
-import java.io.IOException;
 
 /**
  * @author Philipp Bruckner
  */
-public class Notification extends CustomNotification {
+public class Notification {
 
     @FXML
-    private GridPane contentRoot;
+    private GridPane root;
     @FXML
-    private Label headerLabel;
+    private HBox contentBox;
     @FXML
-    private Label textLabel;
+    private CheckBox dontShowAgainBox;
     @FXML
-    private ImageView image;
-    private Type type;
+    private Button exitButton;
 
-    public Notification(Type type) {
-        loadFXML();
-        this.type = type;
-        image.setImage(new Image(type.getImagePath()));
-        headerLabel.textProperty().addListener((observable, oldValue, newValue) -> {
-            layout(newValue.isEmpty());
-        });
-        root.heightProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                Notifications.arrangeNotifications(true);
-            }
-        });
-    }
+    private final ObjectProperty<Duration> duration = new SimpleObjectProperty<>(NotificationManager.getDefaultDuration());
+    final private Timeline durationTimeline = new Timeline();
 
-    private void loadFXML() {
+    public Notification(Node content) {
         try {
-            FXMLLoader notificationFxmlLoader = new FXMLLoader(Notifications.class.getResource("notification.fxml"));
-            notificationFxmlLoader.setController(this);
-            notificationFxmlLoader.load();
-
-            FXMLLoader contentFxmlLoader = new FXMLLoader(Notifications.class.getResource("content.fxml"));
-            contentFxmlLoader.setController(this);
-            contentFxmlLoader.load();
-
-            setContent(contentFxmlLoader.getRoot());
+            FXMLLoader fxmlLoader = new FXMLLoader(NotificationManager.class.getResource("notification.fxml"));
+            fxmlLoader.setController(this);
+            fxmlLoader.load();
+            dontShowAgainBox.setVisible(false);
+            dontShowAgainBox.setManaged(false);
+            contentBox.getChildren().add(content);
+            root.heightProperty().addListener((observable, oldValue, newValue) -> {
+                NotificationManager.arrangeNotifications(true);
+            });
         } catch (IOException e) {
-            throw new RuntimeException("TODO", e);
+            throw new RuntimeException("TODO", e); //TODO Exc
         }
     }
 
-    private void layout(boolean headerEmpty) {
-        if (headerEmpty) {
-            contentRoot.getChildren().remove(headerLabel);
-            GridPane.setColumnIndex(textLabel, 1);
-            GridPane.setRowIndex(image, 1);
-        } else if (!contentRoot.getChildren().contains(headerLabel)) {
-            GridPane.setRowIndex(image, 0);
-            GridPane.setColumnIndex(textLabel, 0);
-            contentRoot.getChildren().add(headerLabel);
+    public Notification(Type type, String text, String header) {
+        this(new NotificationContent(type, text, header).getRoot());
+    }
+
+    public Notification(Type type, String text) {
+        this(new NotificationContent(type, text, "").getRoot());
+    }
+
+    public Notification(Type type, StringProperty textProperty, StringProperty headerProperty) {
+        this(new NotificationContent(type, textProperty, headerProperty).getRoot());
+    }
+
+    public Notification(Type type, StringProperty textProperty, String header) {
+        this(new NotificationContent(type, textProperty, header).getRoot());
+    }
+
+    public Notification(Type type, StringProperty textProperty) {
+        this(new NotificationContent(type, textProperty, "").getRoot());
+    }
+
+    //TODO Sound vor oder nach show?
+    public void show(Window owner, boolean playSound) {
+        if (playSound) {
+            Toolkit.getDefaultToolkit().beep();
+        }
+        showImpl(owner);
+    }
+
+    public void show(Window owner) {
+        if (NotificationManager.isPlaySound()) {
+            Toolkit.getDefaultToolkit().beep();
+        }
+        showImpl(owner);
+    }
+
+    private void showImpl(Window owner) {
+        Popup popup = initPopup();
+        popup.show(owner);
+
+        NotificationManager.addNotification(this);
+        if (duration.get() != Duration.INDEFINITE) {
+            durationTimeline.getKeyFrames().add(new KeyFrame(duration.get(), (ActionEvent event) -> {
+                hide(true);
+            }));
+            durationTimeline.play();
         }
     }
 
-    public Notification setWrapText(boolean wrapText) {
-        textLabel.setWrapText(wrapText);
-        return this;
+    private Popup initPopup() {
+        Popup popup = new Popup();
+        root.getStylesheets().add(getClass().getResource("/css/notification/notification.css").toExternalForm());
+        popup.getContent().add(root);
+        root.getScene().getWindow().setOnHidden((WindowEvent event) -> {
+            NotificationManager.removeNotification(this);
+        });
+        return popup;
     }
 
-    public Type getType() {
-        return type;
+    @FXML
+    private void closeNotification() {
+        hide(false);
     }
 
-    public String getHeader() {
-        return headerLabel.getText();
+    public void hide(boolean fadeOut) {
+        durationTimeline.stop();
+        if (fadeOut) {
+            KeyValue fadeOutBegin = new KeyValue(root.opacityProperty(), 1.0);
+            KeyValue fadeOutEnd = new KeyValue(root.opacityProperty(), 0.0);
+            KeyFrame kfBegin = new KeyFrame(Duration.ZERO, fadeOutBegin);
+            KeyFrame kfEnd = new KeyFrame(Duration.millis(500), fadeOutEnd);
+            Timeline fadeOutTimeline = new Timeline(kfBegin, kfEnd);
+            fadeOutTimeline.setOnFinished((ActionEvent event) -> {
+                hideImpl();
+            });
+            fadeOutTimeline.play();
+        } else {
+            hideImpl();
+        }
     }
 
-    public Notification setHeader(String header) {
-        headerLabel.setText(header);
-        return this;
+    private void hideImpl() {
+        if (root.getScene() != null) {
+            root.getScene().getWindow().hide();
+            dontShowAgainBox.selectedProperty().unbind();
+        }
     }
 
-    public String getText() {
-        return textLabel.getText();
+    public void setOnMouseClicked(EventHandler<? super MouseEvent> value) {
+        root.setOnMouseClicked(value);
     }
 
-    public Notification setText(String text) {
-        textLabel.setText(text);
-        return this;
+    public void bindDontShowAgainProperty(Property<Boolean> property) {
+        dontShowAgainBox.selectedProperty().bindBidirectional(property);
+        dontShowAgainBox.setVisible(true);
+        dontShowAgainBox.setManaged(true);
     }
 
-    public Notification bindHeaderProperty(Property<String> property) {
-        headerLabel.textProperty().bindBidirectional(property);
-        return this;
+    public void hideOnMouseClicked(boolean fadeOut) {
+        setOnMouseClicked((MouseEvent event) -> {
+            hide(fadeOut);
+        });
     }
 
-    public Notification bindTextProperty(Property<String> property) {
-        textLabel.textProperty().bindBidirectional(property);
-        return this;
+    public Duration getDuration() {
+        return duration.get();
     }
 
-    public Image getImage() {
-        return image.getImage();
+    public void setDuration(final Duration duration) {
+        this.duration.set(duration);
     }
 
-    @Override
+    public ObjectProperty<Duration> durationProperty() {
+        return duration;
+    }
+
+    public ReadOnlyObjectProperty<Duration> currentTimeProperty() {
+        return durationTimeline.currentTimeProperty();
+    }
+
+    public Duration getCurrentTime() {
+        return durationTimeline.getCurrentTime();
+    }
+
     public Notification setExitButtonVisible(boolean exitButtonVisible) {
-        return (Notification) super.setExitButtonVisible(exitButtonVisible);
+        exitButton.setVisible(exitButtonVisible);
+        exitButton.setManaged(exitButtonVisible);
+        return this;
     }
 
-    @Override
-    public Notification bindDontShowAgainProperty(Property<Boolean> property) {
-        return (Notification) super.bindDontShowAgainProperty(property);
+    public boolean isExitButtonVisible() {
+        return exitButton.isVisible();
     }
 
-    @Override
-    public Notification hideOnMouseClicked(boolean fadeOut) {
-        return (Notification) super.hideOnMouseClicked(fadeOut);
+    protected double getY() {
+        return root.getScene().getWindow().getY();
     }
 
-    @Override
-    public Notification setOnMouseClicked(EventHandler<? super MouseEvent> value) {
-        return (Notification) super.setOnMouseClicked(value);
+    protected void setY(final double position, boolean animated) {
+        if (!animated) {
+            root.getScene().getWindow().setY(position);
+        } else {
+            DoubleProperty windowY = new SimpleDoubleProperty(root.getScene().getWindow().getY());
+            windowY.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+                root.getScene().getWindow().setY(newValue.doubleValue());
+            });
+            new Timeline(new KeyFrame(Duration.millis(200.0), new KeyValue(windowY, position))).play();
+        }
     }
 
-    @Override
-    public Notification setDuration(Duration timer) {
-        return (Notification) super.setDuration(timer);
+    protected ReadOnlyDoubleProperty yProperty() {
+        return root.getScene().getWindow().yProperty();
+    }
+
+    protected double getX() {
+        return root.getScene().getWindow().getX();
+    }
+
+    protected void setX(final double position, boolean animated) {
+        if (!animated) {
+            root.getScene().getWindow().setX(position);
+        } else {
+            DoubleProperty windowX = new SimpleDoubleProperty(root.getScene().getWindow().getX());
+            windowX.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+                root.getScene().getWindow().setX(newValue.doubleValue());
+            });
+            new Timeline(new KeyFrame(Duration.millis(200.0), new KeyValue(windowX, position))).play();
+        }
+    }
+
+    protected ReadOnlyDoubleProperty xProperty() {
+        return root.getScene().getWindow().xProperty();
+    }
+
+    protected double getHeight() {
+        return root.getScene().getWindow().getHeight();
+//        return root.getHeight();
+    }
+
+    protected double getWidth() {
+        return root.getScene().getWindow().getWidth();
     }
 
     public enum Type {
 
-        INFO("Information", "img/Info.png"),
-        WARNING("Warnung", "img/Warning.png"),
-        ERROR("Fehler", "img/Error.png");
+        INFO("img/Info.png"),
+        WARNING("img/Warning.png"),
+        ERROR("img/Error.png");
 
-        private final String text;
         private final String imagePath;
 
-        private Type(final String text, final String imagePath) {
-            this.text = text;
+        private Type(final String imagePath) {
             this.imagePath = imagePath;
         }
 
-        public String getText() {
-            return text;
-        }
-
-        public String getImagePath() {
+        protected String getImagePath() {
             return imagePath;
         }
     }
-
 }
