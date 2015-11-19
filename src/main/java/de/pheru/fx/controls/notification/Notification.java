@@ -1,8 +1,5 @@
 package de.pheru.fx.controls.notification;
 
-import java.awt.Toolkit;
-import java.io.IOException;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -14,6 +11,7 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -29,6 +27,9 @@ import javafx.stage.Popup;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
+
+import java.awt.*;
+import java.io.IOException;
 
 /**
  * @author Philipp Bruckner
@@ -113,6 +114,7 @@ public class Notification {
 
     private Popup initPopup() {
         Popup popup = new Popup();
+        popup.setAutoFix(false);
         root.getStylesheets().add(getClass().getResource("/css/notification/notification.css").toExternalForm());
         popup.getContent().add(root);
         root.getScene().getWindow().setOnHidden((WindowEvent event) -> {
@@ -237,12 +239,11 @@ public class Notification {
     }
 
     protected double getHeight() {
-        return root.getScene().getWindow().getHeight();
-//        return root.getHeight();
+        return root.getHeight();
     }
 
     protected double getWidth() {
-        return root.getScene().getWindow().getWidth();
+        return root.getWidth();
     }
 
     public enum Type {

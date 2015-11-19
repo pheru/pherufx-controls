@@ -83,9 +83,7 @@ public class Test extends Application {
                 StringProperty s3 = new SimpleStringProperty("init3");
                 StringProperty s4 = new SimpleStringProperty("init4");
                 Notification varSize = new Notification(Notification.Type.INFO, s, s2);
-                varSize.setDuration(Duration.seconds(6));
                 Notification varSize2 = new Notification(Notification.Type.INFO, s3, s4);
-                varSize2.setDuration(Duration.seconds(6));
 
                 Platform.runLater(() -> {
                     mitHeader.show(owner);
