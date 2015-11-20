@@ -15,7 +15,6 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 
 /**
- *
  * @author Philipp Bruckner
  */
 public final class NotificationManager {
@@ -69,8 +68,14 @@ public final class NotificationManager {
         return notificationsList;
     }
 
+    public static void hideAll() {
+        ObservableList<Notification> notificationsCopy = FXCollections.observableArrayList(notifications);
+        for (Notification n : notificationsCopy) {
+            n.hide(false);
+        }
+    }
+
     //TODO magic-numbers entfernen
-    //TODO Anzahl an Spalten variabel machen? (wie mit "überschüssigen NotificationManager umgehen? -> warteschlange?)
     protected static void arrangeNotifications(boolean animated) {
         double targetX = 5.0;
         double targetY = 5.0;
@@ -110,13 +115,8 @@ public final class NotificationManager {
         }
     }
 
-    //TODO Liste protected machen?
-    protected static void removeNotification(Notification notification) {
-        notifications.remove(notification);
-    }
-
-    protected static void addNotification(Notification notification) {
-        notifications.add(notification);
+    protected static ObservableList<Notification> getNotifications() {
+        return notifications;
     }
 
     public static void bindScreenToOwner(Window owner) {

@@ -7,12 +7,12 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import javafx.util.Duration;
 
 /**
@@ -26,46 +26,54 @@ public class Test extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setScene(new Scene(createTestInterface(primaryStage)));
+        primaryStage.setScene(new Scene(createTestInterface()));
         primaryStage.show();
     }
 
-    private VBox createTestInterface(Window owner) {
+    private VBox createTestInterface() {
         Button tonButton = new Button("Ton");
-        tonButton.setOnAction((ActionEvent event) -> testTon(owner));
+        tonButton.setOnAction((ActionEvent event) -> testTon());
 
         Button timerButton = new Button("Timer");
-        timerButton.setOnAction((ActionEvent event) -> testTimer(owner));
+        timerButton.setOnAction((ActionEvent event) -> testTimer());
 
         Button checkBoxButton = new Button("CheckBox");
-        checkBoxButton.setOnAction((ActionEvent event) -> testCheckBox(owner));
+        checkBoxButton.setOnAction((ActionEvent event) -> testCheckBox());
 
         Button exitButtonButton = new Button("ExitButton");
-        exitButtonButton.setOnAction((ActionEvent event) -> testExitButton(owner));
+        exitButtonButton.setOnAction((ActionEvent event) -> testExitButton());
 
         Button alignmentButton = new Button("Alignment");
-        alignmentButton.setOnAction((ActionEvent event) -> testAlignment(owner));
+        alignmentButton.setOnAction((ActionEvent event) -> testAlignment());
 
         Button screenButton = new Button("Screen");
-        screenButton.setOnAction((ActionEvent event) -> testScreen(owner));
+        screenButton.setOnAction((ActionEvent event) -> testScreen());
 
         Button layoutButton = new Button("Layout");
-        layoutButton.setOnAction((ActionEvent event) -> testLayout(owner));
+        layoutButton.setOnAction((ActionEvent event) -> testLayout());
 
-        return new VBox(tonButton, timerButton, checkBoxButton, exitButtonButton, alignmentButton, screenButton, layoutButton);
+        Button hideAllButton = new Button("Hide All");
+        hideAllButton.setOnAction((ActionEvent event) -> NotificationManager.hideAll());
+
+        VBox box = new VBox(tonButton, timerButton, checkBoxButton, exitButtonButton, alignmentButton,
+                screenButton, layoutButton, hideAllButton);
+        box.setAlignment(Pos.TOP_CENTER);
+        box.setSpacing(3);
+        box.setMinWidth(200);
+        return box;
     }
 
-    private void testTon(Window owner) {
+    private void testTon() {
         new Thread(() -> {
             try {
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton").show(owner, true)); // Ton
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton").show(true)); // Ton
                 Thread.sleep(1000);
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton").show(owner));  //Kein Ton
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton").show());  //Kein Ton
                 Thread.sleep(1000);
                 NotificationManager.setPlaySound(true);
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton ").show(owner)); //Ton
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton ").show()); //Ton
                 Thread.sleep(1000);
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton").show(owner, false)); //Kein Ton
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton").show(false)); //Kein Ton
                 NotificationManager.setPlaySound(false);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -73,7 +81,7 @@ public class Test extends Application {
         }).start();
     }
 
-    private void testLayout(Window owner) {
+    private void testLayout() {
         new Thread(() -> {
             try {
                 Notification mitHeader = new Notification(Notification.Type.INFO, "Mit Header", "Header");
@@ -86,10 +94,10 @@ public class Test extends Application {
                 Notification varSize2 = new Notification(Notification.Type.INFO, s3, s4);
 
                 Platform.runLater(() -> {
-                    mitHeader.show(owner);
-                    ohneHeader.show(owner);
-                    varSize.show(owner);
-                    varSize2.show(owner);
+                    mitHeader.show();
+                    ohneHeader.show();
+                    varSize.show();
+                    varSize2.show();
                 });
                 Thread.sleep(3000);
                 Platform.runLater(() -> {
@@ -111,50 +119,50 @@ public class Test extends Application {
         }).start();
     }
 
-    private void testTimer(Window owner) {
-        new Notification(Notification.Type.INFO, "Default (Indefinite)").show(owner);
+    private void testTimer() {
+        new Notification(Notification.Type.INFO, "Default (Indefinite)").show();
         Notification notification = new Notification(Notification.Type.INFO, "Indefinite");
         notification.setDuration(Duration.INDEFINITE);
-        notification.show(owner);
+        notification.show();
         Notification notification1 = new Notification(Notification.Type.INFO, "3 Sekunden");
         notification1.setDuration(Duration.seconds(3));
-        notification1.show(owner);
+        notification1.show();
 
         NotificationManager.setDefaultDuration(Duration.seconds(3));
 
-        new Notification(Notification.Type.INFO, "Default (3 Sekunden)").show(owner);
+        new Notification(Notification.Type.INFO, "Default (3 Sekunden)").show();
         Notification notification2 = new Notification(Notification.Type.INFO, "5 Sekunden");
         notification2.setDuration(Duration.seconds(5));
-        notification2.show(owner);
+        notification2.show();
         Notification notification3 = new Notification(Notification.Type.INFO, "Indefinite");
         notification3.setDuration(Duration.INDEFINITE);
-        notification3.show(owner);
+        notification3.show();
         NotificationManager.setDefaultDuration(Duration.INDEFINITE);
     }
 
-    private void testScreen(Window owner) {
+    private void testScreen() {
         if (Screen.getScreens().size() < 2) {
             System.err.println("Screen-Funktionionalität kann nicht mit nur einem Screen getestet werden!");
             return;
         }
-        new Notification(Notification.Type.INFO, "").show(owner);
-        new Notification(Notification.Type.INFO, "").show(owner);
+        new Notification(Notification.Type.INFO, "").show();
+        new Notification(Notification.Type.INFO, "").show();
         NotificationManager.setScreen(Screen.getScreens().get(1));
-        new Notification(Notification.Type.INFO, "").show(owner);
-        new Notification(Notification.Type.INFO, "").show(owner);
+        new Notification(Notification.Type.INFO, "").show();
+        new Notification(Notification.Type.INFO, "").show();
         NotificationManager.setScreen(Screen.getScreens().get(0));
         //TODO bindScreenToOwner
     }
 
-    private void testCheckBox(Window owner) {
+    private void testCheckBox() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private void testExitButton(Window owner) {
+    private void testExitButton() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private void testAlignment(Window owner) {
+    private void testAlignment() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

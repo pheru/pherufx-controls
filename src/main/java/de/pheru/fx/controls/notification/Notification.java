@@ -1,8 +1,10 @@
 package de.pheru.fx.controls.notification;
 
+import com.sun.javafx.stage.StageHelper;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
@@ -11,8 +13,8 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -24,6 +26,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Popup;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
@@ -35,6 +39,8 @@ import java.io.IOException;
  * @author Philipp Bruckner
  */
 public class Notification {
+
+    private static Stage notificationStage;
 
     @FXML
     private GridPane root;
@@ -99,11 +105,19 @@ public class Notification {
         showImpl(owner);
     }
 
+    public void show() {
+        show(getNotificationStage());
+    }
+
+    public void show(boolean playSound) {
+        show(getNotificationStage(), playSound);
+    }
+
     private void showImpl(Window owner) {
         Popup popup = initPopup();
+        NotificationManager.getNotifications().add(this);
         popup.show(owner);
 
-        NotificationManager.addNotification(this);
         if (duration.get() != Duration.INDEFINITE) {
             durationTimeline.getKeyFrames().add(new KeyFrame(duration.get(), (ActionEvent event) -> {
                 hide(true);
@@ -117,10 +131,26 @@ public class Notification {
         popup.setAutoFix(false);
         root.getStylesheets().add(getClass().getResource("/css/notification/notification.css").toExternalForm());
         popup.getContent().add(root);
-        root.getScene().getWindow().setOnHidden((WindowEvent event) -> {
-            NotificationManager.removeNotification(this);
+        popup.setOnHidden((WindowEvent event) -> {
+            NotificationManager.getNotifications().remove(this);
         });
         return popup;
+    }
+
+    private Stage getNotificationStage() {
+        if (notificationStage == null) {
+            notificationStage = new Stage(StageStyle.UTILITY);
+            notificationStage.setOpacity(0.0);
+            notificationStage.show();
+            StageHelper.getStages().addListener((ListChangeListener<Stage>) c -> {
+                if (c.getList().size() == 1 && c.getList().get(0) == notificationStage) {
+                    Platform.runLater(() -> {
+                        notificationStage.hide();
+                    });
+                }
+            });
+        }
+        return notificationStage;
     }
 
     @FXML
