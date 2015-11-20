@@ -13,6 +13,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Duration;
 
 /**
@@ -26,11 +27,11 @@ public class Test extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setScene(new Scene(createTestInterface()));
+        primaryStage.setScene(new Scene(createTestInterface(primaryStage)));
         primaryStage.show();
     }
 
-    private VBox createTestInterface() {
+    private VBox createTestInterface(Window owner) {
         Button tonButton = new Button("Ton");
         tonButton.setOnAction((ActionEvent event) -> testTon());
 
@@ -47,7 +48,7 @@ public class Test extends Application {
         alignmentButton.setOnAction((ActionEvent event) -> testAlignment());
 
         Button screenButton = new Button("Screen");
-        screenButton.setOnAction((ActionEvent event) -> testScreen());
+        screenButton.setOnAction((ActionEvent event) -> testScreen(owner));
 
         Button layoutButton = new Button("Layout");
         layoutButton.setOnAction((ActionEvent event) -> testLayout());
@@ -140,18 +141,35 @@ public class Test extends Application {
         NotificationManager.setDefaultDuration(Duration.INDEFINITE);
     }
 
-    private void testScreen() {
+    private void testScreen(Window owner) {
         if (Screen.getScreens().size() < 2) {
             System.err.println("Screen-Funktionionalität kann nicht mit nur einem Screen getestet werden!");
             return;
         }
-        new Notification(Notification.Type.INFO, "").show();
-        new Notification(Notification.Type.INFO, "").show();
-        NotificationManager.setScreen(Screen.getScreens().get(1));
-        new Notification(Notification.Type.INFO, "").show();
-        new Notification(Notification.Type.INFO, "").show();
-        NotificationManager.setScreen(Screen.getScreens().get(0));
-        //TODO bindScreenToOwner
+        new Thread(() -> {
+            try {
+                Platform.runLater(() -> {
+                    new Notification(Notification.Type.INFO, "asd").show();
+                    new Notification(Notification.Type.INFO, "asdasd").show();
+                    new Notification(Notification.Type.INFO, "sadf").show();
+                    new Notification(Notification.Type.INFO, "fdesdf").show();
+                });
+                Thread.sleep(2000);
+                Platform.runLater(() -> {
+                    NotificationManager.setScreen(Screen.getScreens().get(1));
+                });
+                Thread.sleep(2000);
+                Platform.runLater(() -> {
+                    NotificationManager.setScreen(Screen.getScreens().get(0));
+                });
+                Thread.sleep(2000);
+                Platform.runLater(() -> {
+                    NotificationManager.bindScreenToOwner(owner);
+                });
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void testCheckBox() {
