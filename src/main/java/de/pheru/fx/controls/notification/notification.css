@@ -18,7 +18,11 @@
 }
 
 .notification .check-box .box{
-    -fx-background-color: black;
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 5;
+    -fx-border-color: white;
+    -fx-border-radius: 5;
+    /*-fx-padding: 5px;*/
 }
 
 .notification .check-box:selected .mark{
@@ -28,6 +32,19 @@
 .notification .label{
     -fx-text-fill: white;
     -fx-font-size: 11pt;
+}
+
+.notification .progress-bar .track{
+    -fx-border-color: white;
+    -fx-border-radius: 60;
+    -fx-background-color: rgba(255, 255, 255, 0.25);
+    -fx-background-radius: 60;
+}
+
+.notification .progress-bar .bar{
+    -fx-background-radius: 60;
+    -fx-background-insets: 2;
+    -fx-padding: 4px;
 }
 
 .notification .header{

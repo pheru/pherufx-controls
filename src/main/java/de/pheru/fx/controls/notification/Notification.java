@@ -138,7 +138,7 @@ public class Notification {
     private Popup initPopup() {
         Popup popup = new Popup();
         popup.setAutoFix(false);
-        root.getStylesheets().add(getClass().getResource("notification.css").toExternalForm());
+//        root.getStylesheets().add(getClass().getResource("notification.css").toExternalForm());
         popup.getContent().add(root);
         popup.setOnHidden((WindowEvent event) -> {
             NotificationManager.getNotifications().remove(this);
@@ -271,9 +271,9 @@ public class Notification {
 
     public enum Type {
 
-        INFO("img/Info.png", "-fx-background-color: rgba(0, 0, 50, 0.8);"),
-        WARNING("img/Warning.png", "-fx-background-color: rgba(50, 50, 0, 0.8);"),
-        ERROR("img/Error.png", "-fx-background-color: rgba(50, 0, 0, 0.8);");
+        INFO("img/Info.png", "-fx-background-color: rgba(0, 0, 70, 0.8);"),
+        WARNING("img/Warning.png", "-fx-background-color: rgba(70, 70, 0, 0.8);"),
+        ERROR("img/Error.png", "-fx-background-color: rgba(70, 0, 0, 0.8);");
 
         private final String imagePath;
         private final String style;

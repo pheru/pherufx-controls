@@ -75,6 +75,10 @@ public class Test extends Application {
         Task<Void> t = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                updateProgress(-1, 100);
+                Thread.sleep(2000);
+                updateProgress(3, 100);
+                Thread.sleep(1500);
                 for (int i = 0; i < 100; i++) {
                     Thread.sleep(100);
                     updateProgress(i + 1, 100);
@@ -89,15 +93,15 @@ public class Test extends Application {
         Notification n = new Notification(new Label("CustomContent"));
         n.bindDontShowAgainProperty(new SimpleBooleanProperty(true));
         n.show();
-        new Notification(Notification.Type.ERROR, new Label("CustomContent - Error")).show();
-        new Notification(Notification.Type.INFO, new Label("CustomContent - Info")).show();
-        new Notification(Notification.Type.WARNING, new Label("CustomContent - Warning")).show();
+//        new Notification(Notification.Type.ERROR, new Label("CustomContent - Error")).show();
+//        new Notification(Notification.Type.INFO, new Label("CustomContent - Info")).show();
+//        new Notification(Notification.Type.WARNING, new Label("CustomContent - Warning")).show();
         new Notification(Notification.Type.INFO, "Info").show();
         new Notification(Notification.Type.WARNING, "Warning").show();
         new Notification(Notification.Type.ERROR, "Error - Und zwar ein ganz, ganz, ganz langer! Oh ja, da schauste!").show();
-        new Notification(Notification.Type.INFO, "Info", "Info").show();
-        new Notification(Notification.Type.WARNING, "Warning", "Warning").show();
-        new Notification(Notification.Type.ERROR, "Error", "Error").show();
+//        new Notification(Notification.Type.INFO, "Info", "Info").show();
+//        new Notification(Notification.Type.WARNING, "Warning", "Warning").show();
+//        new Notification(Notification.Type.ERROR, "Error", "Error").show();
 
         new Thread(t).start();
     }
