@@ -4,15 +4,20 @@ import de.pheru.fx.controls.notification.Notification;
 import de.pheru.fx.controls.notification.NotificationManager;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Duration;
 
 /**
@@ -26,11 +31,14 @@ public class Test extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setScene(new Scene(createTestInterface()));
+        primaryStage.setScene(new Scene(createTestInterface(primaryStage)));
         primaryStage.show();
     }
 
-    private VBox createTestInterface() {
+    private VBox createTestInterface(Window owner) {
+        Button allgButton = new Button("Allgemein");
+        allgButton.setOnAction((ActionEvent event) -> testAllg());
+
         Button tonButton = new Button("Ton");
         tonButton.setOnAction((ActionEvent event) -> testTon());
 
@@ -50,17 +58,48 @@ public class Test extends Application {
         screenButton.setOnAction((ActionEvent event) -> testScreen());
 
         Button layoutButton = new Button("Layout");
-        layoutButton.setOnAction((ActionEvent event) -> testLayout());
+        layoutButton.setOnAction((ActionEvent event) -> testLayout(owner));
 
         Button hideAllButton = new Button("Hide All");
         hideAllButton.setOnAction((ActionEvent event) -> NotificationManager.hideAll());
 
-        VBox box = new VBox(tonButton, timerButton, checkBoxButton, exitButtonButton, alignmentButton,
+        VBox box = new VBox(allgButton, tonButton, timerButton, checkBoxButton, exitButtonButton, alignmentButton,
                 screenButton, layoutButton, hideAllButton);
         box.setAlignment(Pos.TOP_CENTER);
         box.setSpacing(3);
         box.setMinWidth(200);
         return box;
+    }
+
+    private void testAllg() {
+        Task<Void> t = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                for (int i = 0; i < 100; i++) {
+                    Thread.sleep(100);
+                    updateProgress(i + 1, 100);
+                }
+                return null;
+            }
+        };
+        ProgressBar pBar = new ProgressBar(-1);
+        pBar.setPrefWidth(500);
+        pBar.progressProperty().bind(t.progressProperty());
+        new Notification(new VBox(new Label("Lade irgendwas..."), pBar)).show();
+        Notification n = new Notification(new Label("CustomContent"));
+        n.bindDontShowAgainProperty(new SimpleBooleanProperty(true));
+        n.show();
+        new Notification(Notification.Type.ERROR, new Label("CustomContent - Error")).show();
+        new Notification(Notification.Type.INFO, new Label("CustomContent - Info")).show();
+        new Notification(Notification.Type.WARNING, new Label("CustomContent - Warning")).show();
+        new Notification(Notification.Type.INFO, "Info").show();
+        new Notification(Notification.Type.WARNING, "Warning").show();
+        new Notification(Notification.Type.ERROR, "Error - Und zwar ein ganz, ganz, ganz langer! Oh ja, da schauste!").show();
+        new Notification(Notification.Type.INFO, "Info", "Info").show();
+        new Notification(Notification.Type.WARNING, "Warning", "Warning").show();
+        new Notification(Notification.Type.ERROR, "Error", "Error").show();
+
+        new Thread(t).start();
     }
 
     private void testTon() {
@@ -81,21 +120,21 @@ public class Test extends Application {
         }).start();
     }
 
-    private void testLayout() {
+    private void testLayout(Window owner) {
         new Thread(() -> {
             try {
-                Notification mitHeader = new Notification(Notification.Type.INFO, "Mit Header", "Header");
+                Notification mitHeader = new Notification(Notification.Type.WARNING, "Mit Header", "Header");
                 Notification ohneHeader = new Notification(Notification.Type.INFO, "Ohne Header");
                 StringProperty s = new SimpleStringProperty("init");
                 StringProperty s2 = new SimpleStringProperty("init2");
                 StringProperty s3 = new SimpleStringProperty("init3");
                 StringProperty s4 = new SimpleStringProperty("init4");
-                Notification varSize = new Notification(Notification.Type.INFO, s, s2);
+                Notification varSize = new Notification(Notification.Type.ERROR, s, s2);
                 Notification varSize2 = new Notification(Notification.Type.INFO, s3, s4);
 
                 Platform.runLater(() -> {
                     mitHeader.show();
-                    ohneHeader.show();
+                    ohneHeader.show(owner);
                     varSize.show();
                     varSize2.show();
                 });

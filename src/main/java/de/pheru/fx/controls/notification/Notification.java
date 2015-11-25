@@ -8,7 +8,6 @@ import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -54,7 +53,7 @@ public class Notification {
     private final ObjectProperty<Duration> duration = new SimpleObjectProperty<>(NotificationManager.getDefaultDuration());
     final private Timeline durationTimeline = new Timeline();
 
-    public Notification(Node content) {
+    public Notification(Type type, Node content) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(NotificationManager.class.getResource("notification.fxml"));
             fxmlLoader.setController(this);
@@ -65,31 +64,41 @@ public class Notification {
             root.heightProperty().addListener((observable, oldValue, newValue) -> {
                 NotificationManager.arrangeNotifications(true);
             });
+            if (type != null && NotificationManager.isStyleByType()) {
+                root.setStyle(type.getStyle());
+            }
         } catch (IOException e) {
             throw new RuntimeException("TODO", e); //TODO Exc
         }
     }
 
+    public Notification(Node content) {
+        this(null, content);
+    }
+
     public Notification(Type type, String text, String header) {
-        this(new NotificationContent(type, text, header).getRoot());
+        this(type, new NotificationContent(type, text, header).getRoot());
     }
 
     public Notification(Type type, String text) {
-        this(new NotificationContent(type, text, "").getRoot());
+        this(type, new NotificationContent(type, text, "").getRoot());
     }
 
     public Notification(Type type, StringProperty textProperty, StringProperty headerProperty) {
-        this(new NotificationContent(type, textProperty, headerProperty).getRoot());
+        this(type, new NotificationContent(type, textProperty, headerProperty).getRoot());
     }
 
     public Notification(Type type, StringProperty textProperty, String header) {
-        this(new NotificationContent(type, textProperty, header).getRoot());
+        this(type, new NotificationContent(type, textProperty, header).getRoot());
     }
 
     public Notification(Type type, StringProperty textProperty) {
-        this(new NotificationContent(type, textProperty, "").getRoot());
+        this(type, new NotificationContent(type, textProperty, "").getRoot());
     }
 
+    //TODO rearrange wenn durch owner-iconify nicht sichtbar
+    //   oder owner nicht mehr (einzeln) bei show anbieten
+    //   oder notification in owner-window anzeigen
     //TODO Sound vor oder nach show?
     public void show(Window owner, boolean playSound) {
         if (playSound) {
@@ -129,7 +138,7 @@ public class Notification {
     private Popup initPopup() {
         Popup popup = new Popup();
         popup.setAutoFix(false);
-        root.getStylesheets().add(getClass().getResource("/css/notification/notification.css").toExternalForm());
+        root.getStylesheets().add(getClass().getResource("notification.css").toExternalForm());
         popup.getContent().add(root);
         popup.setOnHidden((WindowEvent event) -> {
             NotificationManager.getNotifications().remove(this);
@@ -137,7 +146,7 @@ public class Notification {
         return popup;
     }
 
-    private Stage getNotificationStage() {
+    private static Stage getNotificationStage() {
         if (notificationStage == null) {
             notificationStage = new Stage(StageStyle.UTILITY);
             notificationStage.setOpacity(0.0);
@@ -228,10 +237,6 @@ public class Notification {
         return exitButton.isVisible();
     }
 
-    protected double getY() {
-        return root.getScene().getWindow().getY();
-    }
-
     protected void setY(final double position, boolean animated) {
         if (!animated) {
             root.getScene().getWindow().setY(position);
@@ -242,14 +247,6 @@ public class Notification {
             });
             new Timeline(new KeyFrame(Duration.millis(200.0), new KeyValue(windowY, position))).play();
         }
-    }
-
-    protected ReadOnlyDoubleProperty yProperty() {
-        return root.getScene().getWindow().yProperty();
-    }
-
-    protected double getX() {
-        return root.getScene().getWindow().getX();
     }
 
     protected void setX(final double position, boolean animated) {
@@ -264,10 +261,6 @@ public class Notification {
         }
     }
 
-    protected ReadOnlyDoubleProperty xProperty() {
-        return root.getScene().getWindow().xProperty();
-    }
-
     protected double getHeight() {
         return root.getHeight();
     }
@@ -278,18 +271,24 @@ public class Notification {
 
     public enum Type {
 
-        INFO("img/Info.png"),
-        WARNING("img/Warning.png"),
-        ERROR("img/Error.png");
+        INFO("img/Info.png", "-fx-background-color: rgba(0, 0, 50, 0.8);"),
+        WARNING("img/Warning.png", "-fx-background-color: rgba(50, 50, 0, 0.8);"),
+        ERROR("img/Error.png", "-fx-background-color: rgba(50, 0, 0, 0.8);");
 
         private final String imagePath;
+        private final String style;
 
-        private Type(final String imagePath) {
+        Type(final String imagePath, String style) {
             this.imagePath = imagePath;
+            this.style = style;
         }
 
         protected String getImagePath() {
             return imagePath;
+        }
+
+        protected String getStyle() {
+            return style;
         }
     }
 }

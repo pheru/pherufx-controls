@@ -22,8 +22,8 @@ public final class NotificationManager {
     private static final ObjectProperty<Screen> screen = createScreenProperty();
     private static final ObjectProperty<Alignment> alignment = createAlignmentProperty();
     private static final ObjectProperty<Duration> defaultDuration = new SimpleObjectProperty<>(Duration.INDEFINITE);
+    private static final BooleanProperty styleByType = new SimpleBooleanProperty(true);
     private static final BooleanProperty playSound = new SimpleBooleanProperty(false);
-    private static final BooleanProperty showAgainOnOwnerHidden = new SimpleBooleanProperty(false); //TODO nicht implementiert
 
     private static final ObservableList<Notification> notifications = createNotificationsList();
     private static Window boundOwner = null;
@@ -177,20 +177,20 @@ public final class NotificationManager {
         return playSound;
     }
 
+    public static boolean isStyleByType() {
+        return styleByType.get();
+    }
+
+    public static BooleanProperty styleByTypeProperty() {
+        return styleByType;
+    }
+
+    public static void setStyleByType(boolean styleByType) {
+        NotificationManager.styleByType.set(styleByType);
+    }
+
     public enum Alignment {
 
         BOTTOM_RIGHT, BOTTOM_LEFT, TOP_RIGHT, TOP_LEFT
-    }
-
-    public boolean isShowAgainOnOwnerHidden() {
-        return showAgainOnOwnerHidden.get();
-    }
-
-    public void setShowAgainOnOwnerHidden(final boolean showAgainOnOwnerHidden) {
-        NotificationManager.showAgainOnOwnerHidden.set(showAgainOnOwnerHidden);
-    }
-
-    public BooleanProperty showAgainOnOwnerHiddenProperty() {
-        return showAgainOnOwnerHidden;
     }
 }

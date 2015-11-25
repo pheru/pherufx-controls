@@ -9,18 +9,12 @@
 
 <GridPane fx:id="root" hgap="5.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <ImageView fx:id="imageView" fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" GridPane.rowIndex="1" />
-        <Label fx:id="textLabel" textAlignment="JUSTIFY" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
+        <ImageView fx:id="imageView" fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" GridPane.rowIndex="1"
+                   GridPane.valignment="TOP"/>
+        <Label fx:id="textLabel" textAlignment="JUSTIFY" wrapText="true" GridPane.columnIndex="1"
+               GridPane.columnSpan="2147483647" GridPane.rowIndex="1"/>
     </children>
-    <columnConstraints>
-        <ColumnConstraints />
-        <ColumnConstraints />
-    </columnConstraints>
-    <rowConstraints>
-        <RowConstraints />
-        <RowConstraints />
-    </rowConstraints>
     <fx:define>
-        <Label fx:id="headerLabel" styleClass="header" wrapText="true" GridPane.columnIndex="1" />
+        <Label fx:id="headerLabel" styleClass="header" wrapText="true" GridPane.columnIndex="1"/>
     </fx:define>
 </GridPane>

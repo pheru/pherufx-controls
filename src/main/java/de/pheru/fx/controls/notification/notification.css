@@ -3,7 +3,7 @@
     Author     : Philipp Bruckner
 */
 .notification{
-    -fx-background-color: rgba(0, 0, 0, 0.7);
+    -fx-background-color: rgba(0, 0, 0, 0.75);
     -fx-background-radius: 5;
 }
 
