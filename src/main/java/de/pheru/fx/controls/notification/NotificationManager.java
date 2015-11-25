@@ -28,11 +28,8 @@ public final class NotificationManager {
     private static final ObservableList<Notification> notifications = createNotificationsList();
     private static Window boundOwner = null;
     private static final ChangeListener<Number> ownerListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-        //TODO fertig implementieren
         Rectangle2D rect = new Rectangle2D(boundOwner.getX(), boundOwner.getY(), boundOwner.getWidth(), boundOwner.getHeight());
-        System.out.println(rect);
-        ObservableList<Screen> screens = Screen.getScreensForRectangle(rect);
-        System.out.println(screens);
+        screen.set(Screen.getScreensForRectangle(rect).get(0));
     };
 
     private NotificationManager() {
