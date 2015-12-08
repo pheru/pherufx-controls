@@ -46,6 +46,10 @@
     -fx-border-radius: 5;
 }
 
+.notification .check-box:hover {
+    -fx-text-fill: -fx-focus-color;
+}
+
 .notification .check-box:hover .box {
     -fx-border-color: -fx-focus-color;
 }
@@ -106,6 +110,6 @@
 /*}*/
 
 /*.notification .exitButton:pressed {*/
-    /*-fx-text-fill: red;*/
-    /*-fx-background-color: grey;*/
+/*-fx-text-fill: red;*/
+/*-fx-background-color: grey;*/
 /*}*/
