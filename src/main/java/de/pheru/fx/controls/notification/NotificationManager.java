@@ -14,6 +14,9 @@ import javafx.stage.Screen;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Philipp Bruckner
  */
@@ -83,6 +86,10 @@ public final class NotificationManager {
         for (Notification n : notificationsCopy) {
             n.hide(false);
         }
+    }
+
+    public static List<Notification> getNotificationsUnmodifiable(){
+        return Collections.unmodifiableList(notifications);
     }
 
     protected static void arrangeNotifications(boolean animated) {
