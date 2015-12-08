@@ -58,13 +58,16 @@ public class Test extends Application {
         screenButton.setOnAction((ActionEvent event) -> testScreen(owner));
 
         Button layoutButton = new Button("Layout");
-        layoutButton.setOnAction((ActionEvent event) -> testLayout(owner));
+        layoutButton.setOnAction((ActionEvent event) -> testLayout());
+
+        Button positionButton = new Button("Position");
+        positionButton.setOnAction((ActionEvent event) -> testPosition());
 
         Button hideAllButton = new Button("Hide All");
         hideAllButton.setOnAction((ActionEvent event) -> NotificationManager.hideAll());
 
         VBox box = new VBox(allgButton, tonButton, timerButton, checkBoxButton, exitButtonButton, alignmentButton,
-                screenButton, layoutButton, hideAllButton);
+                screenButton, layoutButton, positionButton, hideAllButton);
         box.setAlignment(Pos.TOP_CENTER);
         box.setSpacing(3);
         box.setMinWidth(200);
@@ -77,10 +80,10 @@ public class Test extends Application {
             protected Void call() throws Exception {
                 updateProgress(-1, 100);
                 Thread.sleep(2000);
-                updateProgress(3, 100);
+                updateProgress(1, 100);
                 Thread.sleep(1500);
                 for (int i = 0; i < 100; i++) {
-                    Thread.sleep(100);
+                    Thread.sleep(50);
                     updateProgress(i + 1, 100);
                 }
                 return null;
@@ -97,7 +100,10 @@ public class Test extends Application {
 //        new Notification(Notification.Type.INFO, new Label("CustomContent - Info")).show();
 //        new Notification(Notification.Type.WARNING, new Label("CustomContent - Warning")).show();
         new Notification(Notification.Type.INFO, "Info").show();
+        new Notification(Notification.Type.INFO, "Info").show();
         new Notification(Notification.Type.WARNING, "Warning").show();
+        new Notification(Notification.Type.WARNING, "Warning").show();
+        new Notification(Notification.Type.ERROR, "Error - Und zwar ein ganz, ganz, ganz langer! Oh ja, da schauste!").show();
         new Notification(Notification.Type.ERROR, "Error - Und zwar ein ganz, ganz, ganz langer! Oh ja, da schauste!").show();
 //        new Notification(Notification.Type.INFO, "Info", "Info").show();
 //        new Notification(Notification.Type.WARNING, "Warning", "Warning").show();
@@ -124,7 +130,7 @@ public class Test extends Application {
         }).start();
     }
 
-    private void testLayout(Window owner) {
+    private void testLayout() {
         new Thread(() -> {
             try {
                 Notification mitHeader = new Notification(Notification.Type.WARNING, "Mit Header", "Header");
@@ -138,7 +144,7 @@ public class Test extends Application {
 
                 Platform.runLater(() -> {
                     mitHeader.show();
-                    ohneHeader.show(owner);
+                    ohneHeader.show();
                     varSize.show();
                     varSize2.show();
                 });
@@ -155,6 +161,26 @@ public class Test extends Application {
                     s2.set("2 ghjkj");
                     s3.set("3 jkj");
                     s4.set("4 jjkj");
+                });
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+
+    private void testPosition() {
+        new Notification(Notification.Type.INFO, "Eins - 0").show(0);
+        new Notification(Notification.Type.INFO, "Zwei - 1").show(1);
+        Notification drei = new Notification(Notification.Type.INFO, "Drei - 0");
+        drei.show(0);
+        new Notification(Notification.Type.INFO, "Vier - 2").show(2);
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                Platform.runLater(() -> {
+                    drei.hide(false);
+                    drei.show(0);
                 });
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -206,7 +232,7 @@ public class Test extends Application {
                 });
                 Thread.sleep(2000);
                 Platform.runLater(() -> {
-                    NotificationManager.bindScreenToOwner(owner);
+                    NotificationManager.setBoundOwner(owner);
                 });
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -223,6 +249,22 @@ public class Test extends Application {
     }
 
     private void testAlignment() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        new Notification(Notification.Type.INFO, "Eins").show(true);
+        new Notification(Notification.Type.INFO, "Zwei").show(true);
+        new Notification(Notification.Type.INFO, "Drei").show(true);
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                NotificationManager.setAlignment(NotificationManager.Alignment.TOP_RIGHT);
+                Thread.sleep(3000);
+                NotificationManager.setAlignment(NotificationManager.Alignment.TOP_LEFT);
+                Thread.sleep(3000);
+                NotificationManager.setAlignment(NotificationManager.Alignment.BOTTOM_LEFT);
+                Thread.sleep(3000);
+                NotificationManager.setAlignment(NotificationManager.Alignment.BOTTOM_RIGHT);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }

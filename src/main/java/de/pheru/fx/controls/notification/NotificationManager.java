@@ -19,16 +19,22 @@ import javafx.util.Duration;
  */
 public final class NotificationManager {
 
-    private static final ObjectProperty<Screen> screen = createScreenProperty();
-    private static final ObjectProperty<Alignment> alignment = createAlignmentProperty();
+    public static final double NOTIFICATION_VERTICAL_SPACING = 2.0;
+    public static final double NOTIFICATION_HORIZONTAL_SPACING = 5.0;
+    public static final double SCREEN_SPACING = 3.0;
+
     private static final ObjectProperty<Duration> defaultDuration = new SimpleObjectProperty<>(Duration.INDEFINITE);
     private static final BooleanProperty styleByType = new SimpleBooleanProperty(true);
     private static final BooleanProperty playSound = new SimpleBooleanProperty(false);
+    private static final ObjectProperty<Screen> screen = createScreenProperty();
+    private static final ObjectProperty<Alignment> alignment = createAlignmentProperty();
+    private static final ObjectProperty<Window> boundOwner = createBoundOwnerProperty(); //TODO Umbenennen WindowForScreen?
 
     private static final ObservableList<Notification> notifications = createNotificationsList();
-    private static Window boundOwner = null;
+
     private static final ChangeListener<Number> ownerListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-        Rectangle2D rect = new Rectangle2D(boundOwner.getX(), boundOwner.getY(), boundOwner.getWidth(), boundOwner.getHeight());
+        Window window = boundOwner.get();
+        Rectangle2D rect = new Rectangle2D(window.getX(), window.getY(), window.getWidth(), window.getHeight());
         screen.set(Screen.getScreensForRectangle(rect).get(0));
     };
 
@@ -51,17 +57,24 @@ public final class NotificationManager {
         return alignmentProperty;
     }
 
-    private static ObservableList<Notification> createNotificationsList() {
-        ObservableList<Notification> notificationsList = FXCollections.observableArrayList();
-        notificationsList.addListener((ListChangeListener.Change<? extends Notification> c) -> {
-            while (c.next()) {
-                if (c.wasAdded()) {
-                    arrangeNotifications(false); //TODO bei add kompletten arrange?
-                } else {
-                    arrangeNotifications(true);
-                }
+    private static ObjectProperty<Window> createBoundOwnerProperty() {
+        ObjectProperty<Window> boundOwnerProperty = new SimpleObjectProperty<>(null);
+        boundOwnerProperty.addListener((observable, oldValue, newValue) -> {
+            if (oldValue != null) {
+                oldValue.xProperty().removeListener(ownerListener);
+                oldValue.yProperty().removeListener(ownerListener);
+            }
+            if (newValue != null) {
+                newValue.xProperty().addListener(ownerListener);
+                newValue.yProperty().addListener(ownerListener);
             }
         });
+        return boundOwnerProperty;
+    }
+
+    private static ObservableList<Notification> createNotificationsList() {
+        ObservableList<Notification> notificationsList = FXCollections.observableArrayList();
+        notificationsList.addListener((ListChangeListener.Change<? extends Notification> c) -> arrangeNotifications(true));
         return notificationsList;
     }
 
@@ -72,58 +85,71 @@ public final class NotificationManager {
         }
     }
 
-    //TODO magic-numbers entfernen
     protected static void arrangeNotifications(boolean animated) {
-        double targetX = 5.0;
-        double targetY = 5.0;
+        double targetX = SCREEN_SPACING;
+        double targetY = SCREEN_SPACING;
         final Rectangle2D visualBounds = screen.get().getVisualBounds();
 
         if (alignment.get() == Alignment.BOTTOM_LEFT || alignment.get() == Alignment.BOTTOM_RIGHT) {
-            targetY = visualBounds.getMaxY() - 3;
+            targetY = visualBounds.getMaxY() - SCREEN_SPACING + NOTIFICATION_VERTICAL_SPACING;
         }
         if (alignment.get() == Alignment.BOTTOM_RIGHT || alignment.get() == Alignment.TOP_RIGHT) {
-            targetX = visualBounds.getMaxX() - 350 - 5;
+            targetX = visualBounds.getMaxX() - Notification.WIDTH - SCREEN_SPACING;
         }
         for (Notification notification : notifications) {
             if (alignment.get() == Alignment.TOP_LEFT || alignment.get() == Alignment.TOP_RIGHT) {
-                if (targetY + notification.getHeight() > visualBounds.getMaxY()) {
-                    targetY = 5.0;
+                if (targetY + notification.getHeight() + SCREEN_SPACING > visualBounds.getMaxY()) {
+                    targetY = SCREEN_SPACING;
                     if (alignment.get() == Alignment.TOP_RIGHT) {
-                        targetX -= notification.getWidth() + 5;
+                        targetX -= notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
                     } else { //TOP_LEFT
-                        targetX += notification.getWidth() + 5;
+                        targetX += notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
                     }
                 }
                 notification.setY(targetY, animated);
-                targetY += notification.getHeight() + 2;
+                targetY += notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
             } else { //BOTTOM
-                if (targetY - notification.getHeight() < 3.0) {
-                    targetY = visualBounds.getMaxY() - 3;
+                if (targetY - notification.getHeight() < SCREEN_SPACING) {
+                    targetY = visualBounds.getMaxY() - SCREEN_SPACING;
                     if (alignment.get() == Alignment.BOTTOM_RIGHT) {
-                        targetX -= notification.getWidth() + 5;
+                        targetX -= notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
                     } else { //BOTTOM_LEFT
-                        targetX += notification.getWidth() + 5;
+                        targetX += notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
                     }
                 }
-                targetY -= notification.getHeight() + 2;
+                targetY -= notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
                 notification.setY(targetY, animated);
             }
             notification.setX(targetX, animated);
         }
     }
 
-    protected static ObservableList<Notification> getNotifications() {
-        return notifications;
+    protected static double getTargetY(int index) {
+        double targetY = SCREEN_SPACING;
+        final Rectangle2D visualBounds = screen.get().getVisualBounds();
+
+        if (alignment.get() == Alignment.BOTTOM_LEFT || alignment.get() == Alignment.BOTTOM_RIGHT) {
+            targetY = visualBounds.getMaxY() - SCREEN_SPACING;
+        }
+        for (int i = 0; i < notifications.size() && i < index; i++) {
+            Notification notification = notifications.get(i);
+            if (alignment.get() == Alignment.TOP_LEFT || alignment.get() == Alignment.TOP_RIGHT) {
+                if (targetY + notification.getHeight() + SCREEN_SPACING > visualBounds.getMaxY()) {
+                    targetY = SCREEN_SPACING;
+                }
+                targetY += notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
+            } else { //BOTTOM
+                if (targetY - notification.getHeight() < SCREEN_SPACING) {
+                    targetY = visualBounds.getMaxY() - SCREEN_SPACING;
+                }
+                targetY -= notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
+            }
+        }
+        return targetY;
     }
 
-    public static void bindScreenToOwner(Window owner) {
-        if (boundOwner != null) {
-            boundOwner.xProperty().removeListener(ownerListener);
-            boundOwner.yProperty().removeListener(ownerListener);
-        }
-        boundOwner = owner;
-        boundOwner.xProperty().addListener(ownerListener);
-        boundOwner.yProperty().addListener(ownerListener);
+    protected static ObservableList<Notification> getNotifications() {
+        return notifications;
     }
 
     public static Screen getScreen() {
@@ -136,6 +162,18 @@ public final class NotificationManager {
 
     public static ObjectProperty<Screen> screenProperty() {
         return screen;
+    }
+
+    public static Window getBoundOwner() {
+        return boundOwner.get();
+    }
+
+    public static ObjectProperty<Window> boundOwnerProperty() {
+        return boundOwner;
+    }
+
+    public static void setBoundOwner(Window boundOwner) {
+        NotificationManager.boundOwner.set(boundOwner);
     }
 
     public static Alignment getAlignment() {

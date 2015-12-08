@@ -1,6 +1,7 @@
 package de.pheru.fx.controls.notification;
 
 import com.sun.javafx.stage.StageHelper;
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -27,7 +28,6 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
@@ -38,6 +38,8 @@ import java.io.IOException;
  * @author Philipp Bruckner
  */
 public class Notification {
+
+    public static final double WIDTH = 350.0;
 
     private static Stage notificationStage;
 
@@ -51,9 +53,12 @@ public class Notification {
     private Button exitButton;
 
     private final ObjectProperty<Duration> duration = new SimpleObjectProperty<>(NotificationManager.getDefaultDuration());
-    final private Timeline durationTimeline = new Timeline();
+    private final Timeline durationTimeline = new Timeline();
+    private Timeline xTimeline;
+    private Timeline yTimeline;
 
     public Notification(Type type, Node content) {
+        duration.addListener((observable, oldValue, newValue) -> durationTimeline.playFromStart());
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(NotificationManager.class.getResource("notification.fxml"));
             fxmlLoader.setController(this);
@@ -61,12 +66,12 @@ public class Notification {
             dontShowAgainBox.setVisible(false);
             dontShowAgainBox.setManaged(false);
             contentBox.getChildren().add(content);
-            root.heightProperty().addListener((observable, oldValue, newValue) -> {
-                NotificationManager.arrangeNotifications(true);
-            });
             if (type != null && NotificationManager.isStyleByType()) {
-                root.setStyle(type.getStyle());
+                root.getStyleClass().add(type.getStyleClass());
             }
+            //TODO Über NotificationManager einstellen können (#28)
+//            root.setOnMouseEntered(event -> durationTimeline.pause());
+//            root.setOnMouseExited(event -> durationTimeline.play());
         } catch (IOException e) {
             throw new RuntimeException("TODO", e); //TODO Exc
         }
@@ -96,49 +101,65 @@ public class Notification {
         this(type, new NotificationContent(type, textProperty, "").getRoot());
     }
 
-    //TODO rearrange wenn durch owner-iconify nicht sichtbar
-    //   oder owner nicht mehr (einzeln) bei show anbieten
-    //   oder notification in owner-window anzeigen
-    //TODO Sound vor oder nach show?
-    public void show(Window owner, boolean playSound) {
-        if (playSound) {
-            Toolkit.getDefaultToolkit().beep();
-        }
-        showImpl(owner);
+    public void show() {
+        show(NotificationManager.getNotifications().size());
     }
 
-    public void show(Window owner) {
+    public void show(int index) {
         if (NotificationManager.isPlaySound()) {
             Toolkit.getDefaultToolkit().beep();
         }
-        showImpl(owner);
-    }
-
-    public void show() {
-        show(getNotificationStage());
+        showImpl(index);
     }
 
     public void show(boolean playSound) {
-        show(getNotificationStage(), playSound);
+        show(NotificationManager.getNotifications().size(), playSound);
     }
 
-    private void showImpl(Window owner) {
+    public void show(int index, boolean playSound) {
+        if (playSound) {
+            Toolkit.getDefaultToolkit().beep();
+        }
+        showImpl(index);
+    }
+
+    private void showImpl(int index) {
+        int i = index;
+        if (i > NotificationManager.getNotifications().size()) {
+            i = NotificationManager.getNotifications().size();
+        }
         Popup popup = initPopup();
-        NotificationManager.getNotifications().add(this);
-        popup.show(owner);
+        //TODO Wie sieht es bei 2 Bildschirmen aus?
+        //X-Koordinate vor show, damit das Popup zu Beginn außerhalb der Bildschirms ist
+        popup.setX(NotificationManager.getScreen().getVisualBounds().getMaxX());
+
+        popup.show(getNotificationStage());
+
+        //Y-Koordinate nach show, da evtl. die Höhe des Popups gebraucht wird
+        double targetY = NotificationManager.getTargetY(i);
+        if (NotificationManager.getAlignment() == NotificationManager.Alignment.BOTTOM_LEFT
+                || NotificationManager.getAlignment() == NotificationManager.Alignment.BOTTOM_RIGHT) {
+            targetY -= popup.getHeight() + NotificationManager.NOTIFICATION_VERTICAL_SPACING;
+        }
+        popup.setY(targetY);
+
+        popup.heightProperty().addListener((observable, oldValue, newValue) -> {
+            NotificationManager.arrangeNotifications(true);
+        });
+
+        NotificationManager.getNotifications().add(i, this);
 
         if (duration.get() != Duration.INDEFINITE) {
             durationTimeline.getKeyFrames().add(new KeyFrame(duration.get(), (ActionEvent event) -> {
                 hide(true);
             }));
-            durationTimeline.play();
+            durationTimeline.playFromStart();
         }
     }
 
     private Popup initPopup() {
         Popup popup = new Popup();
         popup.setAutoFix(false);
-//        root.getStylesheets().add(getClass().getResource("notification.css").toExternalForm());
         popup.getContent().add(root);
         popup.setOnHidden((WindowEvent event) -> {
             NotificationManager.getNotifications().remove(this);
@@ -170,15 +191,13 @@ public class Notification {
     public void hide(boolean fadeOut) {
         durationTimeline.stop();
         if (fadeOut) {
-            KeyValue fadeOutBegin = new KeyValue(root.opacityProperty(), 1.0);
-            KeyValue fadeOutEnd = new KeyValue(root.opacityProperty(), 0.0);
-            KeyFrame kfBegin = new KeyFrame(Duration.ZERO, fadeOutBegin);
-            KeyFrame kfEnd = new KeyFrame(Duration.millis(500), fadeOutEnd);
-            Timeline fadeOutTimeline = new Timeline(kfBegin, kfEnd);
-            fadeOutTimeline.setOnFinished((ActionEvent event) -> {
+            FadeTransition fadeTransition = new FadeTransition(Duration.millis(500), root);
+            fadeTransition.setFromValue(1.0);
+            fadeTransition.setToValue(0.0);
+            fadeTransition.setOnFinished((ActionEvent event) -> {
                 hideImpl();
             });
-            fadeOutTimeline.play();
+            fadeTransition.play();
         } else {
             hideImpl();
         }
@@ -245,7 +264,11 @@ public class Notification {
             windowY.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                 root.getScene().getWindow().setY(newValue.doubleValue());
             });
-            new Timeline(new KeyFrame(Duration.millis(200.0), new KeyValue(windowY, position))).play();
+            if (yTimeline != null) {
+                yTimeline.stop();
+            }
+            yTimeline = new Timeline(new KeyFrame(Duration.millis(200.0), new KeyValue(windowY, position)));
+            yTimeline.play();
         }
     }
 
@@ -257,7 +280,11 @@ public class Notification {
             windowX.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                 root.getScene().getWindow().setX(newValue.doubleValue());
             });
-            new Timeline(new KeyFrame(Duration.millis(200.0), new KeyValue(windowX, position))).play();
+            if (xTimeline != null) {
+                xTimeline.stop();
+            }
+            xTimeline = new Timeline(new KeyFrame(Duration.millis(200.0), new KeyValue(windowX, position)));
+            xTimeline.play();
         }
     }
 
@@ -271,24 +298,24 @@ public class Notification {
 
     public enum Type {
 
-        INFO("img/Info.png", "-fx-background-color: rgba(0, 0, 70, 0.8);"),
-        WARNING("img/Warning.png", "-fx-background-color: rgba(70, 70, 0, 0.8);"),
-        ERROR("img/Error.png", "-fx-background-color: rgba(70, 0, 0, 0.8);");
+        INFO("img/Info.png", "info"),
+        WARNING("img/Warning.png", "warning"),
+        ERROR("img/Error.png", "error");
 
         private final String imagePath;
-        private final String style;
+        private final String styleClass;
 
-        Type(final String imagePath, String style) {
+        Type(final String imagePath, String styleClass) {
             this.imagePath = imagePath;
-            this.style = style;
+            this.styleClass = styleClass;
         }
 
         protected String getImagePath() {
             return imagePath;
         }
 
-        protected String getStyle() {
-            return style;
+        protected String getStyleClass() {
+            return styleClass;
         }
     }
 }
