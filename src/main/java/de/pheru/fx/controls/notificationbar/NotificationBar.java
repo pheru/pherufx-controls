@@ -51,33 +51,34 @@ public class NotificationBar extends HBox implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        notificationNodes.add(new Label("1"));
-        notificationNodes.add(new Label("2"));
-        notificationNodes.add(new Label("3"));
-        notificationNodes.add(new Label("4"));
-        notificationNodes.add(new Label("5"));
-
-        //#############################################################################
-
+        setVisible(false);
+        setManaged(false);
         notificationNodes.addListener((ListChangeListener<Node>) c -> {
-            System.out.println("listlistener");
             if (notificationNodes.isEmpty()) {
-                //TODO hide bar
-            }
-            while (c.next()) {
-                if (c.wasRemoved()) {
-                    // Kein -1, da der Eintrag bereits aus der Liste entfernt wurde
-                    if (c.getFrom() == notificationNodes.size()) {
-                        currentNotificationIndex.set(currentNotificationIndex.get() - 1);
-                    } else {
-                        currentNotificationBox.getChildren().clear();
-                        currentNotificationBox.getChildren().add(notificationNodes.get(c.getFrom()));
+                setVisible(false);
+                setManaged(false);
+            } else {
+                while (c.next()) {
+                    if (c.wasRemoved()) {
+                        // Kein -1, da der Eintrag bereits aus der Liste entfernt wurde
+                        if (c.getFrom() == notificationNodes.size()) {
+                            currentNotificationIndex.set(currentNotificationIndex.get() - 1);
+                        } else {
+                            currentNotificationBox.getChildren().clear();
+                            currentNotificationBox.getChildren().add(notificationNodes.get(c.getFrom()));
+                        }
+                    } else if (c.wasAdded()) {
+                        if (!isVisible()) {
+                            setVisible(true);
+                            setManaged(true);
+                            currentNotificationBox.getChildren().clear();
+                            currentNotificationBox.getChildren().add(notificationNodes.get(c.getFrom()));
+                        }
                     }
                 }
             }
         });
         currentNotificationIndex.addListener((observable, oldValue, newValue) -> {
-            System.out.println("indexlistener");
             currentNotificationBox.getChildren().clear();
             currentNotificationBox.getChildren().add(notificationNodes.get(newValue.intValue()));
         });
@@ -87,19 +88,16 @@ public class NotificationBar extends HBox implements Initializable {
 
     @FXML
     private void next() {
-        System.out.println("N");
         currentNotificationIndex.set(currentNotificationIndex.get() + 1);
     }
 
     @FXML
     private void previous() {
-        System.out.println("P");
         currentNotificationIndex.set(currentNotificationIndex.get() - 1);
     }
 
     @FXML
     private void close() {
-        System.out.println("C");
         notificationNodes.remove(currentNotificationIndex.get());
     }
 
