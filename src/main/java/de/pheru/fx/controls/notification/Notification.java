@@ -66,7 +66,7 @@ public class Notification {
             dontShowAgainBox.setVisible(false);
             dontShowAgainBox.setManaged(false);
             contentBox.getChildren().add(content);
-            if (type != null && NotificationManager.isStyleByType()) {
+            if (type != Type.NONE && NotificationManager.isStyleByType()) {
                 root.getStyleClass().add(type.getStyleClass());
             }
             //TODO Über NotificationManager einstellen können (#28)
@@ -78,7 +78,7 @@ public class Notification {
     }
 
     public Notification(Node content) {
-        this(null, content);
+        this(Type.NONE, content);
     }
 
     public Notification(Type type, String text, String header) {
@@ -300,7 +300,8 @@ public class Notification {
 
         INFO("img/Info.png", "info"),
         WARNING("img/Warning.png", "warning"),
-        ERROR("img/Error.png", "error");
+        ERROR("img/Error.png", "error"),
+        NONE("", "");
 
         private final String imagePath;
         private final String styleClass;

@@ -109,7 +109,7 @@
 /*-fx-background-color: white;*/
 /*}*/
 
-/*.notification .exitButton:pressed {*/
+/*.notification.error .exitButton:pressed {*/
 /*-fx-text-fill: red;*/
 /*-fx-background-color: grey;*/
 /*}*/

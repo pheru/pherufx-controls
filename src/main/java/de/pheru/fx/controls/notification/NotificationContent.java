@@ -27,14 +27,18 @@ public class NotificationContent {
 
     public NotificationContent(Notification.Type type, String text, String header) {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(NotificationManager.class.getResource("notificationcontent.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(NotificationContent.class.getResource("notificationcontent.fxml"));
             fxmlLoader.setController(this);
             fxmlLoader.load();
 
             headerLabel.textProperty().isEmpty().addListener((observable, oldValue, newValue) -> {
                 layout(newValue);
             });
-            imageView.setImage(new Image(type.getImagePath()));
+            if (type != Notification.Type.NONE) {
+                imageView.setImage(new Image(type.getImagePath()));
+            } else {
+                root.getChildren().remove(imageView);
+            }
             textLabel.setText(text);
             headerLabel.setText(header);
         } catch (IOException e) {
@@ -42,13 +46,13 @@ public class NotificationContent {
         }
     }
 
-    public NotificationContent(Notification.Type type, StringProperty textProperty, StringProperty headerProperty){
+    public NotificationContent(Notification.Type type, StringProperty textProperty, StringProperty headerProperty) {
         this(type, textProperty.get(), headerProperty.get());
         textLabel.textProperty().bind(textProperty);
         headerLabel.textProperty().bind(headerProperty);
     }
 
-    public NotificationContent(Notification.Type type, StringProperty textProperty, String header){
+    public NotificationContent(Notification.Type type, StringProperty textProperty, String header) {
         this(type, textProperty.get(), header);
         textLabel.textProperty().bind(textProperty);
     }
