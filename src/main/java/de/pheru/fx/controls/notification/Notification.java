@@ -137,9 +137,16 @@ public class Notification {
 
         //Y-Koordinate nach show, da evtl. die Höhe des Popups gebraucht wird
         double targetY = NotificationManager.getTargetY(i);
-        if (NotificationManager.getAlignment() == NotificationManager.Alignment.BOTTOM_LEFT
-                || NotificationManager.getAlignment() == NotificationManager.Alignment.BOTTOM_RIGHT) {
-            targetY -= popup.getHeight() + NotificationManager.NOTIFICATION_VERTICAL_SPACING;
+        switch (NotificationManager.getPosition().getVpos()) {
+            case TOP: //targetY passt
+                break;
+            case CENTER:
+                targetY -= (popup.getHeight() + NotificationManager.NOTIFICATION_VERTICAL_SPACING) / 2;
+                break;
+            case BOTTOM:
+            default:
+                targetY -= popup.getHeight() + NotificationManager.NOTIFICATION_VERTICAL_SPACING;
+                break;
         }
         popup.setY(targetY);
 

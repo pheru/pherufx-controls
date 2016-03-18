@@ -1,8 +1,5 @@
 package de.pheru.fx.controls.notification;
 
-import de.pheru.fx.controls.notification.Notification;
-import de.pheru.fx.controls.notification.NotificationManager;
-import de.pheru.fx.controls.notificationbar.NotificationBar;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -52,8 +49,8 @@ public class TestClassNotification extends Application {
         Button exitButtonButton = new Button("ExitButton");
         exitButtonButton.setOnAction((ActionEvent event) -> testExitButton());
 
-        Button alignmentButton = new Button("Alignment");
-        alignmentButton.setOnAction((ActionEvent event) -> testAlignment());
+        Button alignmentButton = new Button("Position");
+        alignmentButton.setOnAction((ActionEvent event) -> testPosition());
 
         Button screenButton = new Button("Screen");
         screenButton.setOnAction((ActionEvent event) -> testScreen(owner));
@@ -61,8 +58,8 @@ public class TestClassNotification extends Application {
         Button layoutButton = new Button("Layout");
         layoutButton.setOnAction((ActionEvent event) -> testLayout());
 
-        Button positionButton = new Button("Position");
-        positionButton.setOnAction((ActionEvent event) -> testPosition());
+        Button positionButton = new Button("Reihenfolge");
+        positionButton.setOnAction((ActionEvent event) -> testReihenfolge());
 
         Button hideAllButton = new Button("Hide All");
         hideAllButton.setOnAction((ActionEvent event) -> NotificationManager.hideAll());
@@ -112,11 +109,13 @@ public class TestClassNotification extends Application {
 //        new Notification(Notification.Type.WARNING, "Warning", "Warning").show();
 //        new Notification(Notification.Type.ERROR, "Error", "Error").show();
 
-        new Thread(t).start();
+        Thread t2 = new Thread(t);
+        t2.setDaemon(true);
+        t2.start();
     }
 
     private void testTon() {
-        new Thread(() -> {
+        Thread t = new Thread(() -> {
             try {
                 Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton").show(true)); // Ton
                 Thread.sleep(1000);
@@ -130,11 +129,13 @@ public class TestClassNotification extends Application {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
     private void testLayout() {
-        new Thread(() -> {
+        Thread t = new Thread(() -> {
             try {
                 Notification mitHeader = new Notification(Notification.Type.WARNING, "Mit Header", "Header");
                 Notification ohneHeader = new Notification(Notification.Type.INFO, "Ohne Header");
@@ -168,17 +169,19 @@ public class TestClassNotification extends Application {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
 
-    private void testPosition() {
+    private void testReihenfolge() {
         new Notification(Notification.Type.INFO, "Eins - 0").show(0);
         new Notification(Notification.Type.INFO, "Zwei - 1").show(1);
         Notification drei = new Notification(Notification.Type.INFO, "Drei - 0");
         drei.show(0);
         new Notification(Notification.Type.INFO, "Vier - 2").show(2);
-        new Thread(() -> {
+        Thread t = new Thread(() -> {
             try {
                 Thread.sleep(3000);
                 Platform.runLater(() -> {
@@ -188,7 +191,9 @@ public class TestClassNotification extends Application {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
     private void testTimer() {
@@ -217,7 +222,7 @@ public class TestClassNotification extends Application {
             System.err.println("Screen-Funktionionalität kann nicht mit nur einem Screen getestet werden!");
             return;
         }
-        new Thread(() -> {
+        Thread t = new Thread(() -> {
             try {
                 Platform.runLater(() -> {
                     new Notification(Notification.Type.INFO, "asd").show();
@@ -240,7 +245,9 @@ public class TestClassNotification extends Application {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
     private void testCheckBox() {
@@ -251,23 +258,23 @@ public class TestClassNotification extends Application {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private void testAlignment() {
+    private void testPosition() {
         new Notification(Notification.Type.INFO, "Eins").show(true);
         new Notification(Notification.Type.INFO, "Zwei").show(true);
         new Notification(Notification.Type.INFO, "Drei").show(true);
-        new Thread(() -> {
+        Thread t = new Thread(() -> {
             try {
-                Thread.sleep(3000);
-                NotificationManager.setAlignment(NotificationManager.Alignment.TOP_RIGHT);
-                Thread.sleep(3000);
-                NotificationManager.setAlignment(NotificationManager.Alignment.TOP_LEFT);
-                Thread.sleep(3000);
-                NotificationManager.setAlignment(NotificationManager.Alignment.BOTTOM_LEFT);
-                Thread.sleep(3000);
-                NotificationManager.setAlignment(NotificationManager.Alignment.BOTTOM_RIGHT);
+                Thread.sleep(1000);
+                for (Pos p : Pos.values()) {
+                    System.out.println(p);
+                    NotificationManager.setPosition(p);
+                    Thread.sleep(2000);
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
+        t.setDaemon(true);
+        t.start();
     }
 }

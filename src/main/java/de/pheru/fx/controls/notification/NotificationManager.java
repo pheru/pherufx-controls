@@ -9,6 +9,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Window;
@@ -30,7 +32,7 @@ public final class NotificationManager {
     private static final BooleanProperty styleByType = new SimpleBooleanProperty(true);
     private static final BooleanProperty playSound = new SimpleBooleanProperty(false);
     private static final ObjectProperty<Screen> screen = createScreenProperty();
-    private static final ObjectProperty<Alignment> alignment = createAlignmentProperty();
+    private static final ObjectProperty<Pos> position = createPositionProperty();
     private static final ObjectProperty<Window> boundOwner = createBoundOwnerProperty(); //TODO Umbenennen WindowForScreen?
 
     private static final ObservableList<Notification> notifications = createNotificationsList();
@@ -52,12 +54,12 @@ public final class NotificationManager {
         return screenProperty;
     }
 
-    private static ObjectProperty<Alignment> createAlignmentProperty() {
-        ObjectProperty<Alignment> alignmentProperty = new SimpleObjectProperty<>(Alignment.BOTTOM_RIGHT);
-        alignmentProperty.addListener((ObservableValue<? extends Alignment> observable, Alignment oldValue, Alignment newValue) -> {
+    private static ObjectProperty<Pos> createPositionProperty() {
+        ObjectProperty<Pos> posProperty = new SimpleObjectProperty<>(Pos.BOTTOM_RIGHT);
+        posProperty.addListener((ObservableValue<? extends Pos> observable, Pos oldValue, Pos newValue) -> {
             arrangeNotifications(false);
         });
-        return alignmentProperty;
+        return posProperty;
     }
 
     private static ObjectProperty<Window> createBoundOwnerProperty() {
@@ -88,7 +90,7 @@ public final class NotificationManager {
         }
     }
 
-    public static List<Notification> getNotificationsUnmodifiable(){
+    public static List<Notification> getNotificationsUnmodifiable() {
         return Collections.unmodifiableList(notifications);
     }
 
@@ -97,35 +99,60 @@ public final class NotificationManager {
         double targetY = SCREEN_SPACING;
         final Rectangle2D visualBounds = screen.get().getVisualBounds();
 
-        if (alignment.get() == Alignment.BOTTOM_LEFT || alignment.get() == Alignment.BOTTOM_RIGHT) {
-            targetY = visualBounds.getMaxY() - SCREEN_SPACING + NOTIFICATION_VERTICAL_SPACING;
+        //Target-Y
+        switch (position.get().getVpos()) {
+            case TOP:
+                break;
+            case CENTER:
+                targetY = (visualBounds.getMaxY() - SCREEN_SPACING + NOTIFICATION_VERTICAL_SPACING) / 2;
+                break;
+            case BOTTOM:
+            default:
+                targetY = visualBounds.getMaxY() - SCREEN_SPACING + NOTIFICATION_VERTICAL_SPACING;
+                break;
         }
-        if (alignment.get() == Alignment.BOTTOM_RIGHT || alignment.get() == Alignment.TOP_RIGHT) {
-            targetX = visualBounds.getMaxX() - Notification.WIDTH - SCREEN_SPACING;
+
+        //Target-X
+        switch (position.get().getHpos()) {
+            case LEFT:
+                break;
+            case CENTER:
+                targetX = (visualBounds.getMaxX() - Notification.WIDTH - SCREEN_SPACING) / 2;
+                break;
+            case RIGHT:
+            default:
+                targetX = visualBounds.getMaxX() - Notification.WIDTH - SCREEN_SPACING;
+                break;
         }
+
         for (Notification notification : notifications) {
-            if (alignment.get() == Alignment.TOP_LEFT || alignment.get() == Alignment.TOP_RIGHT) {
-                if (targetY + notification.getHeight() + SCREEN_SPACING > visualBounds.getMaxY()) {
-                    targetY = SCREEN_SPACING;
-                    if (alignment.get() == Alignment.TOP_RIGHT) {
-                        targetX -= notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
-                    } else { //TOP_LEFT
-                        targetX += notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
+            switch (position.get().getVpos()) {
+                case TOP:
+                case CENTER:
+                    if (targetY + notification.getHeight() + SCREEN_SPACING > visualBounds.getMaxY()) {
+                        targetY = SCREEN_SPACING;
+                        if (position.get().getHpos() == HPos.RIGHT) {
+                            targetX -= notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
+                        } else { //LEFT, CENTER
+                            targetX += notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
+                        }
                     }
-                }
-                notification.setY(targetY, animated);
-                targetY += notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
-            } else { //BOTTOM
-                if (targetY - notification.getHeight() < SCREEN_SPACING) {
-                    targetY = visualBounds.getMaxY() - SCREEN_SPACING;
-                    if (alignment.get() == Alignment.BOTTOM_RIGHT) {
-                        targetX -= notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
-                    } else { //BOTTOM_LEFT
-                        targetX += notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
+                    notification.setY(targetY, animated);
+                    targetY += notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
+                    break;
+                case BOTTOM:
+                default:
+                    if (targetY - notification.getHeight() < SCREEN_SPACING) {
+                        targetY = visualBounds.getMaxY() - SCREEN_SPACING;
+                        if (position.get().getHpos() == HPos.RIGHT) {
+                            targetX -= notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
+                        } else { //LEFT, CENTER
+                            targetX += notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
+                        }
                     }
-                }
-                targetY -= notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
-                notification.setY(targetY, animated);
+                    targetY -= notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
+                    notification.setY(targetY, animated);
+                    break;
             }
             notification.setX(targetX, animated);
         }
@@ -135,12 +162,12 @@ public final class NotificationManager {
         double targetY = SCREEN_SPACING;
         final Rectangle2D visualBounds = screen.get().getVisualBounds();
 
-        if (alignment.get() == Alignment.BOTTOM_LEFT || alignment.get() == Alignment.BOTTOM_RIGHT) {
+        if (position.get() == Pos.BOTTOM_LEFT || position.get() == Pos.BOTTOM_RIGHT) {
             targetY = visualBounds.getMaxY() - SCREEN_SPACING;
         }
         for (int i = 0; i < notifications.size() && i < index; i++) {
             Notification notification = notifications.get(i);
-            if (alignment.get() == Alignment.TOP_LEFT || alignment.get() == Alignment.TOP_RIGHT) {
+            if (position.get() == Pos.TOP_LEFT || position.get() == Pos.TOP_RIGHT) {
                 if (targetY + notification.getHeight() + SCREEN_SPACING > visualBounds.getMaxY()) {
                     targetY = SCREEN_SPACING;
                 }
@@ -183,16 +210,16 @@ public final class NotificationManager {
         NotificationManager.boundOwner.set(boundOwner);
     }
 
-    public static Alignment getAlignment() {
-        return alignment.get();
+    public static Pos getPosition() {
+        return position.get();
     }
 
-    public static void setAlignment(Alignment alignment) {
-        NotificationManager.alignment.set(alignment);
+    public static void setPosition(Pos position) {
+        NotificationManager.position.set(position);
     }
 
-    public static ObjectProperty<Alignment> alignmentProperty() {
-        return alignment;
+    public static ObjectProperty<Pos> positionProperty() {
+        return position;
     }
 
     public static Duration getDefaultDuration() {
@@ -231,8 +258,4 @@ public final class NotificationManager {
         NotificationManager.styleByType.set(styleByType);
     }
 
-    public enum Alignment {
-
-        BOTTOM_RIGHT, BOTTOM_LEFT, TOP_RIGHT, TOP_LEFT
-    }
 }
