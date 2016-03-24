@@ -5,15 +5,16 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
@@ -23,17 +24,24 @@ import javafx.util.Duration;
  */
 public class TestClassNotification extends Application {
 
+    Stage stage;
+
     public static void main(String[] args) {
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        stage = primaryStage;
         primaryStage.setScene(new Scene(createTestInterface(primaryStage)));
         primaryStage.show();
     }
 
     private VBox createTestInterface(Window owner) {
+        ComboBox<Pos> positionBox = new ComboBox<>(FXCollections.observableArrayList(Pos.values()));
+        positionBox.getSelectionModel().select(0);
+        Notification.getDefaults().positionProperty().bind(positionBox.getSelectionModel().selectedItemProperty());
+
         Button allgButton = new Button("Allgemein");
         allgButton.setOnAction((ActionEvent event) -> testAllg());
 
@@ -49,23 +57,14 @@ public class TestClassNotification extends Application {
         Button exitButtonButton = new Button("ExitButton");
         exitButtonButton.setOnAction((ActionEvent event) -> testExitButton());
 
-        Button alignmentButton = new Button("Position");
-        alignmentButton.setOnAction((ActionEvent event) -> testPosition());
-
-        Button screenButton = new Button("Screen");
-        screenButton.setOnAction((ActionEvent event) -> testScreen(owner));
-
         Button layoutButton = new Button("Layout");
         layoutButton.setOnAction((ActionEvent event) -> testLayout());
 
-        Button positionButton = new Button("Reihenfolge");
-        positionButton.setOnAction((ActionEvent event) -> testReihenfolge());
-
         Button hideAllButton = new Button("Hide All");
-        hideAllButton.setOnAction((ActionEvent event) -> NotificationManager.hideAll());
+        hideAllButton.setOnAction((ActionEvent event) -> Notification.hideAll(null));
 
-        VBox box = new VBox(allgButton, tonButton, timerButton, checkBoxButton, exitButtonButton, alignmentButton,
-                screenButton, layoutButton, positionButton, hideAllButton);
+        VBox box = new VBox(positionBox, allgButton, tonButton, timerButton, checkBoxButton, exitButtonButton,
+                layoutButton, hideAllButton);
         box.setAlignment(Pos.TOP_CENTER);
         box.setSpacing(3);
         box.setMinWidth(200);
@@ -112,20 +111,29 @@ public class TestClassNotification extends Application {
         Thread t2 = new Thread(t);
         t2.setDaemon(true);
         t2.start();
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void testTon() {
+//        Notification.getDefaults().setDuration(Duration.seconds(3));
         Thread t = new Thread(() -> {
             try {
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton").show(true)); // Ton
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton 1").show(true, stage)); // Ton
                 Thread.sleep(1000);
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton").show());  //Kein Ton
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton 2").show(stage));  //Kein Ton
                 Thread.sleep(1000);
-                NotificationManager.setPlaySound(true);
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton ").show()); //Ton
+                Notification.getDefaults().setPlaySound(true);
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton 3").show(stage)); //Ton
                 Thread.sleep(1000);
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton").show(false)); //Kein Ton
-                NotificationManager.setPlaySound(false);
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton 4").show(false, stage)); //Kein Ton
+                Notification.getDefaults().setPlaySound(false);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -174,28 +182,6 @@ public class TestClassNotification extends Application {
         t.start();
     }
 
-
-    private void testReihenfolge() {
-        new Notification(Notification.Type.INFO, "Eins - 0").show(0);
-        new Notification(Notification.Type.INFO, "Zwei - 1").show(1);
-        Notification drei = new Notification(Notification.Type.INFO, "Drei - 0");
-        drei.show(0);
-        new Notification(Notification.Type.INFO, "Vier - 2").show(2);
-        Thread t = new Thread(() -> {
-            try {
-                Thread.sleep(3000);
-                Platform.runLater(() -> {
-                    drei.hide(false);
-                    drei.show(0);
-                });
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-        t.setDaemon(true);
-        t.start();
-    }
-
     private void testTimer() {
         new Notification(Notification.Type.INFO, "Default (Indefinite)").show();
         Notification notification = new Notification(Notification.Type.INFO, "Indefinite");
@@ -205,7 +191,7 @@ public class TestClassNotification extends Application {
         notification1.setDuration(Duration.seconds(3));
         notification1.show();
 
-        NotificationManager.setDefaultDuration(Duration.seconds(3));
+        Notification.getDefaults().setDuration(Duration.seconds(3));
 
         new Notification(Notification.Type.INFO, "Default (3 Sekunden)").show();
         Notification notification2 = new Notification(Notification.Type.INFO, "5 Sekunden");
@@ -214,40 +200,7 @@ public class TestClassNotification extends Application {
         Notification notification3 = new Notification(Notification.Type.INFO, "Indefinite");
         notification3.setDuration(Duration.INDEFINITE);
         notification3.show();
-        NotificationManager.setDefaultDuration(Duration.INDEFINITE);
-    }
-
-    private void testScreen(Window owner) {
-        if (Screen.getScreens().size() < 2) {
-            System.err.println("Screen-Funktionionalität kann nicht mit nur einem Screen getestet werden!");
-            return;
-        }
-        Thread t = new Thread(() -> {
-            try {
-                Platform.runLater(() -> {
-                    new Notification(Notification.Type.INFO, "asd").show();
-                    new Notification(Notification.Type.INFO, "asdasd").show();
-                    new Notification(Notification.Type.INFO, "sadf").show();
-                    new Notification(Notification.Type.INFO, "fdesdf").show();
-                });
-                Thread.sleep(2000);
-                Platform.runLater(() -> {
-                    NotificationManager.setScreen(Screen.getScreens().get(1));
-                });
-                Thread.sleep(2000);
-                Platform.runLater(() -> {
-                    NotificationManager.setScreen(Screen.getScreens().get(0));
-                });
-                Thread.sleep(2000);
-                Platform.runLater(() -> {
-                    NotificationManager.setBoundOwner(owner);
-                });
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-        t.setDaemon(true);
-        t.start();
+        Notification.getDefaults().setDuration(Duration.INDEFINITE);
     }
 
     private void testCheckBox() {
@@ -258,23 +211,4 @@ public class TestClassNotification extends Application {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private void testPosition() {
-        new Notification(Notification.Type.INFO, "Eins").show(true);
-        new Notification(Notification.Type.INFO, "Zwei").show(true);
-        new Notification(Notification.Type.INFO, "Drei").show(true);
-        Thread t = new Thread(() -> {
-            try {
-                Thread.sleep(1000);
-                for (Pos p : Pos.values()) {
-                    System.out.println(p);
-                    NotificationManager.setPosition(p);
-                    Thread.sleep(2000);
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-        t.setDaemon(true);
-        t.start();
-    }
 }

@@ -1,261 +1,217 @@
 package de.pheru.fx.controls.notification;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.ScaleTransition;
+import javafx.animation.Timeline;
+import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.geometry.HPos;
+import javafx.collections.ObservableMap;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
-import javafx.stage.Screen;
+import javafx.scene.layout.GridPane;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Popup;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
-import java.util.Collections;
-import java.util.List;
+import java.awt.Toolkit;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Philipp Bruckner
  */
-public final class NotificationManager {
+abstract class NotificationManager {
 
-    public static final double NOTIFICATION_VERTICAL_SPACING = 2.0;
-    public static final double NOTIFICATION_HORIZONTAL_SPACING = 5.0;
+    public static final double NOTIFICATION_SPACING = 2.0;
     public static final double SCREEN_SPACING = 3.0;
 
-    private static final ObjectProperty<Duration> defaultDuration = new SimpleObjectProperty<>(Duration.INDEFINITE);
-    private static final BooleanProperty styleByType = new SimpleBooleanProperty(true);
-    private static final BooleanProperty playSound = new SimpleBooleanProperty(false);
-    private static final ObjectProperty<Screen> screen = createScreenProperty();
-    private static final ObjectProperty<Pos> position = createPositionProperty();
-    private static final ObjectProperty<Window> boundOwner = createBoundOwnerProperty(); //TODO Umbenennen WindowForScreen?
+    private static final GlobalNotificationManager globalNotificationManager = new GlobalNotificationManager();
+    private static final Map<Window, WindowNotificationManager> windowNotificationManagers = new HashMap<>();
 
-    private static final ObservableList<Notification> notifications = createNotificationsList();
+    private final ObservableMap<Pos, ObservableList<Notification>> notificationsMap = FXCollections.observableHashMap();
 
-    private static final ChangeListener<Number> ownerListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-        Window window = boundOwner.get();
-        Rectangle2D rect = new Rectangle2D(window.getX(), window.getY(), window.getWidth(), window.getHeight());
-        screen.set(Screen.getScreensForRectangle(rect).get(0));
-    };
+    protected abstract Rectangle2D getVisualBounds();
 
-    private NotificationManager() {
-    }
+    protected abstract Window getOwner();
 
-    private static ObjectProperty<Screen> createScreenProperty() {
-        ObjectProperty<Screen> screenProperty = new SimpleObjectProperty<>(Screen.getPrimary());
-        screenProperty.addListener((ObservableValue<? extends Screen> observable, Screen oldValue, Screen newValue) -> {
-            arrangeNotifications(false);
-        });
-        return screenProperty;
-    }
-
-    private static ObjectProperty<Pos> createPositionProperty() {
-        ObjectProperty<Pos> posProperty = new SimpleObjectProperty<>(Pos.BOTTOM_RIGHT);
-        posProperty.addListener((ObservableValue<? extends Pos> observable, Pos oldValue, Pos newValue) -> {
-            arrangeNotifications(false);
-        });
-        return posProperty;
-    }
-
-    private static ObjectProperty<Window> createBoundOwnerProperty() {
-        ObjectProperty<Window> boundOwnerProperty = new SimpleObjectProperty<>(null);
-        boundOwnerProperty.addListener((observable, oldValue, newValue) -> {
-            if (oldValue != null) {
-                oldValue.xProperty().removeListener(ownerListener);
-                oldValue.yProperty().removeListener(ownerListener);
-            }
-            if (newValue != null) {
-                newValue.xProperty().addListener(ownerListener);
-                newValue.yProperty().addListener(ownerListener);
-            }
-        });
-        return boundOwnerProperty;
-    }
-
-    private static ObservableList<Notification> createNotificationsList() {
-        ObservableList<Notification> notificationsList = FXCollections.observableArrayList();
-        notificationsList.addListener((ListChangeListener.Change<? extends Notification> c) -> arrangeNotifications(true));
-        return notificationsList;
-    }
-
-    public static void hideAll() {
-        ObservableList<Notification> notificationsCopy = FXCollections.observableArrayList(notifications);
-        for (Notification n : notificationsCopy) {
-            n.hide(false);
+    protected static NotificationManager getInstanceForOwner(Window owner) {
+        if (owner == null || owner == GlobalNotificationManager.getNotificationStage()) {
+            return globalNotificationManager;
+        } else if (windowNotificationManagers.containsKey(owner)) {
+            return windowNotificationManagers.get(owner);
+        } else {
+            WindowNotificationManager windowNotificationManager = new WindowNotificationManager(owner);
+            windowNotificationManagers.put(owner, windowNotificationManager);
+            return windowNotificationManager;
         }
     }
 
-    public static List<Notification> getNotificationsUnmodifiable() {
-        return Collections.unmodifiableList(notifications);
-    }
+    protected void show(boolean playSound, Notification notification) {
+        Popup popup = notification.getPopup();
+        Pos position = notification.getPosition();
+        GridPane root = notification.getRoot();
 
-    protected static void arrangeNotifications(boolean animated) {
-        double targetX = SCREEN_SPACING;
-        double targetY = SCREEN_SPACING;
-        final Rectangle2D visualBounds = screen.get().getVisualBounds();
+        popup.show(getOwner());
+        popup.setX(initialTargetX(position, root.getWidth()));
+        popup.setY(getNewY(position, root.getHeight()));
 
-        //Target-Y
-        switch (position.get().getVpos()) {
-            case TOP:
-                break;
-            case CENTER:
-                targetY = (visualBounds.getMaxY() - SCREEN_SPACING + NOTIFICATION_VERTICAL_SPACING) / 2;
-                break;
-            case BOTTOM:
-            default:
-                targetY = visualBounds.getMaxY() - SCREEN_SPACING + NOTIFICATION_VERTICAL_SPACING;
-                break;
+        popup.heightProperty().addListener((observable, oldValue, newValue) -> {
+            arrangeNotifications(position, true);
+        });
+
+        getNotificationsForPosition(position).add(notification);
+
+        if (position == Pos.CENTER) {
+            ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(150), root);
+            scaleTransition.setFromX(0.0);
+            scaleTransition.setToX(1.0);
+            scaleTransition.setFromY(0.0);
+            scaleTransition.setToY(1.0);
+            scaleTransition.play();
+        } else {
+            Rectangle clip = new Rectangle(popup.getWidth(), popup.getHeight());
+            DoubleProperty layoutProperty;
+            switch (notification.getPosition()) {
+                case TOP_LEFT:
+                case CENTER_LEFT:
+                case BOTTOM_LEFT:
+                case BASELINE_LEFT:
+                    clip.setLayoutX(0 - clip.getWidth());
+                    clip.setLayoutY(0);
+                    layoutProperty = clip.layoutXProperty();
+                    break;
+                case TOP_CENTER:
+                    clip.setLayoutX(0);
+                    clip.setLayoutY(0 - clip.getHeight());
+                    layoutProperty = clip.layoutYProperty();
+                    break;
+                case TOP_RIGHT:
+                case CENTER_RIGHT:
+                case BOTTOM_RIGHT:
+                case BASELINE_RIGHT:
+                    clip.setLayoutX(clip.getWidth());
+                    clip.setLayoutY(0);
+                    layoutProperty = clip.layoutXProperty();
+                    break;
+                case BOTTOM_CENTER:
+                case BASELINE_CENTER:
+                    clip.setLayoutX(0);
+                    clip.setLayoutY(clip.getHeight());
+                    layoutProperty = clip.layoutYProperty();
+                    break;
+                case CENTER:
+                default:
+                    throw new RuntimeException(position + " not supported!");
+            }
+            root.setClip(clip);
+            new Timeline(new KeyFrame(Duration.millis(150), new KeyValue(layoutProperty, 0))).play();
         }
 
-        //Target-X
-        switch (position.get().getHpos()) {
+        if (playSound) {
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
+
+    protected void hideAll() {
+        for (ObservableList<Notification> notifications : notificationsMap.values()) {
+            ObservableList<Notification> notificationsCopy = FXCollections.observableArrayList(notifications);
+            for (Notification n : notificationsCopy) {
+                n.hide(false);
+            }
+        }
+    }
+
+    protected void arrangeNotifications(Pos position, boolean animated) {
+        double totalHeight = 0;
+        for (Notification notification : getNotificationsForPosition(position)) {
+            double targetX = initialTargetX(position, notification.getRoot().getWidth());
+            double targetY = initialTargetY(position, notification.getRoot().getHeight());
+
+            notification.setX(targetX, animated);
+            switch (position.getVpos()) {
+                case TOP:
+                    notification.setY(targetY + totalHeight, animated);
+                    break;
+                case CENTER:
+                case BOTTOM:
+                case BASELINE:
+                default:
+                    notification.setY(targetY - totalHeight, animated);
+                    break;
+            }
+            totalHeight += notification.getRoot().getHeight() + NOTIFICATION_SPACING;
+        }
+    }
+
+    protected void removeNotification(Notification notification) {
+        getNotificationsForPosition(notification.getPosition()).remove(notification);
+    }
+
+    protected double initialTargetX(Pos position, double notificationWidth) {
+        final Rectangle2D visualBounds = getVisualBounds();
+        switch (position.getHpos()) {
             case LEFT:
-                break;
+                return visualBounds.getMinX() + SCREEN_SPACING;
             case CENTER:
-                targetX = (visualBounds.getMaxX() - Notification.WIDTH - SCREEN_SPACING) / 2;
-                break;
+                return visualBounds.getMinX() + (visualBounds.getWidth() - SCREEN_SPACING - notificationWidth) / 2;
             case RIGHT:
             default:
-                targetX = visualBounds.getMaxX() - Notification.WIDTH - SCREEN_SPACING;
-                break;
-        }
-
-        for (Notification notification : notifications) {
-            switch (position.get().getVpos()) {
-                case TOP:
-                case CENTER:
-                    if (targetY + notification.getHeight() + SCREEN_SPACING > visualBounds.getMaxY()) {
-                        targetY = SCREEN_SPACING;
-                        if (position.get().getHpos() == HPos.RIGHT) {
-                            targetX -= notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
-                        } else { //LEFT, CENTER
-                            targetX += notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
-                        }
-                    }
-                    notification.setY(targetY, animated);
-                    targetY += notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
-                    break;
-                case BOTTOM:
-                default:
-                    if (targetY - notification.getHeight() < SCREEN_SPACING) {
-                        targetY = visualBounds.getMaxY() - SCREEN_SPACING;
-                        if (position.get().getHpos() == HPos.RIGHT) {
-                            targetX -= notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
-                        } else { //LEFT, CENTER
-                            targetX += notification.getWidth() + NOTIFICATION_HORIZONTAL_SPACING;
-                        }
-                    }
-                    targetY -= notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
-                    notification.setY(targetY, animated);
-                    break;
-            }
-            notification.setX(targetX, animated);
+                return visualBounds.getMaxX() - SCREEN_SPACING - notificationWidth;
         }
     }
 
-    protected static double getTargetY(int index) {
-        double targetY = SCREEN_SPACING;
-        final Rectangle2D visualBounds = screen.get().getVisualBounds();
-
-        if (position.get() == Pos.BOTTOM_LEFT || position.get() == Pos.BOTTOM_RIGHT) {
-            targetY = visualBounds.getMaxY() - SCREEN_SPACING;
+    protected double initialTargetY(Pos position, double notificationHeight) {
+        final Rectangle2D visualBounds = getVisualBounds();
+        switch (position.getVpos()) {
+            case TOP:
+                return visualBounds.getMinY() + SCREEN_SPACING;
+            case CENTER:
+                return visualBounds.getMinY() + (visualBounds.getHeight() - SCREEN_SPACING - notificationHeight) / 2;
+            case BOTTOM:
+            case BASELINE:
+            default:
+                return visualBounds.getMaxY() - SCREEN_SPACING - notificationHeight;
         }
-        for (int i = 0; i < notifications.size() && i < index; i++) {
-            Notification notification = notifications.get(i);
-            if (position.get() == Pos.TOP_LEFT || position.get() == Pos.TOP_RIGHT) {
-                if (targetY + notification.getHeight() + SCREEN_SPACING > visualBounds.getMaxY()) {
-                    targetY = SCREEN_SPACING;
-                }
-                targetY += notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
-            } else { //BOTTOM
-                if (targetY - notification.getHeight() < SCREEN_SPACING) {
-                    targetY = visualBounds.getMaxY() - SCREEN_SPACING;
-                }
-                targetY -= notification.getHeight() + NOTIFICATION_VERTICAL_SPACING;
+    }
+
+    protected double getNewY(Pos position, double notificationHeight) {
+        double targetY = initialTargetY(position, notificationHeight);
+        for (Notification notification : getNotificationsForPosition(position)) {
+            switch (position.getVpos()) {
+                case TOP:
+                    targetY += notification.getRoot().getHeight() + NOTIFICATION_SPACING;
+                    break;
+                case CENTER:
+                case BOTTOM:
+                case BASELINE:
+                default:
+                    targetY -= notification.getRoot().getHeight() + NOTIFICATION_SPACING;
+                    break;
             }
         }
         return targetY;
     }
 
-    protected static ObservableList<Notification> getNotifications() {
-        return notifications;
+    protected ObservableList<Notification> getNotificationsForPosition(Pos position) {
+        if (!notificationsMap.containsKey(position)) {
+            notificationsMap.put(position, createNotificationsList(position));
+        }
+        return notificationsMap.get(position);
     }
 
-    public static Screen getScreen() {
-        return screen.get();
+    private ObservableList<Notification> createNotificationsList(Pos position) {
+        ObservableList<Notification> notificationsList = FXCollections.observableArrayList();
+        notificationsList.addListener((ListChangeListener.Change<? extends Notification> c) -> {
+            while (c.next()) {
+                if (c.wasRemoved()) { //Neue werden "von oben" eingefuegt -> kein arrange noetig
+                    arrangeNotifications(position, true);
+                }
+            }
+        });
+        return notificationsList;
     }
-
-    public static void setScreen(final Screen screen) {
-        NotificationManager.screen.set(screen);
-    }
-
-    public static ObjectProperty<Screen> screenProperty() {
-        return screen;
-    }
-
-    public static Window getBoundOwner() {
-        return boundOwner.get();
-    }
-
-    public static ObjectProperty<Window> boundOwnerProperty() {
-        return boundOwner;
-    }
-
-    public static void setBoundOwner(Window boundOwner) {
-        NotificationManager.boundOwner.set(boundOwner);
-    }
-
-    public static Pos getPosition() {
-        return position.get();
-    }
-
-    public static void setPosition(Pos position) {
-        NotificationManager.position.set(position);
-    }
-
-    public static ObjectProperty<Pos> positionProperty() {
-        return position;
-    }
-
-    public static Duration getDefaultDuration() {
-        return defaultDuration.get();
-    }
-
-    public static void setDefaultDuration(final Duration defaultTimer) {
-        NotificationManager.defaultDuration.set(defaultTimer);
-    }
-
-    public static ObjectProperty<Duration> defaultDurationProperty() {
-        return defaultDuration;
-    }
-
-    public static boolean isPlaySound() {
-        return playSound.get();
-    }
-
-    public static void setPlaySound(final boolean playSound) {
-        NotificationManager.playSound.set(playSound);
-    }
-
-    public static BooleanProperty playSoundProperty() {
-        return playSound;
-    }
-
-    public static boolean isStyleByType() {
-        return styleByType.get();
-    }
-
-    public static BooleanProperty styleByTypeProperty() {
-        return styleByType;
-    }
-
-    public static void setStyleByType(boolean styleByType) {
-        NotificationManager.styleByType.set(styleByType);
-    }
-
 }
