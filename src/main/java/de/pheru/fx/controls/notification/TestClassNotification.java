@@ -124,6 +124,7 @@ public class TestClassNotification extends Application {
     private void testTon() {
 //        Notification.getDefaults().setDuration(Duration.seconds(3));
         Thread t = new Thread(() -> {
+//            stage = null;
             try {
                 Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton 1").show(true, stage)); // Ton
                 Thread.sleep(1000);

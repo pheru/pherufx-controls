@@ -14,11 +14,14 @@ import javafx.stage.Window;
  */
 class GlobalNotificationManager extends NotificationManager {
 
+    private static final double MIN_Y = 22.66;
+
     private static Stage notificationStage;
 
     @Override
     protected Rectangle2D getVisualBounds() {
-        return Screen.getPrimary().getVisualBounds(); //TODO evtl. minY etwas größer (wegen Fensterleiste & -Buttons)
+        Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+        return new Rectangle2D(0.0, MIN_Y, visualBounds.getWidth(), visualBounds.getHeight() - MIN_Y);
     }
 
     @Override
