@@ -26,6 +26,7 @@ import java.util.Map;
  */
 abstract class NotificationManager {
 
+    public static final Duration ANIMATION_DURATION = Duration.millis(200);
     public static final double NOTIFICATION_SPACING = 2.0;
     public static final double SCREEN_SPACING = 3.0;
 
@@ -66,7 +67,7 @@ abstract class NotificationManager {
         getNotificationsForPosition(position).add(notification);
 
         if (position == Pos.CENTER) {
-            ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(150), root);
+            ScaleTransition scaleTransition = new ScaleTransition(ANIMATION_DURATION, root);
             scaleTransition.setFromX(0.0);
             scaleTransition.setToX(1.0);
             scaleTransition.setFromY(0.0);
@@ -108,7 +109,7 @@ abstract class NotificationManager {
                     throw new RuntimeException(position + " not supported!");
             }
             root.setClip(clip);
-            new Timeline(new KeyFrame(Duration.millis(150), new KeyValue(layoutProperty, 0))).play();
+            new Timeline(new KeyFrame(ANIMATION_DURATION, new KeyValue(layoutProperty, 0))).play();
         }
 
         if (playSound) {
