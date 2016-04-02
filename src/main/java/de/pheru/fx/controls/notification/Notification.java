@@ -37,6 +37,7 @@ public class Notification {
 
     public static final double WIDTH = 350.0;
 
+    private static Duration animationDuration = Duration.millis(300);
     private static NotificationDefaults defaults = new NotificationDefaults();
 
     @FXML
@@ -49,12 +50,13 @@ public class Notification {
     private Button exitButton;
 
     private Popup popup;
-
-    private Pos position = defaults.getPosition();
-    private final ObjectProperty<Duration> duration = new SimpleObjectProperty<>(defaults.getDuration());
     private final Timeline durationTimeline = new Timeline();
     private Timeline xTimeline;
     private Timeline yTimeline;
+
+    private Pos position = defaults.getPosition();
+    private boolean playSound = defaults.isPlaySound();
+    private final ObjectProperty<Duration> duration = new SimpleObjectProperty<>(defaults.getDuration());
 
     public Notification(Type type, Node content) {
         try {
@@ -100,20 +102,12 @@ public class Notification {
         this(type, new NotificationContent(type, textProperty, "").getRoot());
     }
 
-    public void show() {
-        show(defaults.isPlaySound(), GlobalNotificationManager.getNotificationStage());
+    public void show(boolean animate) {
+        show(animate, GlobalNotificationManager.getNotificationStage());
     }
 
-    public void show(boolean playSound) {
-        show(playSound, GlobalNotificationManager.getNotificationStage());
-    }
-
-    public void show(Window window) {
-        show(defaults.isPlaySound(), window);
-    }
-
-    public void show(boolean playSound, Window window) {
-        NotificationManager.getInstanceForOwner(window).show(playSound, this);
+    public void show(boolean animate, Window window) {
+        NotificationManager.getInstanceForOwner(window).show(animate, this);
         if (duration.get() != Duration.INDEFINITE) {
             durationTimeline.getKeyFrames().clear();
             durationTimeline.getKeyFrames().add(new KeyFrame(duration.get(), (ActionEvent event) -> {
@@ -263,6 +257,9 @@ public class Notification {
     }
 
     public void setPosition(Pos position) {
+        if(popup != null && popup.isShowing()){
+            throw new IllegalStateException("The position can not be changed while notification is showing!");
+        }
         this.position = position;
     }
 
@@ -272,6 +269,22 @@ public class Notification {
 
     public static void setDefaults(NotificationDefaults defaults) {
         Notification.defaults = defaults;
+    }
+
+    public boolean isPlaySound() {
+        return playSound;
+    }
+
+    public void setPlaySound(boolean playSound) {
+        this.playSound = playSound;
+    }
+
+    public static Duration getAnimationDuration() {
+        return animationDuration;
+    }
+
+    public static void setAnimationDuration(Duration animationDuration) {
+        Notification.animationDuration = animationDuration;
     }
 
     public enum Type {

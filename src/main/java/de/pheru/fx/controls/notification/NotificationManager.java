@@ -15,7 +15,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Popup;
 import javafx.stage.Window;
-import javafx.util.Duration;
 
 import java.awt.Toolkit;
 import java.util.HashMap;
@@ -26,11 +25,10 @@ import java.util.Map;
  */
 abstract class NotificationManager {
 
-    public static final Duration ANIMATION_DURATION = Duration.millis(200);
     public static final double NOTIFICATION_SPACING = 2.0;
     public static final double SCREEN_SPACING = 3.0;
 
-    private static final GlobalNotificationManager globalNotificationManager = new GlobalNotificationManager();
+    private static GlobalNotificationManager globalNotificationManager;
     private static final Map<Window, WindowNotificationManager> windowNotificationManagers = new HashMap<>();
 
     private final ObservableMap<Pos, ObservableList<Notification>> notificationsMap = FXCollections.observableHashMap();
@@ -41,6 +39,9 @@ abstract class NotificationManager {
 
     protected static NotificationManager getInstanceForOwner(Window owner) {
         if (owner == null || owner == GlobalNotificationManager.getNotificationStage()) {
+            if (globalNotificationManager == null) {
+                globalNotificationManager = new GlobalNotificationManager();
+            }
             return globalNotificationManager;
         } else if (windowNotificationManagers.containsKey(owner)) {
             return windowNotificationManagers.get(owner);
@@ -51,7 +52,7 @@ abstract class NotificationManager {
         }
     }
 
-    protected void show(boolean playSound, Notification notification) {
+    protected void show(boolean animate, Notification notification) {
         Popup popup = notification.getPopup();
         Pos position = notification.getPosition();
         GridPane root = notification.getRoot();
@@ -66,8 +67,20 @@ abstract class NotificationManager {
 
         getNotificationsForPosition(position).add(notification);
 
+        if (animate) {
+            playAnimation(position, notification);
+        }
+
+        if (notification.isPlaySound()) {
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
+
+    private void playAnimation(Pos position, Notification notification) {
+        Popup popup = notification.getPopup();
+        GridPane root = notification.getRoot();
         if (position == Pos.CENTER) {
-            ScaleTransition scaleTransition = new ScaleTransition(ANIMATION_DURATION, root);
+            ScaleTransition scaleTransition = new ScaleTransition(Notification.getAnimationDuration(), root);
             scaleTransition.setFromX(0.0);
             scaleTransition.setToX(1.0);
             scaleTransition.setFromY(0.0);
@@ -100,20 +113,14 @@ abstract class NotificationManager {
                     break;
                 case BOTTOM_CENTER:
                 case BASELINE_CENTER:
+                default:
                     clip.setLayoutX(0);
                     clip.setLayoutY(clip.getHeight());
                     layoutProperty = clip.layoutYProperty();
                     break;
-                case CENTER:
-                default:
-                    throw new RuntimeException(position + " not supported!");
             }
             root.setClip(clip);
-            new Timeline(new KeyFrame(ANIMATION_DURATION, new KeyValue(layoutProperty, 0))).play();
-        }
-
-        if (playSound) {
-            Toolkit.getDefaultToolkit().beep();
+            new Timeline(new KeyFrame(Notification.getAnimationDuration(), new KeyValue(layoutProperty, 0))).play();
         }
     }
 
@@ -171,7 +178,7 @@ abstract class NotificationManager {
             case TOP:
                 return visualBounds.getMinY() + SCREEN_SPACING;
             case CENTER:
-                return visualBounds.getMinY() + (visualBounds.getHeight() - SCREEN_SPACING - notificationHeight) / 2;
+                return visualBounds.getMinY() + (visualBounds.getHeight() - SCREEN_SPACING) / 2 - notificationHeight;
             case BOTTOM:
             case BASELINE:
             default:
