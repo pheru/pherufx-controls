@@ -62,11 +62,15 @@ public class NotificationBar extends VBox implements Initializable {
         r.heightProperty().bind(heightProperty());
         content.setClip(r);
 
-        hide();
+        setMinMaxHeight(0.0, false);
+
+        widthProperty().addListener((observable, oldValue, newValue) -> {
+            setMinMaxHeight(computeContentHeight(), true);
+        });
 
         notificationNodes.addListener((ListChangeListener<Node>) c -> {
             if (notificationNodes.isEmpty()) {
-                hide();
+                setMinMaxHeight(0.0, true);
             } else {
                 while (c.next()) {
                     if (c.wasRemoved()) {
@@ -76,14 +80,14 @@ public class NotificationBar extends VBox implements Initializable {
                             currentNotificationBox.getChildren().setAll(notificationNodes.get(currentNotificationIndex.get()));
                         }
                         if (notificationNodes.isEmpty()) {
-                            hide();
+                            setMinMaxHeight(0.0, true);
                         } else {
-                            resizeToContent();
+                            setMinMaxHeight(computeContentHeight(), true);
                         }
                     } else if (c.wasAdded()) {
                         if (notificationNodes.size() == c.getAddedSize()) {
                             currentNotificationBox.getChildren().setAll(notificationNodes.get(0));
-                            resizeToContent();
+                            setMinMaxHeight(computeContentHeight(), true);
                         }
                     }
                 }
@@ -91,22 +95,21 @@ public class NotificationBar extends VBox implements Initializable {
         });
         currentNotificationIndex.addListener((observable, oldValue, newValue) -> {
             currentNotificationBox.getChildren().setAll(notificationNodes.get(newValue.intValue()));
-            resizeToContent();
+            setMinMaxHeight(computeContentHeight(), true);
         });
         previousButton.disableProperty().bind(currentNotificationIndex.isEqualTo(0));
         nextButton.disableProperty().bind(currentNotificationIndex.isEqualTo(Bindings.size(notificationNodes).subtract(1)));
     }
 
-    private void hide() {
-        setMinHeight(0.0);
-        setMaxHeight(0.0);
-    }
-
-    private void resizeToContent() {
-        double height = computeContentHeight(currentNotificationBox.getChildren().get(0));
-        new Timeline(new KeyFrame(Duration.millis(250),
-                new KeyValue(minHeightProperty(), height),
-                new KeyValue(maxHeightProperty(), height))).play();
+    private void setMinMaxHeight(double value, boolean animate) {
+        if (animate) {
+            new Timeline(new KeyFrame(Duration.millis(200),
+                    new KeyValue(minHeightProperty(), value),
+                    new KeyValue(maxHeightProperty(), value))).play();
+        } else {
+            setMinHeight(value);
+            setMaxHeight(value);
+        }
     }
 
     @FXML
@@ -128,16 +131,20 @@ public class NotificationBar extends VBox implements Initializable {
         return notificationNodes;
     }
 
-    private double computeContentHeight(Node content) {
+    private double computeContentHeight() {
+        if (currentNotificationBox.getChildren().isEmpty()) {
+            return 0.0;
+        }
+        Node contentNode = currentNotificationBox.getChildren().get(0);
         Group root = new Group();
         Scene scene = new Scene(root);
-        root.getChildren().add(content);
+        root.getChildren().add(contentNode);
         root.applyCss();
         root.layout();
 
-        double height = content.prefHeight(currentNotificationBox.getWidth());
+        double height = contentNode.prefHeight(currentNotificationBox.getWidth());
 
-        currentNotificationBox.getChildren().setAll(content);
+        currentNotificationBox.getChildren().setAll(contentNode);
 
         double buttonHeight = Math.max(nextButton.getHeight(), closeButton.getHeight());
         return Math.max(buttonHeight, height);
