@@ -42,6 +42,9 @@ public class TestClassNotification extends Application {
         positionBox.getSelectionModel().select(0);
         Notification.getDefaults().positionProperty().bind(positionBox.getSelectionModel().selectedItemProperty());
 
+        Button testButton = new Button("Test");
+        testButton.setOnAction((ActionEvent event) -> testTest());
+
         Button allgButton = new Button("Allgemein");
         allgButton.setOnAction((ActionEvent event) -> testAllg());
 
@@ -63,12 +66,18 @@ public class TestClassNotification extends Application {
         Button hideAllButton = new Button("Hide All");
         hideAllButton.setOnAction((ActionEvent event) -> Notification.hideAll(null));
 
-        VBox box = new VBox(positionBox, allgButton, tonButton, timerButton, checkBoxButton, exitButtonButton,
+        VBox box = new VBox(positionBox, testButton, allgButton, tonButton, timerButton, checkBoxButton, exitButtonButton,
                 layoutButton, hideAllButton);
         box.setAlignment(Pos.TOP_CENTER);
         box.setSpacing(3);
         box.setMinWidth(200);
         return box;
+    }
+
+    private void testTest() {
+        Notification notification = new Notification(Notification.Type.INFO, "Test");
+        notification.setDuration(Duration.seconds(3));
+        notification.show(true);
     }
 
     private void testAllg() {
@@ -128,7 +137,7 @@ public class TestClassNotification extends Application {
             try {
                 Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton 1").show(true, stage)); // Ton
                 Thread.sleep(1000);
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton \n2").show(false, stage)); // Ton
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton \n2").show(true, stage)); // Ton
                 Thread.sleep(1000);
 //                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton 2").show(stage));  //Kein Ton
 //                Thread.sleep(1000);

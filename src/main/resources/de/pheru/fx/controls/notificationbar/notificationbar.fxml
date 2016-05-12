@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import java.net.URL?>
+<?import javafx.scene.layout.*?>
+
+<fx:root styleClass="notificationbar" type="javafx.scene.layout.VBox" xmlns="http://javafx.com/javafx/null"
+         xmlns:fx="http://javafx.com/fxml/1" alignment="TOP_LEFT">
+    <HBox fx:id="content" alignment="TOP_LEFT">
+        <VBox fx:id="currentNotificationBox" alignment="TOP_LEFT" HBox.hgrow="ALWAYS" fillWidth="true"/>
+        <Button fx:id="previousButton" onAction="#previous" text="&lt;" textOverrun="CLIP"/>
+        <Button fx:id="nextButton" onAction="#next" text="&gt;" textOverrun="CLIP"/>
+        <Button fx:id="closeButton" onAction="#close" text="X" textOverrun="CLIP"/>
+    </HBox>
+</fx:root>
