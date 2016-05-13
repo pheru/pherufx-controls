@@ -6,16 +6,19 @@ import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -30,6 +33,8 @@ import java.util.ResourceBundle;
  */
 public class NotificationBar extends VBox implements Initializable {
 
+    public static final String STYLE_CLASS = "notificationbar";
+
     @FXML
     private HBox content;
     @FXML
@@ -41,7 +46,7 @@ public class NotificationBar extends VBox implements Initializable {
     @FXML
     private Button closeButton;
 
-    private final ObservableList<Node> notificationNodes = FXCollections.observableArrayList();
+    private final ObservableList<NotificationNode> notificationNodes = FXCollections.observableArrayList();
     private final IntegerProperty currentNotificationIndex = new SimpleIntegerProperty(0);
 
     public NotificationBar() {
@@ -64,12 +69,13 @@ public class NotificationBar extends VBox implements Initializable {
 
         setMinMaxHeight(0.0, false);
 
-        widthProperty().addListener((observable, oldValue, newValue) -> {
+        currentNotificationBox.widthProperty().addListener((observable, oldValue, newValue) -> {
             setMinMaxHeight(computeContentHeight(), true);
         });
 
-        notificationNodes.addListener((ListChangeListener<Node>) c -> {
+        notificationNodes.addListener((ListChangeListener<NotificationNode>) c -> {
             if (notificationNodes.isEmpty()) {
+                currentNotificationBox.getChildren().clear();
                 setMinMaxHeight(0.0, true);
             } else {
                 while (c.next()) {
@@ -77,28 +83,34 @@ public class NotificationBar extends VBox implements Initializable {
                         if (currentNotificationIndex.get() >= notificationNodes.size()) {
                             currentNotificationIndex.set(notificationNodes.size() - 1);
                         } else {
-                            currentNotificationBox.getChildren().setAll(notificationNodes.get(currentNotificationIndex.get()));
-                        }
-                        if (notificationNodes.isEmpty()) {
-                            setMinMaxHeight(0.0, true);
-                        } else {
-                            setMinMaxHeight(computeContentHeight(), true);
+                            setCurrentNotificationNode(notificationNodes.get(currentNotificationIndex.get()));
                         }
                     } else if (c.wasAdded()) {
                         if (notificationNodes.size() == c.getAddedSize()) {
-                            currentNotificationBox.getChildren().setAll(notificationNodes.get(0));
-                            setMinMaxHeight(computeContentHeight(), true);
+                            setCurrentNotificationNode(notificationNodes.get(0));
                         }
                     }
                 }
             }
         });
         currentNotificationIndex.addListener((observable, oldValue, newValue) -> {
-            currentNotificationBox.getChildren().setAll(notificationNodes.get(newValue.intValue()));
-            setMinMaxHeight(computeContentHeight(), true);
+            setCurrentNotificationNode(notificationNodes.get(newValue.intValue()));
         });
-        previousButton.disableProperty().bind(currentNotificationIndex.isEqualTo(0));
-        nextButton.disableProperty().bind(currentNotificationIndex.isEqualTo(Bindings.size(notificationNodes).subtract(1)));
+        previousButton.visibleProperty().bind(currentNotificationIndex.greaterThan(0));
+        previousButton.managedProperty().bind(currentNotificationIndex.greaterThan(0));
+        nextButton.visibleProperty().bind(currentNotificationIndex.lessThan(Bindings.size(notificationNodes).subtract(1)));
+        nextButton.managedProperty().bind(currentNotificationIndex.lessThan(Bindings.size(notificationNodes).subtract(1))
+                .or(previousButton.managedProperty()));
+    }
+
+    private void setCurrentNotificationNode(NotificationNode node) {
+        currentNotificationBox.getChildren().setAll(node.getNode());
+        setMinMaxHeight(computeContentHeight(), true);
+        if (node.getType() == Type.NONE) {
+            getStyleClass().setAll(STYLE_CLASS);
+        } else {
+            getStyleClass().setAll(STYLE_CLASS, node.getType().getStyleClass());
+        }
     }
 
     private void setMinMaxHeight(double value, boolean animate) {
@@ -127,8 +139,30 @@ public class NotificationBar extends VBox implements Initializable {
         notificationNodes.remove(currentNotificationIndex.get());
     }
 
-    public ObservableList<Node> getNotificationNodes() {
-        return notificationNodes;
+    public void addNotification(Type type, String message) {
+        Label label = createMessageLabel();
+        label.setText(message);
+        notificationNodes.add(new NotificationNode(label, type));
+    }
+
+    public void addNotification(Type type, StringProperty message) {
+        Label label = createMessageLabel();
+        label.textProperty().bind(message);
+        notificationNodes.add(new NotificationNode(label, type));
+    }
+
+    private Label createMessageLabel() {
+        Label label = new Label();
+        label.textProperty().addListener((observable, oldValue, newValue) -> {
+            setMinMaxHeight(computeContentHeight(), true);
+        });
+        label.setWrapText(true);
+        label.setAlignment(Pos.TOP_LEFT);
+        return label;
+    }
+
+    public void addNotification(Type type, Node node) {
+        notificationNodes.add(new NotificationNode(node, type));
     }
 
     private double computeContentHeight() {
@@ -148,5 +182,46 @@ public class NotificationBar extends VBox implements Initializable {
 
         double buttonHeight = Math.max(nextButton.getHeight(), closeButton.getHeight());
         return Math.max(buttonHeight, height);
+    }
+
+    private class NotificationNode {
+        private final Node node;
+        private final Type type;
+
+        public NotificationNode(Node node, Type type) {
+            this.node = node;
+            this.type = type;
+        }
+
+        public Node getNode() {
+            return node;
+        }
+
+        public Type getType() {
+            return type;
+        }
+    }
+
+    public enum Type {
+        INFO("img/Info.png", "info"),
+        WARNING("img/Warning.png", "warning"),
+        ERROR("img/Error.png", "error"),
+        NONE("", "");
+
+        private final String imagePath;
+        private final String styleClass;
+
+        Type(final String imagePath, String styleClass) {
+            this.imagePath = imagePath;
+            this.styleClass = styleClass;
+        }
+
+        protected String getImagePath() {
+            return imagePath;
+        }
+
+        protected String getStyleClass() {
+            return styleClass;
+        }
     }
 }

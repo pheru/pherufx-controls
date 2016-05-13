@@ -41,23 +41,15 @@ public class TestClassNotificationBar extends Application {
         b.setOnAction(event -> {
             if (tf.getText().isEmpty()) {
                 VBox vb = new VBox(new Label("Test"), new ProgressBar(0.5), new Button("Button"));
-                notificationBar.getNotificationNodes().add(vb);
+                notificationBar.addNotification(NotificationBar.Type.INFO, vb);
             } else {
-                Label l = new Label(tf.getText());
-                l.setWrapText(true);
-                notificationBar.getNotificationNodes().add(l);
+                notificationBar.addNotification(NotificationBar.Type.WARNING, tf.getText());
             }
         });
         v.getChildren().add(b);
-        Button b2 = new Button("Add wrapmessage");
+        Button b2 = new Button("Add property");
         b2.setOnAction(event -> {
-            Label l = new Label("asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd ");
-            l.setWrapText(true);
-            l.setAlignment(Pos.TOP_LEFT);
-//            l.setPrefHeight(999);
-//            l.setMaxHeight(999);
-//            notificationBar.setPrefHeight(999);
-            notificationBar.getNotificationNodes().add(l);
+            notificationBar.addNotification(NotificationBar.Type.ERROR, tf.textProperty());
         });
         v.getChildren().add(b2);
 
