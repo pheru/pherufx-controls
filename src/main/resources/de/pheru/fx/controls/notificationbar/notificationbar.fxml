@@ -10,14 +10,27 @@
 <?import javafx.scene.layout.*?>
 
 <fx:root alignment="TOP_LEFT" styleClass="notificationbar" type="javafx.scene.layout.VBox"
-         xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
+         xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" maxHeight="0.0">
+    <fx:define>
+        <Double fx:id="BUTTON_SIZE" fx:value="16.0"/>
+    </fx:define>
     <stylesheets>
         <URL value="@notificationbar.css"/>
     </stylesheets>
-    <HBox fx:id="content" alignment="TOP_LEFT" spacing="3.0">
+    <HBox fx:id="content" alignment="TOP_LEFT" spacing="3.0" minHeight="0.0" maxHeight="0.0">
+        <VBox alignment="CENTER" prefHeight="9999">
+            <ImageView fx:id="imageView" fitWidth="20.0" fitHeight="20.0" focusTraversable="false" managed="false"
+                       visible="false"/>
+        </VBox>
         <VBox fx:id="currentNotificationBox" alignment="TOP_LEFT" fillWidth="true" HBox.hgrow="ALWAYS"/>
-        <Button fx:id="previousButton" focusTraversable="false" minHeight="15.0" minWidth="15.0" maxHeight="15.0" maxWidth="15.0" onAction="#previous" styleClass="notificationbarbutton, previousbutton"/>
-        <Button fx:id="nextButton" focusTraversable="false" minHeight="15.0" minWidth="15.0" maxHeight="15.0" maxWidth="15.0" onAction="#next" styleClass="notificationbarbutton, nextbutton"/>
-        <Button fx:id="closeButton" focusTraversable="false" minHeight="15.0" minWidth="15.0" maxHeight="15.0" maxWidth="15.0" onAction="#close" styleClass="notificationbarbutton, closebutton"/>
+        <Button fx:id="previousButton" focusTraversable="false" minHeight="$BUTTON_SIZE" minWidth="$BUTTON_SIZE"
+                maxHeight="$BUTTON_SIZE" maxWidth="$BUTTON_SIZE" onAction="#previous"
+                styleClass="notificationbarbutton, previousbutton"/>
+        <Button fx:id="nextButton" focusTraversable="false" minHeight="$BUTTON_SIZE" minWidth="$BUTTON_SIZE"
+                maxHeight="$BUTTON_SIZE" maxWidth="$BUTTON_SIZE" onAction="#next"
+                styleClass="notificationbarbutton, nextbutton"/>
+        <Button fx:id="closeButton" focusTraversable="false" minHeight="$BUTTON_SIZE" minWidth="$BUTTON_SIZE"
+                maxHeight="$BUTTON_SIZE" maxWidth="$BUTTON_SIZE" onAction="#close"
+                styleClass="notificationbarbutton, closebutton"/>
     </HBox>
 </fx:root>

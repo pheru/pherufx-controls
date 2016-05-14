@@ -11,7 +11,7 @@
 }
 
 .notificationbar.error {
-    -fx-background-color: red;
+    -fx-background-color: orangered;
 }
 
 .notificationbar .notificationbarbutton {
@@ -19,11 +19,11 @@
 }
 
 .notificationbar .notificationbarbutton:hover {
-    -fx-background-color: white;
+    -fx-background-color: darkgrey;
 }
 
 .notificationbar .notificationbarbutton:pressed {
-    -fx-background-color: grey;
+    -fx-background-color: dimgrey;
 }
 
 .notificationbar .nextbutton {

@@ -1,7 +1,6 @@
 package de.pheru.fx.controls.notificationbar;
 
 import javafx.application.Application;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -38,18 +37,21 @@ public class TestClassNotificationBar extends Application {
         VBox.setVgrow(tableView, Priority.ALWAYS);
         v.getChildren().add(tf);
         Button b = new Button("Add Message");
+
+        final NotificationBar.Element[] e = new NotificationBar.Element[1];
         b.setOnAction(event -> {
             if (tf.getText().isEmpty()) {
                 VBox vb = new VBox(new Label("Test"), new ProgressBar(0.5), new Button("Button"));
-                notificationBar.addNotification(NotificationBar.Type.INFO, vb);
+                e[0] = notificationBar.addElement(NotificationBar.Type.ERROR, vb);
             } else {
-                notificationBar.addNotification(NotificationBar.Type.WARNING, tf.getText());
+                notificationBar.addElement(NotificationBar.Type.INFO, tf.getText());
             }
         });
         v.getChildren().add(b);
         Button b2 = new Button("Add property");
         b2.setOnAction(event -> {
-            notificationBar.addNotification(NotificationBar.Type.ERROR, tf.textProperty());
+//            e[0].close();
+            notificationBar.addElement(NotificationBar.Type.WARNING, tf.getText());
         });
         v.getChildren().add(b2);
 

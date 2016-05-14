@@ -19,6 +19,8 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -38,6 +40,8 @@ public class NotificationBar extends VBox implements Initializable {
     @FXML
     private HBox content;
     @FXML
+    private ImageView imageView;
+    @FXML
     private VBox currentNotificationBox;
     @FXML
     private Button previousButton;
@@ -46,8 +50,11 @@ public class NotificationBar extends VBox implements Initializable {
     @FXML
     private Button closeButton;
 
-    private final ObservableList<NotificationNode> notificationNodes = FXCollections.observableArrayList();
-    private final IntegerProperty currentNotificationIndex = new SimpleIntegerProperty(0);
+    private final ObservableList<Element> elements = FXCollections.observableArrayList();
+    private final IntegerProperty currentIndex = new SimpleIntegerProperty(0);
+
+    private boolean animate = true;
+    private boolean showTypeIcon = true;
 
     public NotificationBar() {
         FXMLLoader fxmlLoader = new FXMLLoader(NotificationBar.class.getResource("notificationbar.fxml"));
@@ -67,102 +74,116 @@ public class NotificationBar extends VBox implements Initializable {
         r.heightProperty().bind(heightProperty());
         content.setClip(r);
 
-        setMinMaxHeight(0.0, false);
-
         currentNotificationBox.widthProperty().addListener((observable, oldValue, newValue) -> {
-            setMinMaxHeight(computeContentHeight(), true);
+            setMinMaxHeight(computeContentHeight(), animate);
         });
 
-        notificationNodes.addListener((ListChangeListener<NotificationNode>) c -> {
-            if (notificationNodes.isEmpty()) {
+        elements.addListener((ListChangeListener<Element>) c -> {
+            if (elements.isEmpty()) {
                 currentNotificationBox.getChildren().clear();
-                setMinMaxHeight(0.0, true);
+                setMinMaxHeight(0.0, animate);
             } else {
                 while (c.next()) {
-                    if (c.wasRemoved()) {
-                        if (currentNotificationIndex.get() >= notificationNodes.size()) {
-                            currentNotificationIndex.set(notificationNodes.size() - 1);
+                    if (c.wasRemoved() && c.getFrom() == currentIndex.get()) {
+                        if (currentIndex.get() >= elements.size()) {
+                            currentIndex.set(elements.size() - 1);
                         } else {
-                            setCurrentNotificationNode(notificationNodes.get(currentNotificationIndex.get()));
+                            setCurrentNotificationNode(elements.get(currentIndex.get()));
                         }
                     } else if (c.wasAdded()) {
-                        if (notificationNodes.size() == c.getAddedSize()) {
-                            setCurrentNotificationNode(notificationNodes.get(0));
+                        if (elements.size() == c.getAddedSize()) {
+                            setCurrentNotificationNode(elements.get(0));
                         }
                     }
                 }
             }
         });
-        currentNotificationIndex.addListener((observable, oldValue, newValue) -> {
-            setCurrentNotificationNode(notificationNodes.get(newValue.intValue()));
+        currentIndex.addListener((observable, oldValue, newValue) -> {
+            setCurrentNotificationNode(elements.get(newValue.intValue()));
         });
-        previousButton.visibleProperty().bind(currentNotificationIndex.greaterThan(0));
-        previousButton.managedProperty().bind(currentNotificationIndex.greaterThan(0));
-        nextButton.visibleProperty().bind(currentNotificationIndex.lessThan(Bindings.size(notificationNodes).subtract(1)));
-        nextButton.managedProperty().bind(currentNotificationIndex.lessThan(Bindings.size(notificationNodes).subtract(1))
+        previousButton.visibleProperty().bind(currentIndex.greaterThan(0));
+        previousButton.managedProperty().bind(currentIndex.greaterThan(0));
+        nextButton.visibleProperty().bind(currentIndex.lessThan(Bindings.size(elements).subtract(1)));
+        nextButton.managedProperty().bind(currentIndex.lessThan(Bindings.size(elements).subtract(1))
                 .or(previousButton.managedProperty()));
     }
 
-    private void setCurrentNotificationNode(NotificationNode node) {
+    private void setCurrentNotificationNode(Element node) {
         currentNotificationBox.getChildren().setAll(node.getNode());
-        setMinMaxHeight(computeContentHeight(), true);
+        setMinMaxHeight(computeContentHeight(), animate);
         if (node.getType() == Type.NONE) {
             getStyleClass().setAll(STYLE_CLASS);
+            imageView.setManaged(false);
+            imageView.setVisible(false);
         } else {
             getStyleClass().setAll(STYLE_CLASS, node.getType().getStyleClass());
+            imageView.setImage(new Image(node.getType().getImagePath()));
+            imageView.setManaged(showTypeIcon);
+            imageView.setVisible(showTypeIcon);
         }
     }
 
     private void setMinMaxHeight(double value, boolean animate) {
         if (animate) {
             new Timeline(new KeyFrame(Duration.millis(200),
+                    new KeyValue(content.minHeightProperty(), value),
+                    new KeyValue(content.maxHeightProperty(), value),
                     new KeyValue(minHeightProperty(), value),
                     new KeyValue(maxHeightProperty(), value))).play();
         } else {
             setMinHeight(value);
             setMaxHeight(value);
+            content.setMinHeight(value);
+            content.setMaxHeight(value);
         }
     }
 
     @FXML
     private void next() {
-        currentNotificationIndex.set(currentNotificationIndex.get() + 1);
+        currentIndex.set(currentIndex.get() + 1);
     }
 
     @FXML
     private void previous() {
-        currentNotificationIndex.set(currentNotificationIndex.get() - 1);
+        currentIndex.set(currentIndex.get() - 1);
     }
 
     @FXML
     private void close() {
-        notificationNodes.remove(currentNotificationIndex.get());
+        elements.remove(currentIndex.get());
     }
 
-    public void addNotification(Type type, String message) {
+    public Element addElement(Type type, String message) {
         Label label = createMessageLabel();
         label.setText(message);
-        notificationNodes.add(new NotificationNode(label, type));
+        return addElement(type, label);
+
     }
 
-    public void addNotification(Type type, StringProperty message) {
+    public Element addElement(Type type, StringProperty message) {
         Label label = createMessageLabel();
         label.textProperty().bind(message);
-        notificationNodes.add(new NotificationNode(label, type));
+        label.textProperty().addListener((observable, oldValue, newValue) -> {
+            setMinMaxHeight(computeContentHeight(), animate);
+        });
+        return addElement(type, label);
+    }
+
+    public Element addElement(Type type, Node node) {
+        Element element = new Element(type, node);
+        addElement(element);
+        return element;
+    }
+
+    public void addElement(Element element) {
+        elements.add(element);
     }
 
     private Label createMessageLabel() {
         Label label = new Label();
-        label.textProperty().addListener((observable, oldValue, newValue) -> {
-            setMinMaxHeight(computeContentHeight(), true);
-        });
         label.setWrapText(true);
         label.setAlignment(Pos.TOP_LEFT);
         return label;
-    }
-
-    public void addNotification(Type type, Node node) {
-        notificationNodes.add(new NotificationNode(node, type));
     }
 
     private double computeContentHeight() {
@@ -176,29 +197,52 @@ public class NotificationBar extends VBox implements Initializable {
         root.applyCss();
         root.layout();
 
-        double height = contentNode.prefHeight(currentNotificationBox.getWidth());
+        double prefHeight = contentNode.prefHeight(currentNotificationBox.getWidth());
 
         currentNotificationBox.getChildren().setAll(contentNode);
 
-        double buttonHeight = Math.max(nextButton.getHeight(), closeButton.getHeight());
-        return Math.max(buttonHeight, height);
+        double minHeight = closeButton.getHeight();
+        if(imageView.isVisible()){
+            minHeight = Math.max(imageView.getFitHeight(), minHeight);
+        }
+        return Math.max(minHeight, prefHeight);
     }
 
-    private class NotificationNode {
+    public boolean isAnimate() {
+        return animate;
+    }
+
+    public void setAnimate(boolean animate) {
+        this.animate = animate;
+    }
+
+    public boolean isShowTypeIcon() {
+        return showTypeIcon;
+    }
+
+    public void setShowTypeIcon(boolean showTypeIcon) {
+        this.showTypeIcon = showTypeIcon;
+    }
+
+    public class Element {
         private final Node node;
         private final Type type;
 
-        public NotificationNode(Node node, Type type) {
+        public Element(Type type, Node node) {
             this.node = node;
             this.type = type;
         }
 
-        public Node getNode() {
+        private Node getNode() {
             return node;
         }
 
-        public Type getType() {
+        private Type getType() {
             return type;
+        }
+
+        public void close() {
+            elements.remove(this);
         }
     }
 
