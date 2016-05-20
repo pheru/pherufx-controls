@@ -9,6 +9,9 @@
 <?import java.net.URL?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.*?>
+
 <fx:root alignment="TOP_LEFT" styleClass="notificationbar" type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" maxHeight="0.0">
     <fx:define>
@@ -17,20 +20,43 @@
     <stylesheets>
         <URL value="@notificationbar.css"/>
     </stylesheets>
-    <HBox fx:id="content" alignment="TOP_LEFT" spacing="3.0" minHeight="0.0" maxHeight="0.0">
+    <HBox fx:id="content" alignment="TOP_LEFT" minHeight="0.0" maxHeight="0.0">
         <VBox alignment="CENTER" prefHeight="9999">
             <ImageView fx:id="imageView" fitWidth="20.0" fitHeight="20.0" focusTraversable="false" managed="false"
-                       visible="false"/>
+                       visible="false">
+                <VBox.margin>
+                    <Insets right="3.0"/>
+                </VBox.margin>
+            </ImageView>
         </VBox>
         <VBox fx:id="currentNotificationBox" alignment="TOP_LEFT" fillWidth="true" HBox.hgrow="ALWAYS"/>
         <Button fx:id="previousButton" focusTraversable="false" minHeight="$BUTTON_SIZE" minWidth="$BUTTON_SIZE"
                 maxHeight="$BUTTON_SIZE" maxWidth="$BUTTON_SIZE" onAction="#previous"
-                styleClass="notificationbarbutton, previousbutton"/>
+                styleClass="notificationbar-button" contentDisplay="GRAPHIC_ONLY">
+            <graphic>
+                <SVGPath styleClass="notificationbar-buttongraphic" content="M 10 0 L 0 5 L 10 10 Z"/>
+            </graphic>
+            <padding>
+                <Insets top="0" right="2" bottom="0" left="0"/>
+            </padding>
+        </Button>
         <Button fx:id="nextButton" focusTraversable="false" minHeight="$BUTTON_SIZE" minWidth="$BUTTON_SIZE"
                 maxHeight="$BUTTON_SIZE" maxWidth="$BUTTON_SIZE" onAction="#next"
-                styleClass="notificationbarbutton, nextbutton"/>
+                styleClass="notificationbar-button" contentDisplay="GRAPHIC_ONLY">
+            <graphic>
+                <SVGPath styleClass="notificationbar-buttongraphic" content="M 0 0 L 10 5 L 0 10 Z"/>
+            </graphic>
+            <padding>
+                <Insets top="0" right="0" bottom="0" left="2"/>
+            </padding>
+        </Button>
         <Button fx:id="closeButton" focusTraversable="false" minHeight="$BUTTON_SIZE" minWidth="$BUTTON_SIZE"
                 maxHeight="$BUTTON_SIZE" maxWidth="$BUTTON_SIZE" onAction="#close"
-                styleClass="notificationbarbutton, closebutton"/>
+                styleClass="notificationbar-button, notificationbar-closebutton" contentDisplay="GRAPHIC_ONLY">
+            <graphic>
+                <SVGPath styleClass="notificationbar-buttongraphic, notificationbar-closebuttongraphic"
+                         content="M 2 0 L 10 8 L 8 10 L 0 2 Z M 0 8 L 8 0 L 10 2 L 2 10 Z"/>
+            </graphic>
+        </Button>
     </HBox>
 </fx:root>

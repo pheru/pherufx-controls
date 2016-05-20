@@ -6,13 +6,11 @@ import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -27,13 +25,11 @@ import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 /**
  * Created by Philipp on 16.03.2016.
  */
-public class NotificationBar extends VBox implements Initializable {
+public class NotificationBar extends VBox {
 
     public static final String STYLE_CLASS = "notificationbar";
 
@@ -62,45 +58,33 @@ public class NotificationBar extends VBox implements Initializable {
         fxmlLoader.setController(this);
         try {
             fxmlLoader.load();
+            init();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    private void init() {
+        setUpClip();
+        setUpBindingsAndListeners();
+    }
+
+    private void setUpClip() {
         Rectangle r = new Rectangle();
         r.widthProperty().bind(widthProperty());
         r.heightProperty().bind(heightProperty());
         content.setClip(r);
+    }
 
+    private void setUpBindingsAndListeners() {
         currentNotificationBox.widthProperty().addListener((observable, oldValue, newValue) -> {
-            setMinMaxHeight(computeContentHeight(), animate);
-        });
-
-        elements.addListener((ListChangeListener<Element>) c -> {
-            if (elements.isEmpty()) {
-                currentNotificationBox.getChildren().clear();
-                setMinMaxHeight(0.0, animate);
-            } else {
-                while (c.next()) {
-                    if (c.wasRemoved() && c.getFrom() == currentIndex.get()) {
-                        if (currentIndex.get() >= elements.size()) {
-                            currentIndex.set(elements.size() - 1);
-                        } else {
-                            setCurrentNotificationNode(elements.get(currentIndex.get()));
-                        }
-                    } else if (c.wasAdded()) {
-                        if (elements.size() == c.getAddedSize()) {
-                            setCurrentNotificationNode(elements.get(0));
-                        }
-                    }
-                }
-            }
+            resizeToContent();
         });
         currentIndex.addListener((observable, oldValue, newValue) -> {
             setCurrentNotificationNode(elements.get(newValue.intValue()));
         });
+        elements.addListener(new ElementsListChangeLister());
+
         previousButton.visibleProperty().bind(currentIndex.greaterThan(0));
         previousButton.managedProperty().bind(currentIndex.greaterThan(0));
         nextButton.visibleProperty().bind(currentIndex.lessThan(Bindings.size(elements).subtract(1)));
@@ -108,49 +92,25 @@ public class NotificationBar extends VBox implements Initializable {
                 .or(previousButton.managedProperty()));
     }
 
-    private void setCurrentNotificationNode(Element node) {
-        currentNotificationBox.getChildren().setAll(node.getNode());
-        setMinMaxHeight(computeContentHeight(), animate);
-        if (node.getType() == Type.NONE) {
-            getStyleClass().setAll(STYLE_CLASS);
-            imageView.setManaged(false);
-            imageView.setVisible(false);
-        } else {
-            getStyleClass().setAll(STYLE_CLASS, node.getType().getStyleClass());
-            imageView.setImage(new Image(node.getType().getImagePath()));
-            imageView.setManaged(showTypeIcon);
-            imageView.setVisible(showTypeIcon);
-        }
-    }
-
-    private void setMinMaxHeight(double value, boolean animate) {
-        if (animate) {
-            new Timeline(new KeyFrame(Duration.millis(200),
-                    new KeyValue(content.minHeightProperty(), value),
-                    new KeyValue(content.maxHeightProperty(), value),
-                    new KeyValue(minHeightProperty(), value),
-                    new KeyValue(maxHeightProperty(), value))).play();
-        } else {
-            setMinHeight(value);
-            setMaxHeight(value);
-            content.setMinHeight(value);
-            content.setMaxHeight(value);
+    @FXML
+    public void next() {
+        if (currentIndex.get() < elements.size() - 1) {
+            currentIndex.set(currentIndex.get() + 1);
         }
     }
 
     @FXML
-    private void next() {
-        currentIndex.set(currentIndex.get() + 1);
+    public void previous() {
+        if (currentIndex.get() > 0) {
+            currentIndex.set(currentIndex.get() - 1);
+        }
     }
 
     @FXML
-    private void previous() {
-        currentIndex.set(currentIndex.get() - 1);
-    }
-
-    @FXML
-    private void close() {
-        elements.remove(currentIndex.get());
+    public void close() {
+        if (currentIndex.get() < elements.size()) {
+            elements.remove(currentIndex.get());
+        }
     }
 
     public Element addElement(Type type, String message) {
@@ -160,14 +120,15 @@ public class NotificationBar extends VBox implements Initializable {
 
     }
 
-    public Element addElement(Type type, StringProperty message) {
-        Label label = createMessageLabel();
-        label.textProperty().bind(message);
-        label.textProperty().addListener((observable, oldValue, newValue) -> {
-            setMinMaxHeight(computeContentHeight(), animate);
-        });
-        return addElement(type, label);
-    }
+    //TODO Issue #42 Automatische Anpassung bei Inhalts-Resize
+//    public Element addElement(Type type, StringProperty message) {
+//        Label label = createMessageLabel();
+//        label.textProperty().bind(message);
+//        label.textProperty().addListener((observable, oldValue, newValue) -> {
+//            resizeToContent();
+//        });
+//        return addElement(type, label);
+//    }
 
     public Element addElement(Type type, Node node) {
         Element element = new Element(type, node);
@@ -186,7 +147,26 @@ public class NotificationBar extends VBox implements Initializable {
         return label;
     }
 
-    private double computeContentHeight() {
+    public void resizeToContent() {
+        setMinMaxHeight(computeContentHeight(), animate);
+    }
+
+    private void setMinMaxHeight(double value, boolean animate) {
+        if (animate) {
+            new Timeline(new KeyFrame(Duration.millis(200),
+                    new KeyValue(content.minHeightProperty(), value),
+                    new KeyValue(content.maxHeightProperty(), value),
+                    new KeyValue(minHeightProperty(), value),
+                    new KeyValue(maxHeightProperty(), value))).play();
+        } else {
+            setMinHeight(value);
+            setMaxHeight(value);
+            content.setMinHeight(value);
+            content.setMaxHeight(value);
+        }
+    }
+
+    private double computeContentHeight() { //TODO Issue #43 Flackern bei resize
         if (currentNotificationBox.getChildren().isEmpty()) {
             return 0.0;
         }
@@ -202,10 +182,25 @@ public class NotificationBar extends VBox implements Initializable {
         currentNotificationBox.getChildren().setAll(contentNode);
 
         double minHeight = closeButton.getHeight();
-        if(imageView.isVisible()){
+        if (imageView.isVisible()) {
             minHeight = Math.max(imageView.getFitHeight(), minHeight);
         }
         return Math.max(minHeight, prefHeight);
+    }
+
+    private void setCurrentNotificationNode(Element element) {
+        currentNotificationBox.getChildren().setAll(element.getNode());
+        if (element.getType() == Type.NONE) {
+            getStyleClass().setAll(STYLE_CLASS);
+            imageView.setManaged(false);
+            imageView.setVisible(false);
+        } else {
+            getStyleClass().setAll(STYLE_CLASS, element.getType().getStyleClass());
+            imageView.setImage(new Image(element.getType().getImagePath()));
+            imageView.setManaged(showTypeIcon);
+            imageView.setVisible(showTypeIcon);
+        }
+        resizeToContent();
     }
 
     public boolean isAnimate() {
@@ -222,6 +217,35 @@ public class NotificationBar extends VBox implements Initializable {
 
     public void setShowTypeIcon(boolean showTypeIcon) {
         this.showTypeIcon = showTypeIcon;
+    }
+
+    private class ElementsListChangeLister implements ListChangeListener<Element> {
+
+        @Override
+        public void onChanged(Change<? extends Element> c) {
+            if (elements.isEmpty()) {
+                currentNotificationBox.getChildren().clear();
+                setMinMaxHeight(0.0, animate);
+            } else {
+                while (c.next()) {
+                    if (c.wasRemoved()) {
+                        if (c.getFrom() == currentIndex.get()) {
+                            if (currentIndex.get() >= elements.size()) {
+                                currentIndex.set(elements.size() - 1);
+                            } else {
+                                setCurrentNotificationNode(elements.get(currentIndex.get()));
+                            }
+                        } else if (c.getFrom() < currentIndex.get()) {
+                            currentIndex.set(currentIndex.get() - 1);
+                        }
+                    } else if (c.wasAdded()) {
+                        if (elements.size() == c.getAddedSize()) {
+                            setCurrentNotificationNode(elements.get(0));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public class Element {
