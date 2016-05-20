@@ -2,6 +2,10 @@
     Created on : 30.01.2015, 22:50:08
     Author     : Philipp Bruckner
 */
+
+/*
+Notification - Type NONE
+*/
 .notification {
     -fx-background-color: rgba(0, 0, 0, 0.75);
     -fx-background-radius: 5;
@@ -11,6 +15,9 @@
     -fx-background-color: rgba(0, 0, 0, 0.85);
 }
 
+/*
+Notification - Type INFO
+*/
 .notification.info {
     -fx-background-color: rgba(0, 0, 70, 0.8);
 }
@@ -19,6 +26,9 @@
     -fx-background-color: rgba(0, 0, 120, 0.8);
 }
 
+/*
+Notification - Type WARNING
+*/
 .notification.warning {
     -fx-background-color: rgba(70, 70, 0, 0.8);
 }
@@ -27,6 +37,9 @@
     -fx-background-color: rgba(120, 120, 0, 0.8);
 }
 
+/*
+Notification - Type ERROR
+*/
 .notification.error {
     -fx-background-color: rgba(70, 0, 0, 0.8);
 }
@@ -35,6 +48,58 @@
     -fx-background-color: rgba(120, 0, 0, 0.8);
 }
 
+/*
+Header
+*/
+.notification .header {
+    -fx-font-size: 14pt;
+    -fx-font-weight: bold;
+}
+
+/*
+Label
+*/
+.notification .label {
+    -fx-text-fill: white;
+    -fx-font-size: 11pt;
+}
+
+/*
+Close-Button
+*/
+.notification-closebutton {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0 5 0 5;
+    -fx-background-insets: 0;
+}
+
+.notification-closebuttongraphic {
+    -fx-fill: red;
+}
+
+.notification-closebutton:hover {
+    -fx-background-color: red;
+}
+
+.notification-closebutton:hover .notification-closebuttongraphic {
+    -fx-fill: white;
+}
+
+.notification.error .notification-closebuttongraphic {
+    -fx-fill: white;
+}
+
+.notification.error .notification-closebutton:hover {
+    -fx-background-color: white;
+}
+
+.notification.error .notification-closebutton:hover .notification-closebuttongraphic {
+    -fx-fill: red;
+}
+
+/*
+CheckBox
+*/
 .notification .check-box {
     -fx-text-fill: white;
 }
@@ -58,11 +123,9 @@
     -fx-background-color: -fx-focus-color;
 }
 
-.notification .label {
-    -fx-text-fill: white;
-    -fx-font-size: 11pt;
-}
-
+/*
+ProgressBar
+*/
 .notification .progress-bar .track {
     -fx-border-color: white;
     -fx-border-radius: 60;
@@ -75,41 +138,3 @@
     -fx-background-insets: 2;
     -fx-padding: 4px;
 }
-
-.notification .header {
-    -fx-font-size: 14pt;
-    -fx-font-weight: bold;
-}
-
-.notification .exitButton {
-    -fx-background-color: transparent;
-    -fx-background-radius: 30;
-    -fx-background-insets: 0;
-    -fx-text-fill: red;
-    -fx-font-size: 9;
-    -fx-font-weight: bold;
-}
-
-.notification .exitButton:hover {
-    -fx-text-fill: white;
-    -fx-background-color: linear-gradient(#d55400, #be1d00);
-}
-
-.notification .exitButton:pressed {
-    -fx-text-fill: white;
-    -fx-background-color: linear-gradient(#d04400, #881010);
-}
-
-/*.notification.error .exitButton {*/
-/*-fx-text-fill: white;*/
-/*}*/
-
-/*.notification.error .exitButton:hover {*/
-/*-fx-text-fill: red;*/
-/*-fx-background-color: white;*/
-/*}*/
-
-/*.notification.error .exitButton:pressed {*/
-/*-fx-text-fill: red;*/
-/*-fx-background-color: grey;*/
-/*}*/

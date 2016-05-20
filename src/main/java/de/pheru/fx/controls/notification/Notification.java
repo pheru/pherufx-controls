@@ -12,6 +12,8 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -29,6 +31,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Philipp Bruckner
@@ -39,6 +42,7 @@ public class Notification {
 
     private static Duration animationDuration = Duration.millis(300);
     private static NotificationDefaults defaults = new NotificationDefaults();
+    private static ObservableList<String> styleSheets = FXCollections.observableArrayList();
 
     @FXML
     private GridPane root;
@@ -63,23 +67,20 @@ public class Notification {
             FXMLLoader fxmlLoader = new FXMLLoader(NotificationManager.class.getResource("notification.fxml"));
             fxmlLoader.setController(this);
             fxmlLoader.load();
-
-            duration.addListener((observable, oldValue, newValue) -> durationTimeline.playFromStart());
-            dontShowAgainBox.setVisible(false);
-            dontShowAgainBox.setManaged(false);
-            contentBox.getChildren().add(content);
-            if (type != Type.NONE && defaults.isStyleByType()) {
-                root.getStyleClass().add(type.getStyleClass());
-            }
-            root.setOnMouseEntered(event -> durationTimeline.stop());
-            root.setOnMouseExited(event -> durationTimeline.play());
+            root.getStylesheets().addAll(styleSheets);
         } catch (IOException e) {
-            throw new RuntimeException("TODO", e); //TODO Exc
+            throw new IllegalStateException("Could not load fxml!", e);
         }
-    }
 
-    public Notification(Node content) {
-        this(Type.NONE, content);
+        duration.addListener((observable, oldValue, newValue) -> durationTimeline.playFromStart());
+        dontShowAgainBox.setVisible(false);
+        dontShowAgainBox.setManaged(false);
+        contentBox.getChildren().add(content);
+        if (type != Type.NONE && defaults.isStyleByType()) {
+            root.getStyleClass().add(type.getStyleClass());
+        }
+        root.setOnMouseEntered(event -> durationTimeline.stop());
+        root.setOnMouseExited(event -> durationTimeline.play());
     }
 
     public Notification(Type type, String text, String header) {
@@ -217,6 +218,9 @@ public class Notification {
         dontShowAgainBox.setManaged(true);
     }
 
+    public static ObservableList<String> getStyleSheets() {
+        return styleSheets;
+    }
 
     protected GridPane getRoot() {
         return root;
@@ -257,7 +261,7 @@ public class Notification {
     }
 
     public void setPosition(Pos position) {
-        if(popup != null && popup.isShowing()){
+        if (popup != null && popup.isShowing()) {
             throw new IllegalStateException("The position can not be changed while notification is showing!");
         }
         this.position = position;

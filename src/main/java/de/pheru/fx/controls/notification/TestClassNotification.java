@@ -26,6 +26,8 @@ public class TestClassNotification extends Application {
 
     Stage stage;
 
+    private ComboBox<Notification.Type> typeBox;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -41,6 +43,13 @@ public class TestClassNotification extends Application {
         ComboBox<Pos> positionBox = new ComboBox<>(FXCollections.observableArrayList(Pos.values()));
         positionBox.getSelectionModel().select(0);
         Notification.getDefaults().positionProperty().bind(positionBox.getSelectionModel().selectedItemProperty());
+
+        typeBox = new ComboBox<>();
+        typeBox.getItems().setAll(Notification.Type.values());
+        typeBox.getSelectionModel().selectFirst();
+
+        Button showButton = new Button("Show");
+        showButton.setOnAction((ActionEvent event) -> testShow());
 
         Button testButton = new Button("Test");
         testButton.setOnAction((ActionEvent event) -> testTest());
@@ -66,7 +75,7 @@ public class TestClassNotification extends Application {
         Button hideAllButton = new Button("Hide All");
         hideAllButton.setOnAction((ActionEvent event) -> Notification.hideAll(null));
 
-        VBox box = new VBox(positionBox, testButton, allgButton, tonButton, timerButton, checkBoxButton, exitButtonButton,
+        VBox box = new VBox(positionBox, typeBox, showButton, testButton, allgButton, tonButton, timerButton, checkBoxButton, exitButtonButton,
                 layoutButton, hideAllButton);
         box.setAlignment(Pos.TOP_CENTER);
         box.setSpacing(3);
@@ -74,7 +83,14 @@ public class TestClassNotification extends Application {
         return box;
     }
 
+    private void testShow() {
+        Notification n = new Notification(typeBox.getSelectionModel().getSelectedItem(), "Test");
+        n.setDuration(Duration.INDEFINITE);
+        n.show(true);
+    }
+
     private void testTest() {
+        Notification.getStyleSheets().add(getClass().getResource("test.css").toExternalForm());
         Notification notification = new Notification(Notification.Type.INFO, "Test");
         notification.setDuration(Duration.seconds(3));
         notification.show(true);
@@ -98,8 +114,8 @@ public class TestClassNotification extends Application {
         ProgressBar pBar = new ProgressBar(-1);
         pBar.setPrefWidth(500);
         pBar.progressProperty().bind(t.progressProperty());
-        new Notification(new VBox(new Label("Lade irgendwas..."), pBar)).show(true);
-        Notification n = new Notification(new Label("CustomContent"));
+        new Notification(typeBox.getSelectionModel().getSelectedItem(), new VBox(new Label("Lade irgendwas..."), pBar)).show(true);
+        Notification n = new Notification(typeBox.getSelectionModel().getSelectedItem(), new Label("CustomContent"));
         n.bindDontShowAgainProperty(new SimpleBooleanProperty(true));
         n.show(true);
 //        new Notification(Notification.Type.ERROR, new Label("CustomContent - Error")).show(true);

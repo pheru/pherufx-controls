@@ -1,0 +1,12 @@
+/*
+    Created on : 30.01.2015, 22:50:08
+    Author     : Philipp Bruckner
+*/
+.notification {
+    -fx-background-color: rgba(255, 0, 0, 1);
+    -fx-background-radius: 0;
+}
+
+.notification.info {
+    -fx-background-color: rgba(255, 255, 0, 1);
+}
