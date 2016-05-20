@@ -51,7 +51,7 @@ Notification - Type ERROR
 /*
 Header
 */
-.notification .header {
+.header {
     -fx-font-size: 14pt;
     -fx-font-weight: bold;
 }
@@ -59,15 +59,31 @@ Header
 /*
 Label
 */
-.notification .label {
+.label {
     -fx-text-fill: white;
     -fx-font-size: 11pt;
+}
+
+/*
+Button
+*/
+.button {
+    -fx-background-radius: 5;
+    -fx-text-fill: white;
+    -fx-background-color: -fx-focus-color;
+}
+
+.button:hover {
+    -fx-text-fill: -fx-focus-color;
+    -fx-background-color: white;
 }
 
 /*
 Close-Button
 */
 .notification-closebutton {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
     -fx-background-color: transparent;
     -fx-background-radius: 0 5 0 5;
     -fx-background-insets: 0;
@@ -100,40 +116,40 @@ Close-Button
 /*
 CheckBox
 */
-.notification .check-box {
+.check-box {
     -fx-text-fill: white;
 }
 
-.notification .check-box .box {
+.check-box .box {
     -fx-background-color: rgba(255, 255, 255, 0.15);
     -fx-background-radius: 5;
     -fx-border-color: white;
     -fx-border-radius: 5;
 }
 
-.notification .check-box:hover {
+.check-box:hover {
     -fx-text-fill: -fx-focus-color;
 }
 
-.notification .check-box:hover .box {
+.check-box:hover .box {
     -fx-border-color: -fx-focus-color;
 }
 
-.notification .check-box:selected .mark {
+.check-box:selected .mark {
     -fx-background-color: -fx-focus-color;
 }
 
 /*
 ProgressBar
 */
-.notification .progress-bar .track {
+.progress-bar .track {
     -fx-border-color: white;
     -fx-border-radius: 60;
     -fx-background-color: rgba(255, 255, 255, 0.25);
     -fx-background-radius: 60;
 }
 
-.notification .progress-bar .bar {
+.progress-bar .bar {
     -fx-background-radius: 60;
     -fx-background-insets: 2;
     -fx-padding: 4px;

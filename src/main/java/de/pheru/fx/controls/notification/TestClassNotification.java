@@ -14,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -90,10 +91,13 @@ public class TestClassNotification extends Application {
     }
 
     private void testTest() {
-        Notification.getStyleSheets().add(getClass().getResource("test.css").toExternalForm());
-        Notification notification = new Notification(Notification.Type.INFO, "Test");
-        notification.setDuration(Duration.seconds(3));
-        notification.show(true);
+        for (Notification.Type type : Notification.Type.values()) {
+            HBox h = new HBox(new Button("Ja"), new Button("Nein"));
+            h.setSpacing(5);
+            Notification notification = new Notification(type, new VBox(new Label("Blubb"), h));
+            notification.setDuration(Duration.INDEFINITE);
+            notification.show(true);
+        }
     }
 
     private void testAllg() {
