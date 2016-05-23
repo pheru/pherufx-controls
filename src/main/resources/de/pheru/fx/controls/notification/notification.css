@@ -71,11 +71,20 @@ Button
     -fx-background-radius: 5;
     -fx-text-fill: white;
     -fx-background-color: -fx-focus-color;
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
 }
 
 .button:hover {
     -fx-text-fill: -fx-focus-color;
     -fx-background-color: white;
+}
+
+.button:focused {
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
 }
 
 /*

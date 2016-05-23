@@ -59,7 +59,7 @@
               GridPane.columnIndex="1" GridPane.rowSpan="2147483647">
             <Button fx:id="exitButton" alignment="CENTER" maxHeight="20.0" maxWidth="20.0" minHeight="20.0"
                     minWidth="20.0" mnemonicParsing="false" onAction="#closeNotification"
-                    styleClass="notification-closebutton" contentDisplay="GRAPHIC_ONLY">
+                    styleClass="notification-closebutton" contentDisplay="GRAPHIC_ONLY" focusTraversable="false">
                 <graphic>
                     <SVGPath styleClass="notification-closebuttongraphic"
                              content="M 2 0 L 10 8 L 8 10 L 0 2 Z M 0 8 L 8 0 L 10 2 L 2 10 Z"/>
