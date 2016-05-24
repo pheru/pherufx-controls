@@ -5,15 +5,11 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -31,18 +27,16 @@ import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * @author Philipp Bruckner
  */
-public class Notification {
+public class Notification extends NotificationProperties {
 
     public static final double WIDTH = 350.0;
 
     private static Duration animationDuration = Duration.millis(300);
-    private static NotificationDefaults defaults = new NotificationDefaults();
-    private static ObservableList<String> styleSheets = FXCollections.observableArrayList();
+    private static NotificationProperties defaults = new NotificationProperties();
 
     @FXML
     private GridPane root;
@@ -51,29 +45,27 @@ public class Notification {
     @FXML
     private CheckBox dontShowAgainBox;
     @FXML
-    private Button exitButton;
+    private Button closeButton;
 
     private Popup popup;
     private final Timeline durationTimeline = new Timeline();
     private Timeline xTimeline;
     private Timeline yTimeline;
 
-    private Pos position = defaults.getPosition();
-    private boolean playSound = defaults.isPlaySound();
-    private final ObjectProperty<Duration> duration = new SimpleObjectProperty<>(defaults.getDuration());
-
     public Notification(Type type, Node content) {
+        super(defaults);
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(NotificationManager.class.getResource("notification.fxml"));
             fxmlLoader.setController(this);
             fxmlLoader.load();
-            root.getStylesheets().addAll(styleSheets);
         } catch (IOException e) {
             throw new IllegalStateException("Could not load fxml!", e);
         }
 
-        duration.addListener((observable, oldValue, newValue) -> durationTimeline.playFromStart());
-        dontShowAgainBox.setVisible(false);
+        durationProperty().addListener((observable, oldValue, newValue) -> durationTimeline.playFromStart());
+        closeButton.managedProperty().bind(closeButtonVisibleProperty());
+        closeButton.visibleProperty().bind(closeButtonVisibleProperty());
+        dontShowAgainBox.setVisible(false); //TODO in fxml
         dontShowAgainBox.setManaged(false);
         contentBox.getChildren().add(content);
         if (type != Type.NONE && defaults.isStyleByType()) {
@@ -103,15 +95,12 @@ public class Notification {
         this(type, new NotificationContent(type, textProperty, "").getRoot());
     }
 
-    public void show(boolean animate) {
-        show(animate, GlobalNotificationManager.getNotificationStage());
-    }
-
-    public void show(boolean animate, Window window) {
-        NotificationManager.getInstanceForOwner(window).show(animate, this);
-        if (duration.get() != Duration.INDEFINITE) {
+    public void show() {
+        root.getStylesheets().addAll(getStyleSheets());
+        NotificationManager.getInstanceForOwner(getWindow()).show(isAnimateShow(), this);
+        if (getDuration() != Duration.INDEFINITE) {
             durationTimeline.getKeyFrames().clear();
-            durationTimeline.getKeyFrames().add(new KeyFrame(duration.get(), (ActionEvent event) -> {
+            durationTimeline.getKeyFrames().add(new KeyFrame(getDuration(), (ActionEvent event) -> {
                 hide(true);
             }));
             durationTimeline.playFromStart();
@@ -212,30 +201,14 @@ public class Notification {
         });
     }
 
-    public void bindDontShowAgainProperty(Property<Boolean> property) {
+    public void bindDontShowAgainProperty(Property<Boolean> property) { //TODO Durch getter&setter ersetzen?
         dontShowAgainBox.selectedProperty().bindBidirectional(property);
         dontShowAgainBox.setVisible(true);
         dontShowAgainBox.setManaged(true);
     }
 
-    public static ObservableList<String> getStyleSheets() {
-        return styleSheets;
-    }
-
     protected GridPane getRoot() {
         return root;
-    }
-
-    public Duration getDuration() {
-        return duration.get();
-    }
-
-    public void setDuration(final Duration duration) {
-        this.duration.set(duration);
-    }
-
-    public ObjectProperty<Duration> durationProperty() {
-        return duration;
     }
 
     public ReadOnlyObjectProperty<Duration> currentTimeProperty() {
@@ -246,41 +219,20 @@ public class Notification {
         return durationTimeline.getCurrentTime();
     }
 
-    public Notification setExitButtonVisible(boolean exitButtonVisible) {
-        exitButton.setVisible(exitButtonVisible);
-        exitButton.setManaged(exitButtonVisible);
-        return this;
-    }
-
-    public boolean isExitButtonVisible() {
-        return exitButton.isVisible();
-    }
-
-    public Pos getPosition() {
-        return position;
-    }
-
+    @Override
     public void setPosition(Pos position) {
-        if (popup != null && popup.isShowing()) {
+        if (popup != null && popup.isShowing()) { //TODO exc nötig?
             throw new IllegalStateException("The position can not be changed while notification is showing!");
         }
-        this.position = position;
+        super.setPosition(position);
     }
 
-    public static NotificationDefaults getDefaults() {
+    public static NotificationProperties getDefaults() {
         return defaults;
     }
 
-    public static void setDefaults(NotificationDefaults defaults) {
+    public static void setDefaults(NotificationProperties defaults) {
         Notification.defaults = defaults;
-    }
-
-    public boolean isPlaySound() {
-        return playSound;
-    }
-
-    public void setPlaySound(boolean playSound) {
-        this.playSound = playSound;
     }
 
     public static Duration getAnimationDuration() {

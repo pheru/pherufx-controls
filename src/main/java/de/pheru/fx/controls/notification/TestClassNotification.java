@@ -53,7 +53,7 @@ public class TestClassNotification extends Application {
         showButton.setOnAction((ActionEvent event) -> testShow());
 
         Button testButton = new Button("Test");
-        testButton.setOnAction((ActionEvent event) -> testTest());
+        testButton.setOnAction((ActionEvent event) -> testTest(owner));
 
         Button allgButton = new Button("Allgemein");
         allgButton.setOnAction((ActionEvent event) -> testAllg());
@@ -87,17 +87,32 @@ public class TestClassNotification extends Application {
     private void testShow() {
         Notification n = new Notification(typeBox.getSelectionModel().getSelectedItem(), "Test");
         n.setDuration(Duration.INDEFINITE);
-        n.show(true);
+        n.show();
     }
 
-    private void testTest() {
+    private void testTest(Window owner) {
         for (Notification.Type type : Notification.Type.values()) {
             HBox h = new HBox(new Button("Ja"), new Button("Nein"));
             h.setSpacing(5);
             Notification notification = new Notification(type, new VBox(new Label("Blubb"), h));
             notification.setDuration(Duration.INDEFINITE);
-            notification.show(true);
+            notification.show();
         }
+        StringProperty s = new SimpleStringProperty("Test");
+        Notification n = new Notification(typeBox.getValue(), new SimpleStringProperty("Blubb"), s);
+        n.setWindow(owner);
+        n.show();
+        new Thread(()->{
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Platform.runLater(()->{
+
+            s.set("");
+            });
+        }).start();
     }
 
     private void testAllg() {
@@ -118,24 +133,24 @@ public class TestClassNotification extends Application {
         ProgressBar pBar = new ProgressBar(-1);
         pBar.setPrefWidth(500);
         pBar.progressProperty().bind(t.progressProperty());
-        new Notification(typeBox.getSelectionModel().getSelectedItem(), new VBox(new Label("Lade irgendwas..."), pBar)).show(true);
+        new Notification(typeBox.getSelectionModel().getSelectedItem(), new VBox(new Label("Lade irgendwas..."), pBar)).show();
         Notification n = new Notification(typeBox.getSelectionModel().getSelectedItem(), new Label("CustomContent"));
         n.bindDontShowAgainProperty(new SimpleBooleanProperty(true));
-        n.show(true);
-//        new Notification(Notification.Type.ERROR, new Label("CustomContent - Error")).show(true);
-//        new Notification(Notification.Type.INFO, new Label("CustomContent - Info")).show(true);
-//        new Notification(Notification.Type.WARNING, new Label("CustomContent - Warning")).show(true);
-        new Notification(Notification.Type.INFO, "Info").show(true);
-        new Notification(Notification.Type.NONE, "NONE", "ASDÖLKJSDLKJD").show(true);
-        new Notification(Notification.Type.NONE, "NONE2").show(true);
-        new Notification(Notification.Type.INFO, "Info").show(true);
-        new Notification(Notification.Type.WARNING, "Warning").show(true);
-        new Notification(Notification.Type.WARNING, "Warning").show(true);
-        new Notification(Notification.Type.ERROR, "Error - Und zwar ein ganz, ganz, ganz langer! Oh ja, da schauste!").show(true);
-        new Notification(Notification.Type.ERROR, "Error - Und zwar ein ganz, ganz, ganz langer! Oh ja, da schauste!").show(true);
-//        new Notification(Notification.Type.INFO, "Info", "Info").show(true);
-//        new Notification(Notification.Type.WARNING, "Warning", "Warning").show(true);
-//        new Notification(Notification.Type.ERROR, "Error", "Error").show(true);
+        n.show();
+//        new Notification(Notification.Type.ERROR, new Label("CustomContent - Error")).show();
+//        new Notification(Notification.Type.INFO, new Label("CustomContent - Info")).show();
+//        new Notification(Notification.Type.WARNING, new Label("CustomContent - Warning")).show();
+        new Notification(Notification.Type.INFO, "Info").show();
+        new Notification(Notification.Type.NONE, "NONE", "ASDÖLKJSDLKJD").show();
+        new Notification(Notification.Type.NONE, "NONE2").show();
+        new Notification(Notification.Type.INFO, "Info").show();
+        new Notification(Notification.Type.WARNING, "Warning").show();
+        new Notification(Notification.Type.WARNING, "Warning").show();
+        new Notification(Notification.Type.ERROR, "Error - Und zwar ein ganz, ganz, ganz langer! Oh ja, da schauste!").show();
+        new Notification(Notification.Type.ERROR, "Error - Und zwar ein ganz, ganz, ganz langer! Oh ja, da schauste!").show();
+//        new Notification(Notification.Type.INFO, "Info", "Info").show();
+//        new Notification(Notification.Type.WARNING, "Warning", "Warning").show();
+//        new Notification(Notification.Type.ERROR, "Error", "Error").show();
 
         Thread t2 = new Thread(t);
         t2.setDaemon(true);
@@ -155,16 +170,16 @@ public class TestClassNotification extends Application {
         Thread t = new Thread(() -> {
             stage = null;
             try {
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton 1").show(true, stage)); // Ton
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton 1").show()); // Ton
                 Thread.sleep(1000);
-                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton \n2").show(true, stage)); // Ton
+                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton \n2").show()); // Ton
                 Thread.sleep(1000);
-//                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton 2").show(stage));  //Kein Ton
+//                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton 2").show();  //Kein Ton
 //                Thread.sleep(1000);
 //                Notification.getDefaults().setPlaySound(true);
-//                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton 3").show(stage)); //Ton
+//                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Ton 3").show(); //Ton
 //                Thread.sleep(1000);
-//                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton 4").show(false, stage)); //Kein Ton
+//                Platform.runLater(() -> new Notification(Notification.Type.INFO, "Kein Ton 4").show(); //Kein Ton
 //                Notification.getDefaults().setPlaySound(false);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -187,10 +202,10 @@ public class TestClassNotification extends Application {
                 Notification varSize2 = new Notification(Notification.Type.INFO, s3, s4);
 
                 Platform.runLater(() -> {
-                    mitHeader.show(true);
-                    ohneHeader.show(true);
-                    varSize.show(true);
-                    varSize2.show(true);
+                    mitHeader.show();
+                    ohneHeader.show();
+                    varSize.show();
+                    varSize2.show();
                 });
                 Thread.sleep(3000);
                 Platform.runLater(() -> {
@@ -215,23 +230,23 @@ public class TestClassNotification extends Application {
     }
 
     private void testTimer() {
-        new Notification(Notification.Type.INFO, "Default (Indefinite)").show(true);
+        new Notification(Notification.Type.INFO, "Default (Indefinite)").show();
         Notification notification = new Notification(Notification.Type.INFO, "Indefinite");
         notification.setDuration(Duration.INDEFINITE);
-        notification.show(true);
+        notification.show();
         Notification notification1 = new Notification(Notification.Type.INFO, "3 Sekunden");
         notification1.setDuration(Duration.seconds(3));
-        notification1.show(true);
+        notification1.show();
 
         Notification.getDefaults().setDuration(Duration.seconds(3));
 
-        new Notification(Notification.Type.INFO, "Default (3 Sekunden)").show(true);
+        new Notification(Notification.Type.INFO, "Default (3 Sekunden)").show();
         Notification notification2 = new Notification(Notification.Type.INFO, "5 Sekunden");
         notification2.setDuration(Duration.seconds(5));
-        notification2.show(true);
+        notification2.show();
         Notification notification3 = new Notification(Notification.Type.INFO, "Indefinite");
         notification3.setDuration(Duration.INDEFINITE);
-        notification3.show(true);
+        notification3.show();
         Notification.getDefaults().setDuration(Duration.INDEFINITE);
     }
 
