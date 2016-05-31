@@ -2,6 +2,7 @@ package de.pheru.fx.controls.notification;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -14,11 +15,17 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Popup;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Philipp Bruckner
@@ -28,6 +35,7 @@ public class TestClassNotification extends Application {
     Stage stage;
 
     private ComboBox<Notification.Type> typeBox;
+    private final BooleanProperty b = new SimpleBooleanProperty(true);
 
     public static void main(String[] args) {
         launch(args);
@@ -73,8 +81,8 @@ public class TestClassNotification extends Application {
         Button layoutButton = new Button("Layout");
         layoutButton.setOnAction((ActionEvent event) -> testLayout());
 
-        Button hideAllButton = new Button("Hide All");
-        hideAllButton.setOnAction((ActionEvent event) -> Notification.hideAll(null));
+        Button hideAllButton = new Button("Hide All (X)");
+//        hideAllButton.setOnAction((ActionEvent event) -> Notification.hideAll(null));
 
         VBox box = new VBox(positionBox, typeBox, showButton, testButton, allgButton, tonButton, timerButton, checkBoxButton, exitButtonButton,
                 layoutButton, hideAllButton);
@@ -96,11 +104,13 @@ public class TestClassNotification extends Application {
             h.setSpacing(5);
             Notification notification = new Notification(type, new VBox(new Label("Blubb"), h));
             notification.setDuration(Duration.INDEFINITE);
-            notification.show();
+//            notification.show();
         }
         StringProperty s = new SimpleStringProperty("Test");
-        Notification n = new Notification(typeBox.getValue(), new SimpleStringProperty("Blubb"), s);
-        n.setWindow(owner);
+        TableView<String> t = new TableView<>();
+        t.setPrefHeight(200);
+        Notification n = new Notification(typeBox.getValue(), t);
+//        n.setWindow(owner);
         n.show();
         new Thread(()->{
             try {
@@ -110,7 +120,7 @@ public class TestClassNotification extends Application {
             }
             Platform.runLater(()->{
 
-            s.set("");
+            t.setMinHeight(400);
             });
         }).start();
     }

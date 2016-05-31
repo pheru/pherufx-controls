@@ -23,6 +23,7 @@ public class NotificationProperties {
     private final BooleanProperty animateShow = new SimpleBooleanProperty(true);
     private final BooleanProperty fadeOut = new SimpleBooleanProperty(true);
     private final BooleanProperty closeButtonVisible = new SimpleBooleanProperty(true);
+    private final BooleanProperty hideOnMouseClicked = new SimpleBooleanProperty(true);
     private final BooleanProperty playSound = new SimpleBooleanProperty(false);
     private final BooleanProperty styleByType = new SimpleBooleanProperty(true);
     private final ObservableList<String> styleSheets = FXCollections.observableArrayList();
@@ -38,6 +39,7 @@ public class NotificationProperties {
         animateShow.set(copy.isAnimateShow());
         fadeOut.set(copy.isFadeOut());
         closeButtonVisible.set(copy.isCloseButtonVisible());
+        hideOnMouseClicked.set(copy.isHideOnMouseClicked());
         playSound.set(copy.isPlaySound());
         styleByType.set(copy.isStyleByType());
         styleSheets.addAll(copy.getStyleSheets());
@@ -125,6 +127,18 @@ public class NotificationProperties {
 
     public void setCloseButtonVisible(boolean closeButtonVisible) {
         this.closeButtonVisible.set(closeButtonVisible);
+    }
+
+    public boolean isHideOnMouseClicked() {
+        return hideOnMouseClicked.get();
+    }
+
+    public BooleanProperty hideOnMouseClickedProperty() {
+        return hideOnMouseClicked;
+    }
+
+    public void setHideOnMouseClicked(boolean hideOnMouseClicked) {
+        this.hideOnMouseClicked.set(hideOnMouseClicked);
     }
 
     public boolean isPlaySound() {

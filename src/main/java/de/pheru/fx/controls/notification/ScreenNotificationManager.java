@@ -12,16 +12,22 @@ import javafx.stage.Window;
 /**
  * Created by Philipp on 22.03.2016.
  */
-class GlobalNotificationManager extends NotificationManager {
+class ScreenNotificationManager extends NotificationManager {
 
-    private static final double MIN_Y = 22.66;
+    private static final double TOP_MARGIN = 22.66;
 
     private static Stage notificationStage;
 
+    private final Screen screen;
+
+    ScreenNotificationManager(Screen screen) {
+        this.screen = screen;
+    }
+
     @Override
     protected Rectangle2D getVisualBounds() {
-        Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
-        return new Rectangle2D(0.0, MIN_Y, visualBounds.getWidth(), visualBounds.getHeight() - MIN_Y);
+        Rectangle2D visualBounds = screen.getVisualBounds();
+        return new Rectangle2D(visualBounds.getMinX(), visualBounds.getMinY() + TOP_MARGIN, visualBounds.getWidth(), visualBounds.getHeight() - TOP_MARGIN);
     }
 
     @Override

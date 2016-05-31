@@ -14,6 +14,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Popup;
+import javafx.stage.Screen;
 import javafx.stage.Window;
 
 import java.awt.Toolkit;
@@ -28,8 +29,8 @@ abstract class NotificationManager {
     public static final double NOTIFICATION_SPACING = 2.0;
     public static final double SCREEN_SPACING = 3.0;
 
-    private static GlobalNotificationManager globalNotificationManager;
     private static final Map<Window, WindowNotificationManager> windowNotificationManagers = new HashMap<>();
+    private static final Map<Screen, ScreenNotificationManager> screenNotificationManagers = new HashMap<>();
 
     private final ObservableMap<Pos, ObservableList<Notification>> notificationsMap = FXCollections.observableHashMap();
 
@@ -37,18 +38,23 @@ abstract class NotificationManager {
 
     protected abstract Window getOwner();
 
-    protected static NotificationManager getInstanceForOwner(Window owner) {
-        if (owner == null || owner == GlobalNotificationManager.getNotificationStage()) {
-            if (globalNotificationManager == null) {
-                globalNotificationManager = new GlobalNotificationManager();
-            }
-            return globalNotificationManager;
-        } else if (windowNotificationManagers.containsKey(owner)) {
-            return windowNotificationManagers.get(owner);
+    protected static NotificationManager getInstanceForWindow(Window window) {
+        if (windowNotificationManagers.containsKey(window)) {
+            return windowNotificationManagers.get(window);
         } else {
-            WindowNotificationManager windowNotificationManager = new WindowNotificationManager(owner);
-            windowNotificationManagers.put(owner, windowNotificationManager);
+            WindowNotificationManager windowNotificationManager = new WindowNotificationManager(window);
+            windowNotificationManagers.put(window, windowNotificationManager);
             return windowNotificationManager;
+        }
+    }
+
+    protected static NotificationManager getInstanceForScreen(Screen screen) {
+        if (screenNotificationManagers.containsKey(screen)) {
+            return screenNotificationManagers.get(screen);
+        } else {
+            ScreenNotificationManager screenNotificationManager = new ScreenNotificationManager(screen);
+            screenNotificationManagers.put(screen, screenNotificationManager);
+            return screenNotificationManager;
         }
     }
 
@@ -88,6 +94,8 @@ abstract class NotificationManager {
             scaleTransition.play();
         } else {
             Rectangle clip = new Rectangle(popup.getWidth(), popup.getHeight());
+//            clip.widthProperty().bind(popup.widthProperty());
+//            clip.heightProperty().bind(popup.heightProperty());
             DoubleProperty layoutProperty;
             switch (notification.getPosition()) {
                 case TOP_LEFT:
@@ -128,7 +136,7 @@ abstract class NotificationManager {
         for (ObservableList<Notification> notifications : notificationsMap.values()) {
             ObservableList<Notification> notificationsCopy = FXCollections.observableArrayList(notifications);
             for (Notification n : notificationsCopy) {
-                n.hide(false);
+                n.hide();
             }
         }
     }

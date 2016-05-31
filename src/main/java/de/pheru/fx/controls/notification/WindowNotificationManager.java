@@ -16,7 +16,7 @@ class WindowNotificationManager extends NotificationManager {
     private final Window window;
     private Rectangle2D visualBounds;
 
-    protected WindowNotificationManager(Window window) {
+    WindowNotificationManager(Window window) {
         this.window = window;
         updateVisualBounds();
 

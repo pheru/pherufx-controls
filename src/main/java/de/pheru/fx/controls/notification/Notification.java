@@ -22,6 +22,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Popup;
+import javafx.stage.Screen;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
@@ -46,6 +47,8 @@ public class Notification extends NotificationProperties {
     private CheckBox dontShowAgainBox;
     @FXML
     private Button closeButton;
+
+    private final EventHandler<MouseEvent> hideEventHandler = event -> hide();
 
     private Popup popup;
     private final Timeline durationTimeline = new Timeline();
@@ -73,6 +76,9 @@ public class Notification extends NotificationProperties {
         }
         root.setOnMouseEntered(event -> durationTimeline.stop());
         root.setOnMouseExited(event -> durationTimeline.play());
+        if (isHideOnMouseClicked()) {
+            root.setOnMouseClicked(hideEventHandler);
+        }
     }
 
     public Notification(Type type, String text, String header) {
@@ -97,11 +103,11 @@ public class Notification extends NotificationProperties {
 
     public void show() {
         root.getStylesheets().addAll(getStyleSheets());
-        NotificationManager.getInstanceForOwner(getWindow()).show(isAnimateShow(), this);
+        getNotificationManagerInstance().show(isAnimateShow(), this);
         if (getDuration() != Duration.INDEFINITE) {
             durationTimeline.getKeyFrames().clear();
             durationTimeline.getKeyFrames().add(new KeyFrame(getDuration(), (ActionEvent event) -> {
-                hide(true);
+                hide();
             }));
             durationTimeline.playFromStart();
         }
@@ -109,37 +115,36 @@ public class Notification extends NotificationProperties {
 
     @FXML
     private void closeNotification() {
-        hide(false);
+        hide();
     }
 
-    public void hide(boolean fadeOut) {
+    public void hide() {
         durationTimeline.stop();
-        if (fadeOut) {
+        if (isFadeOut()) {
             FadeTransition fadeTransition = new FadeTransition(Duration.millis(500), root);
             fadeTransition.setFromValue(1.0);
             fadeTransition.setToValue(0.0);
             fadeTransition.setOnFinished((ActionEvent event) -> {
-                hide();
+                hidePopup();
             });
             fadeTransition.play();
         } else {
-            hide();
+            hidePopup();
         }
     }
 
-    private void hide() {
+    private void hidePopup() {
         if (root.getScene() != null) {
             popup.hide();
-            dontShowAgainBox.selectedProperty().unbind();
         }
     }
 
-    public static void hideAll() {
-        hideAll(GlobalNotificationManager.getNotificationStage());
+    public static void hideAll(Screen screen) {
+        NotificationManager.getInstanceForScreen(screen).hideAll();
     }
 
     public static void hideAll(Window owner) {
-        NotificationManager.getInstanceForOwner(owner).hideAll();
+        NotificationManager.getInstanceForWindow(owner).hideAll();
     }
 
     protected Popup getPopup() {
@@ -148,10 +153,18 @@ public class Notification extends NotificationProperties {
             popup.setAutoFix(false);
             popup.getContent().add(root);
             popup.setOnHidden((WindowEvent event) -> {
-                NotificationManager.getInstanceForOwner(popup.getOwnerWindow()).removeNotification(this);
+                getNotificationManagerInstance().removeNotification(this);
             });
         }
         return popup;
+    }
+
+    private NotificationManager getNotificationManagerInstance() {
+        if (getWindow() != null) {
+            return NotificationManager.getInstanceForWindow(getWindow());
+        } else {
+            return NotificationManager.getInstanceForScreen(getScreen());
+        }
     }
 
     protected void setY(final double position, boolean animated) {
@@ -186,19 +199,27 @@ public class Notification extends NotificationProperties {
         }
     }
 
-    public void setOnMouseClicked(EventHandler<? super MouseEvent> eventHandler, boolean hide) { //TODO überarbeiten
+    public void setOnMouseClicked(EventHandler<? super MouseEvent> eventHandler) {
         root.setOnMouseClicked(event -> {
             eventHandler.handle(event);
-            if (hide) {
-                hide(false);
+            if (isHideOnMouseClicked()) {
+                hideEventHandler.handle(event);
             }
         });
     }
 
-    public void hideOnMouseClicked() {
-        root.setOnMouseClicked((MouseEvent event) -> {
-            hide(false);
-        });
+    @Override
+    public void setHideOnMouseClicked(boolean hideOnMouseClicked) {
+        super.setHideOnMouseClicked(hideOnMouseClicked);
+        if (hideOnMouseClicked) {
+            if(root.getOnMouseClicked() == null){
+                root.setOnMouseClicked(hideEventHandler);
+            }
+        } else {
+            if(root.getOnMouseClicked() == hideEventHandler){
+                root.setOnMouseClicked(null);
+            }
+        }
     }
 
     public void bindDontShowAgainProperty(Property<Boolean> property) { //TODO Durch getter&setter ersetzen?
@@ -221,7 +242,7 @@ public class Notification extends NotificationProperties {
 
     @Override
     public void setPosition(Pos position) {
-        if (popup != null && popup.isShowing()) { //TODO exc nötig?
+        if (popup != null && popup.isShowing()) { //TODO exc nötig? evtl. stattdessen / auch für window & screen?
             throw new IllegalStateException("The position can not be changed while notification is showing!");
         }
         super.setPosition(position);

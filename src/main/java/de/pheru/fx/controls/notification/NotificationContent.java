@@ -31,9 +31,6 @@ public class NotificationContent {
             fxmlLoader.setController(this);
             fxmlLoader.load();
 
-            headerLabel.textProperty().isEmpty().addListener((observable, oldValue, newValue) -> {
-                layout(newValue);
-            });
             if (type != Notification.Type.NONE) {
                 imageView.setImage(new Image(type.getImagePath()));
             } else {
@@ -41,6 +38,7 @@ public class NotificationContent {
             }
             textLabel.setText(text);
             headerLabel.setText(header);
+            layout(header.isEmpty());
         } catch (IOException e) {
             throw new RuntimeException("TODO", e);
         }
@@ -50,6 +48,9 @@ public class NotificationContent {
         this(type, textProperty.get(), headerProperty.get());
         textLabel.textProperty().bind(textProperty);
         headerLabel.textProperty().bind(headerProperty);
+        headerProperty.addListener((observable, oldValue, newValue) -> {
+            layout(newValue.isEmpty());
+        });
     }
 
     public NotificationContent(Notification.Type type, StringProperty textProperty, String header) {
