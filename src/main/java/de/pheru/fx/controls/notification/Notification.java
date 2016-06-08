@@ -106,9 +106,7 @@ public class Notification extends NotificationProperties {
         getNotificationManagerInstance().show(isAnimateShow(), this);
         if (getDuration() != Duration.INDEFINITE) {
             durationTimeline.getKeyFrames().clear();
-            durationTimeline.getKeyFrames().add(new KeyFrame(getDuration(), (ActionEvent event) -> {
-                hide();
-            }));
+            durationTimeline.getKeyFrames().add(new KeyFrame(getDuration(), (ActionEvent event) -> hide()));
             durationTimeline.playFromStart();
         }
     }

@@ -7,6 +7,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -17,6 +19,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -25,6 +28,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
@@ -56,6 +60,8 @@ public class TestClassNotification extends Application {
         //Defaults
         content.getChildren().add(new Label("Defaults:"));
         content.getChildren().add(createPositionComboBox());
+        content.getChildren().add(createScreenComboBox());
+        content.getChildren().add(createWindowComboBox());
         content.getChildren().add(createCheckBox("HideOnMouseClicked", Notification.getDefaults().hideOnMouseClickedProperty()));
         content.getChildren().add(createCheckBox("AnimateShow", Notification.getDefaults().animateShowProperty()));
         content.getChildren().add(createCheckBox("CloseButtonVisible", Notification.getDefaults().closeButtonVisibleProperty()));
@@ -63,13 +69,11 @@ public class TestClassNotification extends Application {
         content.getChildren().add(createCheckBox("StyleByType", Notification.getDefaults().styleByTypeProperty()));
         content.getChildren().add(createCheckBox("PlaySound", Notification.getDefaults().playSoundProperty()));
         content.getChildren().add(createDurationTextField());
+        content.getChildren().add(createStylesheetCheckBox());
 
         content.getChildren().add(new Separator(Orientation.HORIZONTAL));
 
         content.getChildren().add(createSingleAddButton());
-        content.getChildren().add(createWindowButton());
-        content.getChildren().add(createScreenButton());
-        content.getChildren().add(createDurationButton());
         content.getChildren().add(createCustomContentButton());
         content.getChildren().add(createDontShowAgainButton());
 
@@ -91,7 +95,7 @@ public class TestClassNotification extends Application {
                 if (string.isEmpty()) {
                     return Duration.INDEFINITE;
                 }
-                return Duration.valueOf(string);
+                return Duration.millis(Double.valueOf(string));
             }
         });
         return textField;
@@ -100,6 +104,18 @@ public class TestClassNotification extends Application {
     private CheckBox createCheckBox(String text, BooleanProperty prop) {
         CheckBox checkBox = new CheckBox(text);
         checkBox.selectedProperty().bindBidirectional(prop);
+        return checkBox;
+    }
+
+    private CheckBox createStylesheetCheckBox() {
+        CheckBox checkBox = new CheckBox("Stylesheet");
+        checkBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                Notification.getDefaults().getStyleSheets().add(getClass().getResource("test.css").toExternalForm());
+            } else {
+                Notification.getDefaults().getStyleSheets().clear();
+            }
+        });
         return checkBox;
     }
 
@@ -112,37 +128,37 @@ public class TestClassNotification extends Application {
         return button;
     }
 
-    private Button createWindowButton() {
-        Button button = new Button("Window");
-        button.setOnAction(event -> {
-            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), "Text", "Header");
-            n.show();
-        });
-        return button;
-    }
-
-    private Button createScreenButton() {
-        Button button = new Button("Screen");
-        button.setOnAction(event -> {
-            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), "Text", "Header");
-            n.show();
-        });
-        return button;
-    }
-
-    private Button createDurationButton() {
-        Button button = new Button("Duration");
-        button.setOnAction(event -> {
-            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), "Text", "Header");
-            n.show();
-        });
-        return button;
-    }
-
     private Button createCustomContentButton() {
         Button button = new Button("Custom Content");
         button.setOnAction(event -> {
-            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), "Text", "Header");
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    for (int i = 0; i < 100; i++) {
+                        updateProgress(i, 100);
+                    }
+                    return null;
+                }
+            };
+            VBox content = new VBox();
+
+            ProgressBar progressBar = new ProgressBar(-1);
+            progressBar.progressProperty().bind(task.progressProperty());
+            content.getChildren().add(progressBar);
+
+            Label label = new Label("Test");
+            content.getChildren().add(label);
+
+            Button button1 = new Button("Test-Button");
+            content.getChildren().add(button1);
+            button.setOnAction(event1 -> task.run());
+
+            TableView<String> tableView = new TableView<>();
+            tableView.setMaxHeight(200);
+            tableView.setMaxWidth(200);
+            content.getChildren().add(tableView);
+
+            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), content);
             n.show();
         });
         return button;
@@ -152,6 +168,7 @@ public class TestClassNotification extends Application {
         Button button = new Button("Dont Show Again");
         button.setOnAction(event -> {
             Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), "Text", "Header");
+            n.bindDontShowAgainProperty(booleanProperty);
             n.show();
         });
         return button;
@@ -171,6 +188,23 @@ public class TestClassNotification extends Application {
         positionBox.getSelectionModel().select(0);
         Notification.getDefaults().positionProperty().bind(positionBox.getSelectionModel().selectedItemProperty());
         return positionBox;
+    }
+
+    private ComboBox<Screen> createScreenComboBox() {
+        ComboBox<Screen> comboBox = new ComboBox<>(Screen.getScreens());
+        comboBox.setMaxWidth(400);
+        comboBox.getSelectionModel().select(0);
+        Notification.getDefaults().screenProperty().bind(comboBox.getSelectionModel().selectedItemProperty());
+        return comboBox;
+    }
+
+    // Keine ComboBox wegen https://bugs.openjdk.java.net/browse/JDK-8134923 (Exception wenn null ausgewählt wird)
+    private ChoiceBox<Window> createWindowComboBox() {
+        ChoiceBox<Window> comboBox = new ChoiceBox<>();
+        comboBox.getItems().addAll(null, primaryStage);
+        comboBox.getSelectionModel().select(0);
+        Notification.getDefaults().windowProperty().bind(comboBox.getSelectionModel().selectedItemProperty());
+        return comboBox;
     }
 
     private ComboBox<Notification.Type> createTypeComboBox() {
