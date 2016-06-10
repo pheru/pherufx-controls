@@ -79,6 +79,17 @@ public class Notification extends NotificationProperties {
         if (isHideOnMouseClicked()) {
             root.setOnMouseClicked(hideEventHandler);
         }
+        hideOnMouseClickedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                if (root.getOnMouseClicked() == null) {
+                    root.setOnMouseClicked(hideEventHandler);
+                }
+            } else {
+                if (root.getOnMouseClicked() == hideEventHandler) {
+                    root.setOnMouseClicked(null);
+                }
+            }
+        });
     }
 
     public Notification(Type type, String text, String header) {
@@ -122,9 +133,7 @@ public class Notification extends NotificationProperties {
             FadeTransition fadeTransition = new FadeTransition(Duration.millis(500), root);
             fadeTransition.setFromValue(1.0);
             fadeTransition.setToValue(0.0);
-            fadeTransition.setOnFinished((ActionEvent event) -> {
-                hidePopup();
-            });
+            fadeTransition.setOnFinished((ActionEvent event) -> hidePopup());
             fadeTransition.play();
         } else {
             hidePopup();
@@ -204,20 +213,6 @@ public class Notification extends NotificationProperties {
                 hideEventHandler.handle(event);
             }
         });
-    }
-
-    @Override
-    public void setHideOnMouseClicked(boolean hideOnMouseClicked) {
-        super.setHideOnMouseClicked(hideOnMouseClicked);
-        if (hideOnMouseClicked) {
-            if(root.getOnMouseClicked() == null){
-                root.setOnMouseClicked(hideEventHandler);
-            }
-        } else {
-            if(root.getOnMouseClicked() == hideEventHandler){
-                root.setOnMouseClicked(null);
-            }
-        }
     }
 
     public void bindDontShowAgainProperty(Property<Boolean> property) { //TODO Durch getter&setter ersetzen?

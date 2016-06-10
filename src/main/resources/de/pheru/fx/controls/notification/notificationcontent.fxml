@@ -7,7 +7,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane fx:id="root" hgap="5.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
+<GridPane fx:id="root" hgap="5.0" prefHeight="0.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <ImageView fx:id="imageView" fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" GridPane.rowIndex="1"
                    GridPane.valignment="TOP"/>

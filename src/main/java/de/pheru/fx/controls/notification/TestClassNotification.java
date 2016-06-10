@@ -135,6 +135,7 @@ public class TestClassNotification extends Application {
                 @Override
                 protected Void call() throws Exception {
                     for (int i = 0; i < 100; i++) {
+                        Thread.sleep(100);
                         updateProgress(i, 100);
                     }
                     return null;
@@ -151,7 +152,7 @@ public class TestClassNotification extends Application {
 
             Button button1 = new Button("Test-Button");
             content.getChildren().add(button1);
-            button.setOnAction(event1 -> task.run());
+            button1.setOnAction(event1 -> new Thread(task).start());
 
             TableView<String> tableView = new TableView<>();
             tableView.setMaxHeight(200);
