@@ -36,7 +36,6 @@ public class Notification extends NotificationProperties {
 
     public static final double WIDTH = 350.0;
 
-    private static Duration animationDuration = Duration.millis(300);
     private static NotificationProperties defaults = new NotificationProperties();
 
     @FXML
@@ -130,7 +129,7 @@ public class Notification extends NotificationProperties {
     public void hide() {
         durationTimeline.stop();
         if (isFadeOut()) {
-            FadeTransition fadeTransition = new FadeTransition(Duration.millis(500), root);
+            FadeTransition fadeTransition = new FadeTransition(getFadeOutDuration(), root);
             fadeTransition.setFromValue(1.0);
             fadeTransition.setToValue(0.0);
             fadeTransition.setOnFinished((ActionEvent event) -> hidePopup());
@@ -247,14 +246,6 @@ public class Notification extends NotificationProperties {
 
     public static void setDefaults(NotificationProperties defaults) {
         Notification.defaults = defaults;
-    }
-
-    public static Duration getAnimationDuration() {
-        return animationDuration;
-    }
-
-    public static void setAnimationDuration(Duration animationDuration) {
-        Notification.animationDuration = animationDuration;
     }
 
     public enum Type {

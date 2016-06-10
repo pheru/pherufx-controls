@@ -86,7 +86,7 @@ abstract class NotificationManager {
         Popup popup = notification.getPopup();
         GridPane root = notification.getRoot();
         if (position == Pos.CENTER) {
-            ScaleTransition scaleTransition = new ScaleTransition(Notification.getAnimationDuration(), root);
+            ScaleTransition scaleTransition = new ScaleTransition(notification.getAnimationDuration(), root);
             scaleTransition.setFromX(0.0);
             scaleTransition.setToX(1.0);
             scaleTransition.setFromY(0.0);
@@ -128,7 +128,7 @@ abstract class NotificationManager {
                     break;
             }
             root.setClip(clip);
-            new Timeline(new KeyFrame(Notification.getAnimationDuration(), new KeyValue(layoutProperty, 0))).play();
+            new Timeline(new KeyFrame(notification.getAnimationDuration(), new KeyValue(layoutProperty, 0))).play();
         }
     }
 

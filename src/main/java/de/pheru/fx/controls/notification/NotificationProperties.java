@@ -21,7 +21,9 @@ public class NotificationProperties {
     private final ObjectProperty<Pos> position = new SimpleObjectProperty<>(Pos.BOTTOM_RIGHT);
     private final ObjectProperty<Duration> duration = new SimpleObjectProperty<>(Duration.INDEFINITE);
     private final BooleanProperty animateShow = new SimpleBooleanProperty(true);
+    private final ObjectProperty<Duration> animationDuration = new SimpleObjectProperty<>(Duration.millis(300));
     private final BooleanProperty fadeOut = new SimpleBooleanProperty(true);
+    private final ObjectProperty<Duration> fadeOutDuration = new SimpleObjectProperty<>(Duration.millis(500));
     private final BooleanProperty closeButtonVisible = new SimpleBooleanProperty(true);
     private final BooleanProperty hideOnMouseClicked = new SimpleBooleanProperty(true);
     private final BooleanProperty playSound = new SimpleBooleanProperty(false);
@@ -37,7 +39,9 @@ public class NotificationProperties {
         position.set(copy.getPosition());
         duration.set(copy.getDuration());
         animateShow.set(copy.isAnimateShow());
+        animationDuration.set(copy.getAnimationDuration());
         fadeOut.set(copy.isFadeOut());
+        fadeOutDuration.set(copy.getFadeOutDuration());
         closeButtonVisible.set(copy.isCloseButtonVisible());
         hideOnMouseClicked.set(copy.isHideOnMouseClicked());
         playSound.set(copy.isPlaySound());
@@ -105,6 +109,18 @@ public class NotificationProperties {
         this.animateShow.set(animateShow);
     }
 
+    public Duration getAnimationDuration() {
+        return animationDuration.get();
+    }
+
+    public ObjectProperty<Duration> animationDurationProperty() {
+        return animationDuration;
+    }
+
+    public void setAnimationDuration(Duration animationDuration) {
+        this.animationDuration.set(animationDuration);
+    }
+
     public boolean isFadeOut() {
         return fadeOut.get();
     }
@@ -115,6 +131,18 @@ public class NotificationProperties {
 
     public void setFadeOut(boolean fadeOut) {
         this.fadeOut.set(fadeOut);
+    }
+
+    public Duration getFadeOutDuration() {
+        return fadeOutDuration.get();
+    }
+
+    public ObjectProperty<Duration> fadeOutDurationProperty() {
+        return fadeOutDuration;
+    }
+
+    public void setFadeOutDuration(Duration fadeOutDuration) {
+        this.fadeOutDuration.set(fadeOutDuration);
     }
 
     public boolean isCloseButtonVisible() {

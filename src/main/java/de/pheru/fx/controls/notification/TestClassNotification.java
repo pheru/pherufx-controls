@@ -1,21 +1,14 @@
 package de.pheru.fx.controls.notification;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -26,14 +19,12 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
-import javafx.util.converter.NumberStringConverter;
 
 /**
  * @author Philipp Bruckner
@@ -68,7 +59,12 @@ public class TestClassNotification extends Application {
         content.getChildren().add(createCheckBox("FadeOut", Notification.getDefaults().fadeOutProperty()));
         content.getChildren().add(createCheckBox("StyleByType", Notification.getDefaults().styleByTypeProperty()));
         content.getChildren().add(createCheckBox("PlaySound", Notification.getDefaults().playSoundProperty()));
-        content.getChildren().add(createDurationTextField());
+        content.getChildren().add(new Label("  Duration:"));
+        content.getChildren().add(createDurationTextField("Duration", Notification.getDefaults().durationProperty()));
+        content.getChildren().add(new Label("  Anim.Duration:"));
+        content.getChildren().add(createDurationTextField("AnimationDuration", Notification.getDefaults().animationDurationProperty()));
+        content.getChildren().add(new Label("  Fade Duration:"));
+        content.getChildren().add(createDurationTextField("FadeOutDuration", Notification.getDefaults().fadeOutDurationProperty()));
         content.getChildren().add(createStylesheetCheckBox());
 
         content.getChildren().add(new Separator(Orientation.HORIZONTAL));
@@ -81,13 +77,13 @@ public class TestClassNotification extends Application {
         primaryStage.show();
     }
 
-    private TextField createDurationTextField() {
+    private TextField createDurationTextField(String text, ObjectProperty<Duration> property) {
         TextField textField = new TextField("");
-        textField.setPromptText("Duration (leer für INDEFINITE)");
-        Bindings.bindBidirectional(textField.textProperty(), Notification.getDefaults().durationProperty(), new StringConverter<Duration>() {
+        textField.setPromptText(text + " (leer für INDEFINITE)");
+        Bindings.bindBidirectional(textField.textProperty(), property, new StringConverter<Duration>() {
             @Override
             public String toString(Duration object) {
-                return object.toString();
+                return String.valueOf(object.toMillis());
             }
 
             @Override
