@@ -67,8 +67,6 @@ public class Notification extends NotificationProperties {
         durationProperty().addListener((observable, oldValue, newValue) -> durationTimeline.playFromStart());
         closeButton.managedProperty().bind(closeButtonVisibleProperty());
         closeButton.visibleProperty().bind(closeButtonVisibleProperty());
-        dontShowAgainBox.setVisible(false); //TODO in fxml
-        dontShowAgainBox.setManaged(false);
         contentBox.getChildren().add(content);
         if (type != Type.NONE && defaults.isStyleByType()) {
             root.getStyleClass().add(type.getStyleClass());
@@ -158,9 +156,7 @@ public class Notification extends NotificationProperties {
             popup = new Popup();
             popup.setAutoFix(false);
             popup.getContent().add(root);
-            popup.setOnHidden((WindowEvent event) -> {
-                getNotificationManagerInstance().removeNotification(this);
-            });
+            popup.setOnHidden((WindowEvent event) -> getNotificationManagerInstance().removeNotification(this));
         }
         return popup;
     }
@@ -234,10 +230,32 @@ public class Notification extends NotificationProperties {
 
     @Override
     public void setPosition(Pos position) {
-        if (popup != null && popup.isShowing()) { //TODO exc nötig? evtl. stattdessen / auch für window & screen?
+        // Die Position wird vom NotificationManager gebraucht und
+        // darf daher nicht geaendert werden, solange die Notification sichtbar ist
+        if (popup != null && popup.isShowing()) {
             throw new IllegalStateException("The position can not be changed while notification is showing!");
         }
         super.setPosition(position);
+    }
+
+    @Override
+    public void setWindow(Window window) {
+        // Das Window wird vom NotificationManager gebraucht und
+        // darf daher nicht geaendert werden, solange die Notification sichtbar ist
+        if (popup != null && popup.isShowing()) {
+            throw new IllegalStateException("The window can not be changed while notification is showing!");
+        }
+        super.setWindow(window);
+    }
+
+    @Override
+    public void setScreen(Screen screen) {
+        // Der Screen wird vom NotificationManager gebraucht und
+        // darf daher nicht geaendert werden, solange die Notification sichtbar ist
+        if (popup != null && popup.isShowing()) {
+            throw new IllegalStateException("The screen can not be changed while notification is showing!");
+        }
+        super.setScreen(screen);
     }
 
     public static NotificationProperties getDefaults() {

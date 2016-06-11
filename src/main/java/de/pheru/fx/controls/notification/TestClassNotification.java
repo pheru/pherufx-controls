@@ -1,6 +1,7 @@
 package de.pheru.fx.controls.notification;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -157,6 +158,14 @@ public class TestClassNotification extends Application {
 
             Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), content);
             n.show();
+            new Thread(() -> {
+                try {
+                    Thread.sleep(2000);
+                    Platform.runLater(() -> n.setPosition(Pos.CENTER));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         });
         return button;
     }
