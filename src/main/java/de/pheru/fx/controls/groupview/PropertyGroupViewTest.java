@@ -1,9 +1,12 @@
 package de.pheru.fx.controls.groupview;
 
 import javafx.application.Application;
-import javafx.geometry.HPos;
-import javafx.geometry.VPos;
+import javafx.geometry.Orientation;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TableView;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
@@ -18,17 +21,24 @@ public class PropertyGroupViewTest extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         PropertyGroupTileView<Titel> g = new PropertyGroupTileView<>("interpret");
-//        g.setTileFactory(param -> {
-//            VBox v = new VBox();
-//            v.getChildren().add(new Separator(Orientation.HORIZONTAL));
-//            v.getChildren().add(new Label(String.valueOf(param.getItems().size())));
-//            v.getChildren().add(new Label(param.getPropertyValue().toString()));
-//            return v;
-//        });
-        g.setRowValignment(VPos.BOTTOM);
-        g.setColumnHalignment(HPos.RIGHT);
-        g.setMinHeight(600);
-        g.setHgap(Double.MAX_VALUE);
+        g.setTileFactory(param -> {
+            VBox v = new VBox();
+            v.getChildren().add(new Separator(Orientation.HORIZONTAL));
+            v.getChildren().add(new Label(String.valueOf(param.getItemsUnmodifiable().size())));
+            v.getChildren().add(new Label(param.getPropertyValue().toString()));
+            v.getChildren().add(new Separator(Orientation.HORIZONTAL));
+            TableView<String> t = new TableView<>();
+            t.setMaxHeight(200);
+            t.setMaxWidth(200);
+            v.getChildren().add(t);
+            return v;
+        });
+//        g.setRowValignment(VPos.BOTTOM);
+//        g.setColumnHalignment(HPos.RIGHT);
+//        g.setMinHeight(600);
+//        g.setHgap(Double.MAX_VALUE);
+//        g.setvBarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+//        g.sethBarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         g.getItems().add(new Titel("Kamelot"));
         g.getItems().add(new Titel("Gamma Ray"));

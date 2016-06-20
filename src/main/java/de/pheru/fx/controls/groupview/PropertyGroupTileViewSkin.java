@@ -1,16 +1,19 @@
 package de.pheru.fx.controls.groupview;
 
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 
 public class PropertyGroupTileViewSkin<I> extends PropertyGroupViewSkin<I> {
 
+    private ScrollPane scrollPane;
     private FlowPane flowPane;
     private PropertyGroupTileView<I> propertyGroupTileView;
     private ObservableMap<Object, Node> propertyValueNodeMap = FXCollections.observableHashMap();
@@ -20,11 +23,12 @@ public class PropertyGroupTileViewSkin<I> extends PropertyGroupViewSkin<I> {
         this.propertyGroupTileView = propertyGroupTileView;
 
         initFlowPane();
+        initScrollPane();
         propertyValueNodeMap.addListener(new PropertyValueNodeMapChangeListener());
     }
 
     private void initFlowPane() {
-        flowPane = new FlowPane(); //TODO Scrollbar?
+        flowPane = new FlowPane();
         //FlowPane-Properties
         flowPane.hgapProperty().bind(propertyGroupTileView.hgapProperty());
         flowPane.vgapProperty().bind(propertyGroupTileView.vgapProperty());
@@ -42,6 +46,18 @@ public class PropertyGroupTileViewSkin<I> extends PropertyGroupViewSkin<I> {
         flowPane.maxWidthProperty().bind(propertyGroupTileView.maxWidthProperty());
     }
 
+    private void initScrollPane() {
+        scrollPane = new ScrollPane(flowPane);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setFitToWidth(true);
+
+        scrollPane.vbarPolicyProperty().bind(propertyGroupTileView.vBarPolicyProperty());
+        scrollPane.hbarPolicyProperty().bind(propertyGroupTileView.hBarPolicyProperty());
+        scrollPane.vvalueProperty().bind(propertyGroupTileView.vValueProperty());
+        scrollPane.hvalueProperty().bind(propertyGroupTileView.hValueProperty());
+        scrollPane.pannableProperty().bind(propertyGroupTileView.pannableProperty());
+    }
+
     @Override
     protected void propertyValueRemoved(MapChangeListener.Change<?, ? extends ObservableList<I>> c) {
         propertyValueNodeMap.remove(c.getKey());
@@ -53,9 +69,10 @@ public class PropertyGroupTileViewSkin<I> extends PropertyGroupViewSkin<I> {
         if (propertyGroupTileView.getTileFactory() != null) {
             propertyValueNodeMap.put(c.getKey(), propertyGroupTileView.getTileFactory().call(propertyGroup));
         } else {
-            VBox defaultNode = new VBox();
-            defaultNode.getChildren().addAll(new Label(c.getKey().toString()),
-                    new Label(String.valueOf(c.getValueAdded().size()))); //TODO valueAdded empty
+            HBox defaultNode = new HBox();
+            Label label = new Label();
+            label.textProperty().bind(Bindings.size(c.getValueAdded()).asString());
+            defaultNode.getChildren().addAll(new Label(c.getKey() + ": "), label);
             propertyValueNodeMap.put(c.getKey(), defaultNode);
         }
     }
@@ -67,11 +84,12 @@ public class PropertyGroupTileViewSkin<I> extends PropertyGroupViewSkin<I> {
 
     @Override
     public Node getNode() {
-        return flowPane;
+        return scrollPane;
     }
 
     @Override
     public void dispose() {
+        scrollPane = null;
         flowPane = null;
         propertyGroupTileView = null;
         propertyValueNodeMap = null;
