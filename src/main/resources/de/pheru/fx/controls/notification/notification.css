@@ -1,14 +1,5 @@
-/*
-    Created on : 30.01.2015, 22:50:08
-    Author     : Philipp Bruckner
-*/
-
-/*
-Notification - Type NONE
-*/
 .notification {
     -fx-background-color: rgba(0, 0, 0, 0.75);
-    -fx-background-radius: 5;
 }
 
 .notification:hover {
@@ -57,7 +48,7 @@ Header
 }
 
 /*
-Label
+Labels
 */
 .label {
     -fx-text-fill: white;
@@ -65,10 +56,10 @@ Label
 }
 
 /*
-Button
+Buttons
 */
-.button {
-    -fx-background-radius: 5;
+#contentBox .button {
+    -fx-background-radius: 0;
     -fx-text-fill: white;
     -fx-background-color: -fx-focus-color;
     -fx-border-width: 0;
@@ -76,12 +67,12 @@ Button
     -fx-background-insets: 0;
 }
 
-.button:hover {
+#contentBox .button:hover {
     -fx-text-fill: -fx-focus-color;
     -fx-background-color: white;
 }
 
-.button:focused {
+#contentBox .button:focused {
     -fx-border-width: 0;
     -fx-border-color: transparent;
     -fx-background-insets: 0;
@@ -94,50 +85,32 @@ Close-Button
     -fx-border-color: transparent;
     -fx-border-width: 0;
     -fx-background-color: transparent;
-    -fx-background-radius: 0 5 0 5;
     -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 
 .notification-closebuttongraphic {
-    -fx-fill: red;
+    -fx-fill: white;
 }
 
 .notification-closebutton:hover {
-    -fx-background-color: red;
-}
-
-.notification-closebutton:hover .notification-closebuttongraphic {
-    -fx-fill: white;
-}
-
-.notification.error .notification-closebuttongraphic {
-    -fx-fill: white;
-}
-
-.notification.error .notification-closebutton:hover {
-    -fx-background-color: white;
-}
-
-.notification.error .notification-closebutton:hover .notification-closebuttongraphic {
-    -fx-fill: red;
+    -fx-background-color: rgba(255, 0, 0, 1);
 }
 
 /*
-CheckBox
+CheckBoxen
 */
 .check-box {
     -fx-text-fill: white;
 }
 
-.check-box .box {
-    -fx-background-color: rgba(255, 255, 255, 0.15);
-    -fx-background-radius: 5;
-    -fx-border-color: white;
-    -fx-border-radius: 5;
-}
-
 .check-box:hover {
     -fx-text-fill: -fx-focus-color;
+}
+
+.check-box .box {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-border-color: rgba(255, 255, 255, 0.50);
 }
 
 .check-box:hover .box {
@@ -145,11 +118,15 @@ CheckBox
 }
 
 .check-box:selected .mark {
+    -fx-background-color: white;
+}
+
+.check-box:selected:hover .mark {
     -fx-background-color: -fx-focus-color;
 }
 
 /*
-ProgressBar
+ProgressBars
 */
 .progress-bar .track {
     -fx-border-color: white;

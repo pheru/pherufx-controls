@@ -10,6 +10,7 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -18,9 +19,13 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Popup;
 import javafx.stage.Screen;
 import javafx.stage.Window;
@@ -34,12 +39,14 @@ import java.io.IOException;
  */
 public class Notification extends NotificationProperties {
 
-    public static final double WIDTH = 350.0;
-
-    private static NotificationProperties defaults = new NotificationProperties();
+    private static NotificationDefaults defaults = new NotificationDefaults();
 
     @FXML
-    private GridPane root;
+    private StackPane root;
+    @FXML
+    private VBox notificationBox;
+    @FXML
+    private Label headerLabel;
     @FXML
     private HBox contentBox;
     @FXML
@@ -47,32 +54,43 @@ public class Notification extends NotificationProperties {
     @FXML
     private Button closeButton;
 
-    private final EventHandler<MouseEvent> hideEventHandler = event -> hide();
+    private final EventHandler<MouseEvent> hideEventHandler = event -> {
+        if (isClosable()) {
+            hide();
+        }
+    };
 
     private Popup popup;
     private final Timeline durationTimeline = new Timeline();
     private Timeline xTimeline;
     private Timeline yTimeline;
+    private Type type;
 
-    public Notification(Type type, Node content) {
+    private Notification(final Type type) {
         super(defaults);
+        this.type = type;
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(NotificationManager.class.getResource("notification.fxml"));
+            final FXMLLoader fxmlLoader = new FXMLLoader(NotificationManager.class.getResource("notification.fxml"));
             fxmlLoader.setController(this);
             fxmlLoader.load();
+            getStylesheets().addAll(defaults.getStylesheets());
         } catch (IOException e) {
             throw new IllegalStateException("Could not load fxml!", e);
         }
 
+        headerLabel.visibleProperty().bind(headerLabel.textProperty().isEmpty().not());
+        headerLabel.managedProperty().bind(headerLabel.textProperty().isEmpty().not());
+
         durationProperty().addListener((observable, oldValue, newValue) -> durationTimeline.playFromStart());
-        closeButton.managedProperty().bind(closeButtonVisibleProperty());
-        closeButton.visibleProperty().bind(closeButtonVisibleProperty());
-        contentBox.getChildren().add(content);
-        if (type != Type.NONE && defaults.isStyleByType()) {
-            root.getStyleClass().add(type.getStyleClass());
-        }
-        root.setOnMouseEntered(event -> durationTimeline.stop());
-        root.setOnMouseExited(event -> durationTimeline.play());
+        root.setOnMouseEntered(event -> {
+            durationTimeline.stop();
+            closeButton.visibleProperty().bind(closableProperty());
+        });
+        root.setOnMouseExited(event -> {
+            durationTimeline.play();
+            closeButton.visibleProperty().unbind();
+            closeButton.setVisible(false);
+        });
         if (isHideOnMouseClicked()) {
             root.setOnMouseClicked(hideEventHandler);
         }
@@ -89,27 +107,48 @@ public class Notification extends NotificationProperties {
         });
     }
 
-    public Notification(Type type, String text, String header) {
-        this(type, new NotificationContent(type, text, header).getRoot());
+    private ImageView createHeaderImageView(final Type type) {
+        final ImageView iv = new ImageView(type.getImagePath());
+        iv.setFitHeight(24);
+        iv.setFitWidth(24);
+        return iv;
     }
 
-    public Notification(Type type, String text) {
-        this(type, new NotificationContent(type, text, "").getRoot());
+    public Notification(final Type type, final Node content) {
+        this(type);
+        contentBox.getChildren().add(content);
     }
 
-    public Notification(Type type, StringProperty textProperty, StringProperty headerProperty) {
-        this(type, new NotificationContent(type, textProperty, headerProperty).getRoot());
+    public Notification(final Type type, final String text) {
+        this(type);
+        final Label label = getContentLabel();
+        label.setText(text);
+        contentBox.getChildren().add(label);
     }
 
-    public Notification(Type type, StringProperty textProperty, String header) {
-        this(type, new NotificationContent(type, textProperty, header).getRoot());
+    public Notification(final Type type, final StringProperty textProperty) {
+        this(type);
+        final Label label = getContentLabel();
+        label.textProperty().bind(textProperty);
+        contentBox.getChildren().add(label);
     }
 
-    public Notification(Type type, StringProperty textProperty) {
-        this(type, new NotificationContent(type, textProperty, "").getRoot());
+    private Label getContentLabel() {
+        final Label label = new Label();
+        label.setWrapText(true);
+        label.setTextAlignment(TextAlignment.JUSTIFY);
+        return label;
     }
 
     public void show() {
+        if (type != Type.NONE) {
+            if (getStyleByType().isApplyStyle()) {
+                root.getStyleClass().add(type.getStyleClass());
+            }
+            if (getStyleByType().isShowIcon()) {
+                headerLabel.setGraphic(createHeaderImageView(type));
+            }
+        }
         root.getStylesheets().addAll(getStyleSheets());
         getNotificationManagerInstance().show(isAnimateShow(), this);
         if (getDuration() != Duration.INDEFINITE) {
@@ -127,7 +166,7 @@ public class Notification extends NotificationProperties {
     public void hide() {
         durationTimeline.stop();
         if (isFadeOut()) {
-            FadeTransition fadeTransition = new FadeTransition(getFadeOutDuration(), root);
+            final FadeTransition fadeTransition = new FadeTransition(getFadeOutDuration(), root);
             fadeTransition.setFromValue(1.0);
             fadeTransition.setToValue(0.0);
             fadeTransition.setOnFinished((ActionEvent event) -> hidePopup());
@@ -143,11 +182,11 @@ public class Notification extends NotificationProperties {
         }
     }
 
-    public static void hideAll(Screen screen) {
+    public static void hideAll(final Screen screen) {
         NotificationManager.getInstanceForScreen(screen).hideAll();
     }
 
-    public static void hideAll(Window owner) {
+    public static void hideAll(final Window owner) {
         NotificationManager.getInstanceForWindow(owner).hideAll();
     }
 
@@ -173,7 +212,7 @@ public class Notification extends NotificationProperties {
         if (!animated) {
             popup.setY(position);
         } else {
-            DoubleProperty popupY = new SimpleDoubleProperty(popup.getY());
+            final DoubleProperty popupY = new SimpleDoubleProperty(popup.getY());
             popupY.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                 popup.setY(newValue.doubleValue());
             });
@@ -185,11 +224,11 @@ public class Notification extends NotificationProperties {
         }
     }
 
-    protected void setX(final double position, boolean animated) {
+    protected void setX(final double position, final boolean animated) {
         if (!animated) {
             popup.setX(position);
         } else {
-            DoubleProperty popupX = new SimpleDoubleProperty(popup.getX());
+            final DoubleProperty popupX = new SimpleDoubleProperty(popup.getX());
             popupX.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                 popup.setX(newValue.doubleValue());
             });
@@ -201,7 +240,7 @@ public class Notification extends NotificationProperties {
         }
     }
 
-    public void setOnMouseClicked(EventHandler<? super MouseEvent> eventHandler) {
+    public void setOnMouseClicked(final EventHandler<? super MouseEvent> eventHandler) {
         root.setOnMouseClicked(event -> {
             eventHandler.handle(event);
             if (isHideOnMouseClicked()) {
@@ -210,14 +249,30 @@ public class Notification extends NotificationProperties {
         });
     }
 
-    public void bindDontShowAgainProperty(Property<Boolean> property) { //TODO Durch getter&setter ersetzen?
+    public void bindDontShowAgainProperty(final Property<Boolean> property) { //TODO Durch getter&setter ersetzen?
         dontShowAgainBox.selectedProperty().bindBidirectional(property);
         dontShowAgainBox.setVisible(true);
         dontShowAgainBox.setManaged(true);
     }
 
-    protected GridPane getRoot() {
+    public String getHeaderText() {
+        return headerLabel.textProperty().get();
+    }
+
+    public StringProperty headerTextProperty() {
+        return headerLabel.textProperty();
+    }
+
+    public void setHeaderText(final String headerText) {
+        headerLabel.setText(headerText);
+    }
+
+    protected StackPane getRoot() {
         return root;
+    }
+
+    public ObservableList<String> getStylesheets() {
+        return root.getStylesheets();
     }
 
     public ReadOnlyObjectProperty<Duration> currentTimeProperty() {
@@ -262,7 +317,7 @@ public class Notification extends NotificationProperties {
         return defaults;
     }
 
-    public static void setDefaults(NotificationProperties defaults) {
+    public static void setDefaults(final NotificationDefaults defaults) {
         Notification.defaults = defaults;
     }
 

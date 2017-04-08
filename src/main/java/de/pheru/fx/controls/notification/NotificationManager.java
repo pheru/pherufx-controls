@@ -11,7 +11,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Popup;
 import javafx.stage.Screen;
@@ -21,9 +21,6 @@ import java.awt.Toolkit;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author Philipp Bruckner
- */
 abstract class NotificationManager {
 
     public static final double NOTIFICATION_SPACING = 2.0;
@@ -48,20 +45,20 @@ abstract class NotificationManager {
         }
     }
 
-    protected static NotificationManager getInstanceForScreen(Screen screen) {
+    protected static NotificationManager getInstanceForScreen(final Screen screen) {
         if (screenNotificationManagers.containsKey(screen)) {
             return screenNotificationManagers.get(screen);
         } else {
-            ScreenNotificationManager screenNotificationManager = new ScreenNotificationManager(screen);
+            final ScreenNotificationManager screenNotificationManager = new ScreenNotificationManager(screen);
             screenNotificationManagers.put(screen, screenNotificationManager);
             return screenNotificationManager;
         }
     }
 
-    protected void show(boolean animate, Notification notification) {
-        Popup popup = notification.getPopup();
-        Pos position = notification.getPosition();
-        GridPane root = notification.getRoot();
+    protected void show(final boolean animate, final Notification notification) {
+        final Popup popup = notification.getPopup();
+        final Pos position = notification.getPosition();
+        final StackPane root = notification.getRoot();
 
         popup.show(getOwner());
         popup.setX(initialTargetX(position, root.getWidth()));
@@ -82,21 +79,21 @@ abstract class NotificationManager {
         }
     }
 
-    private void playAnimation(Pos position, Notification notification) {
-        Popup popup = notification.getPopup();
-        GridPane root = notification.getRoot();
+    private void playAnimation(final Pos position, final Notification notification) {
+        final Popup popup = notification.getPopup();
+        final StackPane root = notification.getRoot();
         if (position == Pos.CENTER) {
-            ScaleTransition scaleTransition = new ScaleTransition(notification.getAnimationDuration(), root);
+            final ScaleTransition scaleTransition = new ScaleTransition(notification.getAnimationDuration(), root);
             scaleTransition.setFromX(0.0);
             scaleTransition.setToX(1.0);
             scaleTransition.setFromY(0.0);
             scaleTransition.setToY(1.0);
             scaleTransition.play();
         } else {
-            Rectangle clip = new Rectangle(popup.getWidth(), popup.getHeight());
+            final Rectangle clip = new Rectangle(popup.getWidth(), popup.getHeight());
 //            clip.widthProperty().bind(popup.widthProperty());
 //            clip.heightProperty().bind(popup.heightProperty());
-            DoubleProperty layoutProperty;
+            final DoubleProperty layoutProperty;
             switch (notification.getPosition()) {
                 case TOP_LEFT:
                 case CENTER_LEFT:
@@ -133,8 +130,8 @@ abstract class NotificationManager {
     }
 
     protected void hideAll() {
-        for (ObservableList<Notification> notifications : notificationsMap.values()) {
-            ObservableList<Notification> notificationsCopy = FXCollections.observableArrayList(notifications);
+        for (final ObservableList<Notification> notifications : notificationsMap.values()) {
+            final ObservableList<Notification> notificationsCopy = FXCollections.observableArrayList(notifications);
             for (Notification n : notificationsCopy) {
                 n.hide();
             }

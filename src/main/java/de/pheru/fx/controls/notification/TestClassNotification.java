@@ -6,6 +6,8 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.geometry.Orientation;
@@ -27,15 +29,13 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
-/**
- * @author Philipp Bruckner
- */
 public class TestClassNotification extends Application {
 
     private Stage primaryStage;
 
     private ComboBox<Notification.Type> typeComboBox;
     private final BooleanProperty booleanProperty = new SimpleBooleanProperty(false);
+    private final StringProperty textProperty = new SimpleStringProperty("Beispiel");
 
     public static void main(String[] args) {
         launch(args);
@@ -54,11 +54,11 @@ public class TestClassNotification extends Application {
         content.getChildren().add(createPositionComboBox());
         content.getChildren().add(createScreenComboBox());
         content.getChildren().add(createWindowComboBox());
+        content.getChildren().add(createStyleByTypeComboBox());
         content.getChildren().add(createCheckBox("HideOnMouseClicked", Notification.getDefaults().hideOnMouseClickedProperty()));
         content.getChildren().add(createCheckBox("AnimateShow", Notification.getDefaults().animateShowProperty()));
-        content.getChildren().add(createCheckBox("CloseButtonVisible", Notification.getDefaults().closeButtonVisibleProperty()));
+        content.getChildren().add(createCheckBox("Closeable", Notification.getDefaults().closableProperty()));
         content.getChildren().add(createCheckBox("FadeOut", Notification.getDefaults().fadeOutProperty()));
-        content.getChildren().add(createCheckBox("StyleByType", Notification.getDefaults().styleByTypeProperty()));
         content.getChildren().add(createCheckBox("PlaySound", Notification.getDefaults().playSoundProperty()));
         content.getChildren().add(new Label("  Duration:"));
         content.getChildren().add(createDurationTextField("Duration", Notification.getDefaults().durationProperty()));
@@ -70,12 +70,25 @@ public class TestClassNotification extends Application {
 
         content.getChildren().add(new Separator(Orientation.HORIZONTAL));
 
+        content.getChildren().add(new Label("  Single-Add Text:"));
+        content.getChildren().add(createTextTextField());
         content.getChildren().add(createSingleAddButton());
         content.getChildren().add(createCustomContentButton());
         content.getChildren().add(createDontShowAgainButton());
 
         primaryStage.setScene(new Scene(content));
         primaryStage.show();
+
+//        Stage s = new Stage(StageStyle.UNDECORATED);
+//        s.setScene(new Scene(new VBox(new TableView<String>())));
+//        s.initOwner(primaryStage);
+//        s.show();
+    }
+
+    private TextField createTextTextField() {
+        TextField textField = new TextField("");
+        textField.textProperty().bindBidirectional(textProperty);
+        return textField;
     }
 
     private TextField createDurationTextField(String text, ObjectProperty<Duration> property) {
@@ -119,7 +132,8 @@ public class TestClassNotification extends Application {
     private Button createSingleAddButton() {
         Button button = new Button("Single Add (Defaults)");
         button.setOnAction(event -> {
-            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), "Text - SingleAdd", "Header");
+            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), textProperty.get());
+            n.setHeaderText("Hallo!");
             n.show();
         });
         return button;
@@ -139,6 +153,7 @@ public class TestClassNotification extends Application {
                 }
             };
             VBox content = new VBox();
+            content.setSpacing(5);
 
             ProgressBar progressBar = new ProgressBar(-1);
             progressBar.progressProperty().bind(task.progressProperty());
@@ -157,6 +172,7 @@ public class TestClassNotification extends Application {
             content.getChildren().add(tableView);
 
             Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), content);
+            n.setHeaderText("Hallo!");
             n.show();
             new Thread(() -> {
                 try {
@@ -173,7 +189,7 @@ public class TestClassNotification extends Application {
     private Button createDontShowAgainButton() {
         Button button = new Button("Dont Show Again");
         button.setOnAction(event -> {
-            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), "Text", "Header");
+            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), "Text");
             n.bindDontShowAgainProperty(booleanProperty);
             n.show();
         });
@@ -183,7 +199,7 @@ public class TestClassNotification extends Application {
     private Button createButton() {
         Button button = new Button("");
         button.setOnAction(event -> {
-            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), "Text", "Header");
+            Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), "Text");
             n.show();
         });
         return button;
@@ -201,6 +217,15 @@ public class TestClassNotification extends Application {
         comboBox.setMaxWidth(400);
         comboBox.getSelectionModel().select(0);
         Notification.getDefaults().screenProperty().bind(comboBox.getSelectionModel().selectedItemProperty());
+        return comboBox;
+    }
+
+    private ComboBox<NotificationProperties.StyleByType> createStyleByTypeComboBox() {
+        ComboBox<NotificationProperties.StyleByType> comboBox = new ComboBox<>();
+        comboBox.getItems().addAll(NotificationProperties.StyleByType.values());
+        comboBox.setMaxWidth(400);
+        comboBox.getSelectionModel().select(0);
+        Notification.getDefaults().styleByTypeProperty().bind(comboBox.getSelectionModel().selectedItemProperty());
         return comboBox;
     }
 

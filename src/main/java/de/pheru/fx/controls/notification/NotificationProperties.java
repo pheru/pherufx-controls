@@ -24,10 +24,10 @@ public class NotificationProperties {
     private final ObjectProperty<Duration> animationDuration = new SimpleObjectProperty<>(Duration.millis(300));
     private final BooleanProperty fadeOut = new SimpleBooleanProperty(true);
     private final ObjectProperty<Duration> fadeOutDuration = new SimpleObjectProperty<>(Duration.millis(500));
-    private final BooleanProperty closeButtonVisible = new SimpleBooleanProperty(true);
-    private final BooleanProperty hideOnMouseClicked = new SimpleBooleanProperty(true);
+    private final BooleanProperty closable = new SimpleBooleanProperty(true);
+    private final BooleanProperty hideOnMouseClicked = new SimpleBooleanProperty(false);
     private final BooleanProperty playSound = new SimpleBooleanProperty(false);
-    private final BooleanProperty styleByType = new SimpleBooleanProperty(true);
+    private final ObjectProperty<StyleByType> styleByType = new SimpleObjectProperty<>(StyleByType.ICON_AND_STYLE);
     private final ObservableList<String> styleSheets = FXCollections.observableArrayList();
 
     public NotificationProperties() {
@@ -42,11 +42,33 @@ public class NotificationProperties {
         animationDuration.set(copy.getAnimationDuration());
         fadeOut.set(copy.isFadeOut());
         fadeOutDuration.set(copy.getFadeOutDuration());
-        closeButtonVisible.set(copy.isCloseButtonVisible());
+        closable.set(copy.isClosable());
         hideOnMouseClicked.set(copy.isHideOnMouseClicked());
         playSound.set(copy.isPlaySound());
-        styleByType.set(copy.isStyleByType());
+        styleByType.set(copy.getStyleByType());
         styleSheets.addAll(copy.getStyleSheets());
+    }
+
+    public enum StyleByType {
+        ICON(true, false),
+        STYLE(false, true),
+        ICON_AND_STYLE(true, true);
+
+        private final boolean showIcon;
+        private final boolean applyStyle;
+
+        StyleByType(final boolean showIcon, final boolean applyStyle) {
+            this.showIcon = showIcon;
+            this.applyStyle = applyStyle;
+        }
+
+        public boolean isShowIcon() {
+            return showIcon;
+        }
+
+        public boolean isApplyStyle() {
+            return applyStyle;
+        }
     }
 
     public Screen getScreen() {
@@ -145,16 +167,16 @@ public class NotificationProperties {
         this.fadeOutDuration.set(fadeOutDuration);
     }
 
-    public boolean isCloseButtonVisible() {
-        return closeButtonVisible.get();
+    public boolean isClosable() {
+        return closable.get();
     }
 
-    public BooleanProperty closeButtonVisibleProperty() {
-        return closeButtonVisible;
+    public BooleanProperty closableProperty() {
+        return closable;
     }
 
-    public void setCloseButtonVisible(boolean closeButtonVisible) {
-        this.closeButtonVisible.set(closeButtonVisible);
+    public void setClosable(final boolean closable) {
+        this.closable.set(closable);
     }
 
     public boolean isHideOnMouseClicked() {
@@ -181,15 +203,15 @@ public class NotificationProperties {
         this.playSound.set(playSound);
     }
 
-    public boolean isStyleByType() {
+    public StyleByType getStyleByType() {
         return styleByType.get();
     }
 
-    public BooleanProperty styleByTypeProperty() {
+    public ObjectProperty<StyleByType> styleByTypeProperty() {
         return styleByType;
     }
 
-    public void setStyleByType(boolean styleByType) {
+    public void setStyleByType(final StyleByType styleByType) {
         this.styleByType.set(styleByType);
     }
 
