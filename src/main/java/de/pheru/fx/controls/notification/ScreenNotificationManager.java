@@ -20,13 +20,13 @@ class ScreenNotificationManager extends NotificationManager {
 
     private final Screen screen;
 
-    ScreenNotificationManager(Screen screen) {
+    ScreenNotificationManager(final Screen screen) {
         this.screen = screen;
     }
 
     @Override
     protected Rectangle2D getVisualBounds() {
-        Rectangle2D visualBounds = screen.getVisualBounds();
+        final Rectangle2D visualBounds = screen.getVisualBounds();
         return new Rectangle2D(visualBounds.getMinX(), visualBounds.getMinY() + TOP_MARGIN, visualBounds.getWidth(), visualBounds.getHeight() - TOP_MARGIN);
     }
 

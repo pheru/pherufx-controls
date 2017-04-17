@@ -34,9 +34,6 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
-/**
- * @author Philipp Bruckner
- */
 public class Notification extends NotificationProperties {
 
     private static NotificationDefaults defaults = new NotificationDefaults();
@@ -66,53 +63,9 @@ public class Notification extends NotificationProperties {
     private Timeline yTimeline;
     private Type type;
 
-    private Notification(final Type type) {
-        super(defaults);
-        this.type = type;
-        try {
-            final FXMLLoader fxmlLoader = new FXMLLoader(NotificationManager.class.getResource("notification.fxml"));
-            fxmlLoader.setController(this);
-            fxmlLoader.load();
-            getStylesheets().addAll(defaults.getStylesheets());
-        } catch (IOException e) {
-            throw new IllegalStateException("Could not load fxml!", e);
-        }
-
-        headerLabel.visibleProperty().bind(headerLabel.textProperty().isEmpty().not());
-        headerLabel.managedProperty().bind(headerLabel.textProperty().isEmpty().not());
-
-        durationProperty().addListener((observable, oldValue, newValue) -> durationTimeline.playFromStart());
-        root.setOnMouseEntered(event -> {
-            durationTimeline.stop();
-            closeButton.visibleProperty().bind(closableProperty());
-        });
-        root.setOnMouseExited(event -> {
-            durationTimeline.play();
-            closeButton.visibleProperty().unbind();
-            closeButton.setVisible(false);
-        });
-        if (isHideOnMouseClicked()) {
-            root.setOnMouseClicked(hideEventHandler);
-        }
-        hideOnMouseClickedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                if (root.getOnMouseClicked() == null) {
-                    root.setOnMouseClicked(hideEventHandler);
-                }
-            } else {
-                if (root.getOnMouseClicked() == hideEventHandler) {
-                    root.setOnMouseClicked(null);
-                }
-            }
-        });
-    }
-
-    private ImageView createHeaderImageView(final Type type) {
-        final ImageView iv = new ImageView(type.getImagePath());
-        iv.setFitHeight(24);
-        iv.setFitWidth(24);
-        return iv;
-    }
+    // ******************************************************************************************************
+    // * Constructors
+    // ******************************************************************************************************
 
     public Notification(final Type type, final Node content) {
         this(type);
@@ -133,12 +86,80 @@ public class Notification extends NotificationProperties {
         contentBox.getChildren().add(label);
     }
 
+    private Notification(final Type type) {
+        super(defaults);
+        this.type = type;
+        loadFXML();
+        getStylesheets().addAll(defaults.getStylesheets());
+        initHeaderLabel();
+        initMouseHoverListeners();
+        initClickedListeners();
+        initDurationListeners();
+    }
+
+    private void loadFXML() {
+        try {
+            final FXMLLoader fxmlLoader = new FXMLLoader(NotificationManager.class.getResource("notification.fxml"));
+            fxmlLoader.setController(this);
+            fxmlLoader.load();
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not load fxml!", e);
+        }
+    }
+
+    private void initHeaderLabel() {
+        headerLabel.visibleProperty().bind(headerLabel.textProperty().isEmpty().not());
+        headerLabel.managedProperty().bind(headerLabel.textProperty().isEmpty().not());
+    }
+
+    private void initMouseHoverListeners() {
+        root.setOnMouseEntered(event -> {
+            durationTimeline.stop();
+            closeButton.visibleProperty().bind(closableProperty());
+        });
+        root.setOnMouseExited(event -> {
+            durationTimeline.play();
+            closeButton.visibleProperty().unbind();
+            closeButton.setVisible(false);
+        });
+    }
+
+    private void initClickedListeners() {
+        if (isHideOnMouseClicked()) {
+            root.setOnMouseClicked(hideEventHandler);
+        }
+        hideOnMouseClickedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                if (root.getOnMouseClicked() == null) {
+                    root.setOnMouseClicked(hideEventHandler);
+                }
+            } else {
+                if (root.getOnMouseClicked() == hideEventHandler) {
+                    root.setOnMouseClicked(null);
+                }
+            }
+        });
+    }
+
+    private void initDurationListeners() {
+        durationProperty().addListener((observable, oldValue, newValue) -> {
+            durationTimeline.stop();
+            durationTimeline.getKeyFrames().clear();
+            durationTimeline.getKeyFrames().add(new KeyFrame(newValue, (ActionEvent event) -> hide()));
+            durationTimeline.playFromStart();
+        });
+    }
+
     private Label getContentLabel() {
         final Label label = new Label();
         label.setWrapText(true);
         label.setTextAlignment(TextAlignment.JUSTIFY);
         return label;
     }
+
+    // ******************************************************************************************************
+    // * public methods
+    // ******************************************************************************************************
 
     public void show() {
         if (type != Type.NONE) {
@@ -158,11 +179,6 @@ public class Notification extends NotificationProperties {
         }
     }
 
-    @FXML
-    private void closeNotification() {
-        hide();
-    }
-
     public void hide() {
         durationTimeline.stop();
         if (isFadeOut()) {
@@ -176,18 +192,22 @@ public class Notification extends NotificationProperties {
         }
     }
 
-    private void hidePopup() {
-        if (root.getScene() != null) {
-            popup.hide();
-        }
+    public void bindDontShowAgainProperty(final Property<Boolean> property) {
+        dontShowAgainBox.selectedProperty().bindBidirectional(property);
+        dontShowAgainBox.setVisible(true);
+        dontShowAgainBox.setManaged(true);
     }
 
-    public static void hideAll(final Screen screen) {
-        NotificationManager.getInstanceForScreen(screen).hideAll();
+    // ******************************************************************************************************
+    // * protected methods
+    // ******************************************************************************************************
+
+    protected StackPane getRoot() {
+        return root;
     }
 
-    public static void hideAll(final Window owner) {
-        NotificationManager.getInstanceForWindow(owner).hideAll();
+    protected VBox getNotificationBox() { //TODO
+        return notificationBox;
     }
 
     protected Popup getPopup() {
@@ -198,30 +218,6 @@ public class Notification extends NotificationProperties {
             popup.setOnHidden((WindowEvent event) -> getNotificationManagerInstance().removeNotification(this));
         }
         return popup;
-    }
-
-    private NotificationManager getNotificationManagerInstance() {
-        if (getWindow() != null) {
-            return NotificationManager.getInstanceForWindow(getWindow());
-        } else {
-            return NotificationManager.getInstanceForScreen(getScreen());
-        }
-    }
-
-    protected void setY(final double position, boolean animated) {
-        if (!animated) {
-            popup.setY(position);
-        } else {
-            final DoubleProperty popupY = new SimpleDoubleProperty(popup.getY());
-            popupY.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                popup.setY(newValue.doubleValue());
-            });
-            if (yTimeline != null) {
-                yTimeline.stop();
-            }
-            yTimeline = new Timeline(new KeyFrame(Duration.millis(200.0), new KeyValue(popupY, position)));
-            yTimeline.play();
-        }
     }
 
     protected void setX(final double position, final boolean animated) {
@@ -240,6 +236,57 @@ public class Notification extends NotificationProperties {
         }
     }
 
+    protected void setY(final double position, final boolean animated) {
+        if (!animated) {
+            popup.setY(position);
+        } else {
+            final DoubleProperty popupY = new SimpleDoubleProperty(popup.getY());
+            popupY.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+                popup.setY(newValue.doubleValue());
+            });
+            if (yTimeline != null) {
+                yTimeline.stop();
+            }
+            yTimeline = new Timeline(new KeyFrame(Duration.millis(200.0), new KeyValue(popupY, position)));
+            yTimeline.play();
+        }
+    }
+
+    // ******************************************************************************************************
+    // * private methods
+    // ******************************************************************************************************
+
+    private ImageView createHeaderImageView(final Type type) {
+        final ImageView iv = new ImageView(type.getImagePath());
+//        final ImageView iv = new ImageView("de/pheru/fx/controls/notification/testicon.png");
+        iv.setFitHeight(24);
+        iv.setFitWidth(24);
+        return iv;
+    }
+
+    @FXML
+    private void closeNotification() {
+        hide();
+    }
+
+    private void hidePopup() {
+        if (root.getScene() != null) {
+            popup.hide();
+        }
+    }
+
+    private NotificationManager getNotificationManagerInstance() {
+        if (getWindow() != null) {
+            return NotificationManager.getInstanceForWindow(getWindow());
+        } else {
+            return NotificationManager.getInstanceForScreen(getScreen());
+        }
+    }
+
+    // ******************************************************************************************************
+    // * Getters & Setters
+    // ******************************************************************************************************
+
     public void setOnMouseClicked(final EventHandler<? super MouseEvent> eventHandler) {
         root.setOnMouseClicked(event -> {
             eventHandler.handle(event);
@@ -247,12 +294,6 @@ public class Notification extends NotificationProperties {
                 hideEventHandler.handle(event);
             }
         });
-    }
-
-    public void bindDontShowAgainProperty(final Property<Boolean> property) { //TODO Durch getter&setter ersetzen?
-        dontShowAgainBox.selectedProperty().bindBidirectional(property);
-        dontShowAgainBox.setVisible(true);
-        dontShowAgainBox.setManaged(true);
     }
 
     public String getHeaderText() {
@@ -265,10 +306,6 @@ public class Notification extends NotificationProperties {
 
     public void setHeaderText(final String headerText) {
         headerLabel.setText(headerText);
-    }
-
-    protected StackPane getRoot() {
-        return root;
     }
 
     public ObservableList<String> getStylesheets() {
@@ -313,6 +350,18 @@ public class Notification extends NotificationProperties {
         super.setScreen(screen);
     }
 
+    // ******************************************************************************************************
+    // * Static Methods
+    // ******************************************************************************************************
+
+    public static void hideAll(final Screen screen) {
+        NotificationManager.getInstanceForScreen(screen).hideAll();
+    }
+
+    public static void hideAll(final Window owner) {
+        NotificationManager.getInstanceForWindow(owner).hideAll();
+    }
+
     public static NotificationProperties getDefaults() {
         return defaults;
     }
@@ -320,6 +369,10 @@ public class Notification extends NotificationProperties {
     public static void setDefaults(final NotificationDefaults defaults) {
         Notification.defaults = defaults;
     }
+
+    // ******************************************************************************************************
+    // * Enums
+    // ******************************************************************************************************
 
     public enum Type {
 

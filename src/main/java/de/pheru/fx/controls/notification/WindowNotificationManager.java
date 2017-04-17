@@ -16,18 +16,16 @@ class WindowNotificationManager extends NotificationManager {
     private final Window window;
     private Rectangle2D visualBounds;
 
-    WindowNotificationManager(Window window) {
+    WindowNotificationManager(final Window window) {
         this.window = window;
         updateVisualBounds();
 
-        ChangeListener<Number> changeListener = (observable, oldValue, newValue) -> {
-            Platform.runLater(() -> {
-                updateVisualBounds();
-                for (Pos pos : Pos.values()) {
-                    arrangeNotifications(pos, false);
-                }
-            });
-        };
+        final ChangeListener<Number> changeListener = (observable, oldValue, newValue) -> Platform.runLater(() -> {
+            updateVisualBounds();
+            for (final Pos pos : Pos.values()) {
+                arrangeNotifications(pos, false);
+            }
+        });
         window.xProperty().addListener(changeListener);
         window.yProperty().addListener(changeListener);
         window.widthProperty().addListener(changeListener);
@@ -35,8 +33,8 @@ class WindowNotificationManager extends NotificationManager {
     }
 
     private void updateVisualBounds() {
-        Parent root = window.getScene().getRoot();
-        Bounds bounds = root.localToScreen(root.getBoundsInLocal());
+        final Parent root = window.getScene().getRoot();
+        final Bounds bounds = root.localToScreen(root.getBoundsInLocal());
         visualBounds = new Rectangle2D(bounds.getMinX(), bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
     }
 

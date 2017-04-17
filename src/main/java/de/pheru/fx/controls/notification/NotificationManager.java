@@ -1,5 +1,6 @@
 package de.pheru.fx.controls.notification;
 
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ScaleTransition;
@@ -16,6 +17,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Popup;
 import javafx.stage.Screen;
 import javafx.stage.Window;
+import javafx.util.Duration;
 
 import java.awt.Toolkit;
 import java.util.HashMap;
@@ -35,11 +37,11 @@ abstract class NotificationManager {
 
     protected abstract Window getOwner();
 
-    protected static NotificationManager getInstanceForWindow(Window window) {
+    protected static NotificationManager getInstanceForWindow(final Window window) {
         if (windowNotificationManagers.containsKey(window)) {
             return windowNotificationManagers.get(window);
         } else {
-            WindowNotificationManager windowNotificationManager = new WindowNotificationManager(window);
+            final WindowNotificationManager windowNotificationManager = new WindowNotificationManager(window);
             windowNotificationManagers.put(window, windowNotificationManager);
             return windowNotificationManager;
         }
@@ -82,17 +84,20 @@ abstract class NotificationManager {
     private void playAnimation(final Pos position, final Notification notification) {
         final Popup popup = notification.getPopup();
         final StackPane root = notification.getRoot();
+        final FadeTransition fadeTransition = new FadeTransition(Duration.millis(400), notification.getNotificationBox());
+        fadeTransition.setFromValue(0);
+        fadeTransition.setToValue(100);
+        notification.getNotificationBox().setOpacity(0);
         if (position == Pos.CENTER) {
             final ScaleTransition scaleTransition = new ScaleTransition(notification.getAnimationDuration(), root);
             scaleTransition.setFromX(0.0);
             scaleTransition.setToX(1.0);
             scaleTransition.setFromY(0.0);
             scaleTransition.setToY(1.0);
+            scaleTransition.setOnFinished(event -> fadeTransition.play());
             scaleTransition.play();
         } else {
             final Rectangle clip = new Rectangle(popup.getWidth(), popup.getHeight());
-//            clip.widthProperty().bind(popup.widthProperty());
-//            clip.heightProperty().bind(popup.heightProperty());
             final DoubleProperty layoutProperty;
             switch (notification.getPosition()) {
                 case TOP_LEFT:
@@ -125,24 +130,26 @@ abstract class NotificationManager {
                     break;
             }
             root.setClip(clip);
-            new Timeline(new KeyFrame(notification.getAnimationDuration(), new KeyValue(layoutProperty, 0))).play();
+            final Timeline timeline = new Timeline(new KeyFrame(notification.getAnimationDuration(), new KeyValue(layoutProperty, 0)));
+            timeline.setOnFinished(event -> fadeTransition.play());
+            timeline.play();
         }
     }
 
     protected void hideAll() {
         for (final ObservableList<Notification> notifications : notificationsMap.values()) {
             final ObservableList<Notification> notificationsCopy = FXCollections.observableArrayList(notifications);
-            for (Notification n : notificationsCopy) {
+            for (final Notification n : notificationsCopy) {
                 n.hide();
             }
         }
     }
 
-    protected void arrangeNotifications(Pos position, boolean animated) {
+    protected void arrangeNotifications(final Pos position, final boolean animated) {
         double totalHeight = 0;
-        for (Notification notification : getNotificationsForPosition(position)) {
-            double targetX = initialTargetX(position, notification.getRoot().getWidth());
-            double targetY = initialTargetY(position, notification.getRoot().getHeight());
+        for (final Notification notification : getNotificationsForPosition(position)) {
+            final double targetX = initialTargetX(position, notification.getRoot().getWidth());
+            final double targetY = initialTargetY(position, notification.getRoot().getHeight());
 
             notification.setX(targetX, animated);
             switch (position.getVpos()) {
@@ -160,11 +167,11 @@ abstract class NotificationManager {
         }
     }
 
-    protected void removeNotification(Notification notification) {
+    protected void removeNotification(final Notification notification) {
         getNotificationsForPosition(notification.getPosition()).remove(notification);
     }
 
-    protected double initialTargetX(Pos position, double notificationWidth) {
+    private double initialTargetX(final Pos position, final double notificationWidth) {
         final Rectangle2D visualBounds = getVisualBounds();
         switch (position.getHpos()) {
             case LEFT:
@@ -177,7 +184,7 @@ abstract class NotificationManager {
         }
     }
 
-    protected double initialTargetY(Pos position, double notificationHeight) {
+    private double initialTargetY(final Pos position, final double notificationHeight) {
         final Rectangle2D visualBounds = getVisualBounds();
         switch (position.getVpos()) {
             case TOP:
@@ -191,9 +198,9 @@ abstract class NotificationManager {
         }
     }
 
-    protected double getNewY(Pos position, double notificationHeight) {
+    private double getNewY(final Pos position, final double notificationHeight) {
         double targetY = initialTargetY(position, notificationHeight);
-        for (Notification notification : getNotificationsForPosition(position)) {
+        for (final Notification notification : getNotificationsForPosition(position)) {
             switch (position.getVpos()) {
                 case TOP:
                     targetY += notification.getRoot().getHeight() + NOTIFICATION_SPACING;
@@ -209,15 +216,15 @@ abstract class NotificationManager {
         return targetY;
     }
 
-    protected ObservableList<Notification> getNotificationsForPosition(Pos position) {
+    private ObservableList<Notification> getNotificationsForPosition(final Pos position) {
         if (!notificationsMap.containsKey(position)) {
             notificationsMap.put(position, createNotificationsList(position));
         }
         return notificationsMap.get(position);
     }
 
-    private ObservableList<Notification> createNotificationsList(Pos position) {
-        ObservableList<Notification> notificationsList = FXCollections.observableArrayList();
+    private ObservableList<Notification> createNotificationsList(final Pos position) {
+        final ObservableList<Notification> notificationsList = FXCollections.observableArrayList();
         notificationsList.addListener((ListChangeListener.Change<? extends Notification> c) -> {
             while (c.next()) {
                 if (c.wasRemoved()) { //Neue werden "von oben" eingefuegt -> kein arrange noetig

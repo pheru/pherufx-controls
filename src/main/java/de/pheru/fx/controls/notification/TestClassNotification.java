@@ -145,7 +145,7 @@ public class TestClassNotification extends Application {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    for (int i = 0; i < 100; i++) {
+                    for (int i = 1; i <= 100; i++) {
                         Thread.sleep(100);
                         updateProgress(i, 100);
                     }
@@ -155,21 +155,23 @@ public class TestClassNotification extends Application {
             VBox content = new VBox();
             content.setSpacing(5);
 
-            ProgressBar progressBar = new ProgressBar(-1);
-            progressBar.progressProperty().bind(task.progressProperty());
-            content.getChildren().add(progressBar);
+            TableView<String> tableView = new TableView<>();
+            tableView.setMaxHeight(200);
+            tableView.setMaxWidth(200);
+            content.getChildren().add(tableView);
 
             Label label = new Label("Test");
             content.getChildren().add(label);
 
             Button button1 = new Button("Test-Button");
             content.getChildren().add(button1);
-            button1.setOnAction(event1 -> new Thread(task).start());
 
-            TableView<String> tableView = new TableView<>();
-            tableView.setMaxHeight(200);
-            tableView.setMaxWidth(200);
-            content.getChildren().add(tableView);
+            ProgressBar progressBar = new ProgressBar(-1);
+            progressBar.setPrefWidth(999);
+            progressBar.progressProperty().bind(task.progressProperty());
+            content.getChildren().add(progressBar);
+
+            button1.setOnAction(event1 -> new Thread(task).start());
 
             Notification n = new Notification(typeComboBox.getSelectionModel().getSelectedItem(), content);
             n.setHeaderText("Hallo!");

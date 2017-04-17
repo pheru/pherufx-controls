@@ -14,7 +14,7 @@ import javafx.util.Duration;
 /**
  * Created by Philipp on 23.03.2016.
  */
-public class NotificationProperties {
+class NotificationProperties {
 
     private final ObjectProperty<Screen> screen = new SimpleObjectProperty<>(Screen.getPrimary());
     private final ObjectProperty<Window> window = new SimpleObjectProperty<>(null);
