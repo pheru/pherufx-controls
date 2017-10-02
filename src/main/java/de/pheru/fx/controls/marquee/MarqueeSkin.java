@@ -100,6 +100,11 @@ public class MarqueeSkin extends SkinBase<Marquee> {
     }
 
     @Override
+    protected double computePrefHeight(final double width, final double topInset, final double rightInset, final double bottomInset, final double leftInset) {
+        return super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset); //TODO
+    }
+
+    @Override
     protected double computeMinHeight(final double width, final double topInset, final double rightInset, final double bottomInset, final double leftInset) {
         return textNode.getLayoutBounds().getHeight();
     }
