@@ -9,7 +9,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-public class TestMarquee extends Application{
+class TestMarquee extends Application{
 
     public static void main(String[] args) {
         launch(args);
@@ -20,7 +20,7 @@ public class TestMarquee extends Application{
         final Label label = new Label("Label");
         label.setMaxWidth(30);
 
-        final Marquee marquee = new Marquee("Test!");
+        final Marquee marquee = new Marquee("White Pearl, Black Ocean");
         marquee.setStyle("-fx-background-color: white");
 
         Button b = new Button("+");
@@ -45,14 +45,17 @@ public class TestMarquee extends Application{
                 marquee,
                 br,
                 bd);
-        marquee.setAnimationSpeed(3);
-        box.setAlignment(Pos.BOTTOM_LEFT);
+//        marquee.setAnimationSpeed(3);
+        marquee.setInfiniteScroll(true);
+        box.setAlignment(Pos.CENTER_LEFT);
         marquee.setMaxWidth(100);
+//        marquee.setPrefWidth(200);
+//        marquee.setMinWidth(0);
         box.setMaxWidth(400);
         box.setMinWidth(400);
 
-        marquee.setAnimationEndDelay(Duration.ZERO);
-        marquee.setAnimationStartDelay(Duration.ZERO);
+//        marquee.setAnimationEndDelay(Duration.ZERO);
+//        marquee.setAnimationStartDelay(Duration.ZERO);
         box.setStyle("-fx-background-color: red;");
         final Scene scene = new Scene(box);
         primaryStage.setScene(scene);

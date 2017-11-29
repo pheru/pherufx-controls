@@ -1,11 +1,6 @@
 package de.pheru.fx.controls.marquee;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.util.Duration;
@@ -16,17 +11,27 @@ public class Marquee extends Control {
     private final ObjectProperty<Duration> animationStartDelay = new SimpleObjectProperty<>(Duration.millis(1000));
     private final ObjectProperty<Duration> animationEndDelay = new SimpleObjectProperty<>(Duration.millis(1000));
     private final DoubleProperty animationSpeed = new SimpleDoubleProperty(1.0);
+    private final BooleanProperty infiniteScroll = new SimpleBooleanProperty(false);
+    private final StringProperty infiniteScrollSeparator = new SimpleStringProperty("   -   ");
 
-    public Marquee(final String text) {
-        setText(text);
+    public Marquee(){
         initChangeListeners();
     }
 
+    public Marquee(final String text) {
+        this();
+        this.text.set(text);
+    }
+
+    public Marquee(final String text, final boolean infiniteScroll) {
+        this(text);
+        this.infiniteScroll.set(infiniteScroll);
+    }
+
     private void initChangeListeners() {
-        animationSpeedProperty().addListener((observable, oldValue, newValue) -> {
-            final double newValueAsDouble = newValue.doubleValue();
-            if (newValueAsDouble < 0.1) {
-                setAnimationSpeed(0.1);
+        animationSpeed.addListener((observable, oldValue, newValue) -> {
+            if (newValue.doubleValue() < 0.1) {
+                animationSpeed.set(0.1);
             }
         });
     }
@@ -84,4 +89,27 @@ public class Marquee extends Control {
         this.animationSpeed.set(animationSpeed);
     }
 
+    public boolean isInfiniteScroll() {
+        return infiniteScroll.get();
+    }
+
+    public BooleanProperty infiniteScrollProperty() {
+        return infiniteScroll;
+    }
+
+    public void setInfiniteScroll(final boolean infiniteScroll) {
+        this.infiniteScroll.set(infiniteScroll);
+    }
+
+    public String getInfiniteScrollSeparator() {
+        return infiniteScrollSeparator.get();
+    }
+
+    public StringProperty infiniteScrollSeparatorProperty() {
+        return infiniteScrollSeparator;
+    }
+
+    public void setInfiniteScrollSeparator(final String infiniteScrollSeparator) {
+        this.infiniteScrollSeparator.set(infiniteScrollSeparator);
+    }
 }

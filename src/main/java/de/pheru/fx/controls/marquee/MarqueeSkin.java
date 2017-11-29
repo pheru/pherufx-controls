@@ -1,8 +1,10 @@
 package de.pheru.fx.controls.marquee;
 
+import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.beans.value.ChangeListener;
+import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.control.SkinBase;
 import javafx.scene.shape.Rectangle;
@@ -11,9 +13,13 @@ import javafx.util.Duration;
 
 public class MarqueeSkin extends SkinBase<Marquee> {
 
+    private static final int ANIMATION_DURATION_ADJUSTMENT = 50;
     private Text textNode = new Text();
-    private TranslateTransition transition = new TranslateTransition();
     private Rectangle clip = new Rectangle();
+    private TranslateTransition finiteTransition;
+    private TranslateTransition infiniteTransition;
+    private Text infiniteScrollTextNode;
+    private Rectangle infiniteScrollClip = new Rectangle();
 
     protected MarqueeSkin(final Marquee control) {
         super(control);
@@ -23,7 +29,11 @@ public class MarqueeSkin extends SkinBase<Marquee> {
     private void init() {
         initTextNode();
         initClip();
-        initTransition();
+        if (getSkinnable().isInfiniteScroll()) {
+            initInfiniteScroll();
+        } else {
+            initFiniteScroll();
+        }
         initChangeListener();
 
         getChildren().addAll(textNode);
@@ -41,8 +51,65 @@ public class MarqueeSkin extends SkinBase<Marquee> {
         textNode.setClip(clip);
     }
 
-    private void initTransition() {
-        transition.setOnFinished(event -> {
+    private void initInfiniteScroll() {
+        initInfiniteTransition();
+        initInfiniteScrollTextNode();
+        initInfiniteScrollClip();
+
+        disposeFiniteTransition();
+    }
+
+
+    private void initInfiniteTransition() {
+        infiniteTransition = new TranslateTransition();
+        infiniteTransition.setCycleCount(Animation.INDEFINITE);
+        infiniteTransition.delayProperty().bind(getSkinnable().animationStartDelayProperty());
+        infiniteTransition.setInterpolator(Interpolator.LINEAR);
+        infiniteTransition.setNode(textNode);
+    }
+
+    private void initInfiniteScrollTextNode() {
+        infiniteScrollTextNode = new Text();
+        infiniteScrollTextNode.setTextOrigin(VPos.TOP);
+        infiniteScrollTextNode.textProperty().bind(
+                getSkinnable().infiniteScrollSeparatorProperty()
+                        .concat(getSkinnable().textProperty()));
+        infiniteScrollTextNode.translateXProperty().bind(textNode.translateXProperty());
+        getChildren().add(infiniteScrollTextNode);
+    }
+
+    private void initInfiniteScrollClip() {
+        infiniteScrollClip = new Rectangle();
+        updateinfiniteScrollClipTranslateBinding();
+        infiniteScrollClip.setWidth(textNode.getLayoutBounds().getWidth());
+        infiniteScrollClip.setHeight(textNode.getLayoutBounds().getHeight());
+        textNode.layoutBoundsProperty().addListener((observable, oldValue, newValue) -> {
+            infiniteScrollClip.setWidth(textNode.getLayoutBounds().getWidth());
+            infiniteScrollClip.setHeight(textNode.getLayoutBounds().getHeight());
+            updateinfiniteScrollClipTranslateBinding();
+        });
+        updateinfiniteScrollClipTranslateBinding();
+        infiniteScrollTextNode.setClip(infiniteScrollClip);
+    }
+
+    private void updateinfiniteScrollClipTranslateBinding() {
+        infiniteScrollClip.translateXProperty().bind(
+                textNode.translateXProperty().negate()
+                        .subtract(textNode.getLayoutBounds().getWidth()));
+    }
+
+    private void initFiniteScroll() {
+        initFiniteTransition();
+
+        disposeInfiniteTransition();
+        getChildren().remove(infiniteScrollTextNode);
+        infiniteScrollTextNode = null;
+        infiniteScrollClip = null;
+    }
+
+    private void initFiniteTransition() {
+        finiteTransition = new TranslateTransition();
+        finiteTransition.setOnFinished(event -> {
             final Thread t = new Thread(() -> {
                 try {
                     final long endDelay = (long) getSkinnable().getAnimationEndDelay().toMillis();
@@ -51,42 +118,61 @@ public class MarqueeSkin extends SkinBase<Marquee> {
                     // nothing to do
                 }
                 textNode.setTranslateX(0);
-                transition.playFromStart();
+                finiteTransition.playFromStart();
             });
             t.setDaemon(true);
             t.start();
         });
-        transition.delayProperty().bind(getSkinnable().animationStartDelayProperty());
-        transition.setInterpolator(Interpolator.LINEAR);
-        transition.setNode(textNode);
+        finiteTransition.delayProperty().bind(getSkinnable().animationStartDelayProperty());
+        finiteTransition.setInterpolator(Interpolator.LINEAR);
+        finiteTransition.setNode(textNode);
     }
 
     private void initChangeListener() {
-        final ChangeListener<Object> changeListener = createChangeListener();
-        getSkinnable().textProperty().addListener(changeListener);
-        getSkinnable().widthProperty().addListener(changeListener);
+        final ChangeListener<Object> textOrWidthChangeListener = createTextOrWidthChangeListener();
+        getSkinnable().textProperty().addListener(textOrWidthChangeListener);
+        getSkinnable().widthProperty().addListener(textOrWidthChangeListener);
+        getSkinnable().infiniteScrollProperty().addListener(createInfiniteScrollChangeListener());
     }
 
-    private ChangeListener<Object> createChangeListener() {
+    private ChangeListener<Object> createTextOrWidthChangeListener() {
         return (observable, oldValue, newValue) -> {
             textNode.setTranslateX(0);
-            final double textWidth = textNode.getLayoutBounds().getWidth();
-            if (textWidth < getSkinnable().getWidth()) {
-                transition.stop();
-            } else {
-                final double animationWidth = textWidth - getSkinnable().getWidth();
-                final double animationDuration = animationWidth * 125 / getSkinnable().getAnimationSpeed();
-                transition.stop();
-                transition.setByX(-animationWidth);
-                transition.setDuration(Duration.millis(animationDuration));
-                transition.play();
+            getCurrentTransition().stop();
+            if (textNode.getLayoutBounds().getWidth() > getSkinnable().getWidth()) {
+                computeAndPlayTransition();
             }
         };
     }
 
-    @Override
-    protected double computePrefWidth(final double height, final double topInset, final double rightInset, final double bottomInset, final double leftInset) {
-        return textNode.getLayoutBounds().getWidth();
+    private ChangeListener<Boolean> createInfiniteScrollChangeListener() {
+        return (observable, oldValue, newValue) -> {
+            if (newValue) {
+                initInfiniteScroll();
+            } else {
+                initFiniteScroll();
+            }
+            getCurrentTransition().play();
+        };
+    }
+
+    private TranslateTransition getCurrentTransition() {
+        return getSkinnable().isInfiniteScroll() ? infiniteTransition : finiteTransition;
+    }
+
+    private void computeAndPlayTransition() {
+        final double animationWidth = getSkinnable().isInfiniteScroll() ?
+                infiniteScrollTextNode.getLayoutBounds().getWidth()
+                : textNode.getLayoutBounds().getWidth() - getSkinnable().getWidth();
+        final double animationDuration = animationWidth * ANIMATION_DURATION_ADJUSTMENT / getSkinnable().getAnimationSpeed();
+        playTransition(animationWidth, animationDuration);
+    }
+
+    private void playTransition(final double animationWidth, final double animationDuration) {
+        final TranslateTransition transition = getCurrentTransition();
+        transition.setByX(-animationWidth);
+        transition.setDuration(Duration.millis(animationDuration));
+        transition.play();
     }
 
     @Override
@@ -95,13 +181,8 @@ public class MarqueeSkin extends SkinBase<Marquee> {
     }
 
     @Override
-    protected double computeMaxWidth(final double height, final double topInset, final double rightInset, final double bottomInset, final double leftInset) {
-        return getSkinnable().prefWidth(height);
-    }
-
-    @Override
-    protected double computePrefHeight(final double width, final double topInset, final double rightInset, final double bottomInset, final double leftInset) {
-        return super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset); //TODO
+    protected double computePrefWidth(final double height, final double topInset, final double rightInset, final double bottomInset, final double leftInset) {
+        return textNode.getLayoutBounds().getWidth();
     }
 
     @Override
@@ -117,14 +198,34 @@ public class MarqueeSkin extends SkinBase<Marquee> {
     @Override
     protected void layoutChildren(final double contentX, final double contentY, final double contentWidth, final double contentHeight) {
         // nothing (keep text-layout at 0)
+        if (infiniteScrollTextNode != null) {
+            layoutInArea(infiniteScrollTextNode, contentX + textNode.getLayoutBounds().getWidth(),
+                    contentY, contentWidth, contentHeight, -1, HPos.LEFT, VPos.TOP);
+        }
     }
 
     @Override
     public void dispose() {
         super.dispose();
         textNode = null;
-        transition.stop();
-        transition = null;
         clip = null;
+        infiniteScrollTextNode = null;
+        infiniteScrollClip = null;
+        disposeFiniteTransition();
+        disposeInfiniteTransition();
+    }
+
+    private void disposeFiniteTransition() {
+        if (finiteTransition != null) {
+            finiteTransition.stop();
+            finiteTransition = null;
+        }
+    }
+
+    private void disposeInfiniteTransition() {
+        if (infiniteTransition != null) {
+            infiniteTransition.stop();
+            infiniteTransition = null;
+        }
     }
 }
