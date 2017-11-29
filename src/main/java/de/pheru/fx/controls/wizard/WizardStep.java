@@ -1,11 +1,18 @@
 package de.pheru.fx.controls.wizard;
 
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.scene.Node;
 
-/**
- * Created by Philipp on 23.09.2016.
- */
 public interface WizardStep<T> {
 
-    Node init(final Wizard<T> wizard);
+    Node activate(final T model);
+
+    ObservableBooleanValue finishDisabled(final T model);
+
+    ObservableBooleanValue nextDisabled(final T model);
+
+    default ObservableBooleanValue backDisabled(final T model) {
+        return new SimpleBooleanProperty(false);
+    }
 }

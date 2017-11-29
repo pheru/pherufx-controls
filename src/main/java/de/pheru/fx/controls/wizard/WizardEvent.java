@@ -3,9 +3,6 @@ package de.pheru.fx.controls.wizard;
 import javafx.event.Event;
 import javafx.event.EventType;
 
-/**
- * Created by Philipp on 18.10.2016.
- */
 public class WizardEvent<T> extends Event {
 
     public static final EventType<WizardEvent> EVENT_TYPE = new EventType<>("WIZARD");
