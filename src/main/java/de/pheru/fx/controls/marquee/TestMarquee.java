@@ -1,15 +1,17 @@
 package de.pheru.fx.controls.marquee;
 
+import de.pheru.fx.controls.filledslider.FilledSlider;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-class TestMarquee extends Application{
+public class TestMarquee extends Application{
 
     public static void main(String[] args) {
         launch(args);
@@ -44,6 +46,7 @@ class TestMarquee extends Application{
 //                label,
                 marquee,
                 br,
+                new VBox(new FilledSlider(), new FilledSlider()),
                 bd);
 //        marquee.setAnimationSpeed(3);
         marquee.setInfiniteScroll(true);
